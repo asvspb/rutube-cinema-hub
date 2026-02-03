@@ -80,14 +80,24 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
       }
     };
 
+    const handleScroll = (event: Event) => {
+      // Ignore scroll events that happen inside the menu itself
+      // (e.g. long input values can cause the input to scroll horizontally on focus/typing).
+      const target = event.target;
+      if (target && menuRef.current && menuRef.current.contains(target as Node)) {
+        return;
+      }
+      closeMenu();
+    };
+
     if (activeMenuId) {
       document.addEventListener('mousedown', handleClickOutside);
-      window.addEventListener('scroll', closeMenu, { capture: true }); 
+      window.addEventListener('scroll', handleScroll, { capture: true });
     }
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('scroll', closeMenu, { capture: true });
+      window.removeEventListener('scroll', handleScroll, { capture: true });
     };
   }, [activeMenuId]);
 
