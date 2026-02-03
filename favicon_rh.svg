@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Left half: R on dark blue background -->
+  <rect x="0" y="0" width="16" height="32" rx="4" fill="#000917"/>
+  <text x="8" y="22" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="18" fill="white">R</text>
+  
+  <!-- Right half: k on beige background -->
+  <rect x="16" y="0" width="16" height="32" rx="4" fill="#CDAB8F"/>
+  <text x="24" y="22" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="18" fill="#2d2d2d">k</text>
+</svg>
