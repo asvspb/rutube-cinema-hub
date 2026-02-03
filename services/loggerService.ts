@@ -9,7 +9,7 @@ interface LogEntry {
   stack?: string;
 }
 
-const LOG_SERVER_URL = 'http://localhost:9230/api/logs';
+const LOG_SERVER_URL = '/api/logs';
 
 class Logger {
   private async send(entry: LogEntry) {

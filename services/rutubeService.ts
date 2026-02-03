@@ -115,87 +115,61 @@ export const parseRutubeUrl = (url: string): { id: string, type: 'channel' | 'pl
   }
 };
 
-const getProxies = () => [
-  // 1. PRIMARY STRATEGY: Self-hosted / Local Middleware
-  (target: string) => `http://localhost:9230/api/proxy?url=${encodeURIComponent(target)}`,
+type ProxyStatus = 'unknown' | 'up' | 'down';
+let localProxyStatus: ProxyStatus = 'unknown';
 
-  // 2. FALLBACK: Direct access (Works in Russia without VPN)
-  (target: string) => target,
+const getProxies = () => {
+  const proxies: Array<(target: string) => string> = [];
+  if (localProxyStatus !== 'down') {
+    proxies.push((target: string) => `/api/proxy?url=${encodeURIComponent(target)}`);
+  }
+  proxies.push((target: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`);
+  return proxies;
+};
 
-  // 3. FALLBACK: Public Proxies
-  (target: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`,
-  (target: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
-  (target: string) => `https://corsproxy.io/?${encodeURIComponent(target)}`,
-];
+const isValidRutubeId = (id: string | undefined | null) => !!id && /^\d{6,}$/.test(id);
 
-// Helper: Tries all proxies in parallel and returns the first successful text response
+// Helper: Tries proxies sequentially and returns the first successful text response
 const fetchTextWithRace = async (targetUrl: string): Promise<string> => {
   const proxies = getProxies();
-  
-  const requests = proxies.map(proxyGen => {
+  if (proxies.length === 0) {
+    throw new Error('No proxies available');
+  }
+
+  let lastError: Error | undefined;
+
+  for (const proxyGen of proxies) {
     const url = proxyGen(targetUrl);
-    return new Promise<string>((resolve, reject) => {
-      const controller = new AbortController();
-      const isLocal = url.startsWith('/api');
-      const timeoutMs = isLocal ? 3000 : 10000; // Increased timeout for public proxies
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs); 
+    const isLocal = !/^https?:\/\//.test(url);
+    const timeoutMs = isLocal ? 8000 : 12000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-      fetch(url, { signal: controller.signal })
-        .then(async (res) => {
-          clearTimeout(timeoutId);
-          if (res.ok) {
-            try {
-              const text = await res.text();
-              if (text.length > 20 && !text.includes('Proxy Error') && !text.includes('Access Denied')) {
-                resolve(text);
-              } else {
-                const errorMsg = text.includes('Access Denied') ? 'Access Denied' : 'Proxy error or empty';
-                logger.warn(`Proxy response issue: ${errorMsg}`, { url, text: text.substring(0, 100) });
-                reject(new Error(errorMsg));
-              }
-            } catch (e) {
-              logger.error('Failed to read proxy response', { url }, e as Error);
-              reject(e);
-            }
-          } else {
-            logger.warn(`Proxy returned status ${res.status}`, { url });
-            reject(new Error(`Status ${res.status}`));
-          }
-        })
-        .catch(e => {
-          clearTimeout(timeoutId);
-          if (e.name !== 'AbortError') {
-            logger.error('Proxy fetch failed', { url }, e as Error);
-          }
-          reject(e);
-        });
-    });
-  });
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
 
-  return new Promise((resolve, reject) => {
-    let errorsCount = 0;
-    if (requests.length === 0) {
-        reject(new Error('No proxies available'));
-        return;
+      if (!res.ok) {
+        lastError = new Error(`Status ${res.status}`);
+        continue;
+      }
+
+      const text = await res.text();
+      if (text.length > 20 && !text.includes('Proxy Error') && !text.includes('Access Denied') && !text.includes('Cloudflare')) {
+        if (isLocal) localProxyStatus = 'up';
+        return text;
+      }
+
+      lastError = new Error(text.includes('Access Denied') ? 'Access Denied' : 'Proxy error or empty');
+    } catch (e) {
+      clearTimeout(timeoutId);
+      if (isLocal) localProxyStatus = 'down';
+      lastError = e instanceof Error ? e : new Error('Proxy fetch failed');
     }
-    
-    let resolved = false;
+  }
 
-    requests.forEach(p => {
-      p.then(text => {
-        if (!resolved) {
-          resolved = true;
-          resolve(text);
-        }
-      }).catch(() => {
-        errorsCount++;
-        if (errorsCount === requests.length && !resolved) {
-          logger.error('All proxies failed for URL', { targetUrl });
-          reject(new Error('All proxies failed'));
-        }
-      });
-    });
-  });
+  logger.error('All proxies failed for URL', { targetUrl });
+  throw lastError ?? new Error('All proxies failed');
 };
 
 const parseProxyResponse = (text: string): any => {
@@ -481,9 +455,11 @@ const scrapeVideosFromHtml = async (channelId: string): Promise<any[]> => {
         let html = await fetchTextWithRace(`https://rutube.ru/channel/${channelId}/videos/`);
         let videos = extractVideosFromHtml(html);
         if (videos.length > 0) return videos;
-
-        html = await fetchTextWithRace(`https://rutube.ru/u/${channelId}/videos/`);
-        videos = extractVideosFromHtml(html);
+        if (!/^\d+$/.test(channelId)) {
+            html = await fetchTextWithRace(`https://rutube.ru/u/${channelId}/videos/`);
+            videos = extractVideosFromHtml(html);
+            if (videos.length > 0) return videos;
+        }
         if (videos.length > 0) return videos;
         
         html = await fetchTextWithRace(`https://rutube.ru/channel/${channelId}/`);
@@ -493,6 +469,56 @@ const scrapeVideosFromHtml = async (channelId: string): Promise<any[]> => {
     } catch(e) {
         return [];
     }
+};
+
+const scrapeVideosPaginated = async (channelId: string, maxPages: number): Promise<any[]> => {
+    const aggregated: any[] = [];
+    const seenIds = new Set<string>();
+
+    for (let page = 1; page <= maxPages; page++) {
+        const suffix = page === 1 ? '' : `?page=${page}`;
+        let html: string;
+        try {
+            html = await fetchTextWithRace(`https://rutube.ru/channel/${channelId}/videos/${suffix}`);
+        } catch {
+            break;
+        }
+        const pageVideos = extractVideosFromHtml(html);
+        if (!pageVideos.length) break;
+
+        pageVideos.forEach(v => {
+            if (v.id && !seenIds.has(v.id)) {
+                seenIds.add(v.id);
+                aggregated.push(v);
+            }
+        });
+
+        // Heuristic stop: if last page had fewer than 10 items, likely no more pages
+        if (pageVideos.length < 10) break;
+    }
+
+    // Fallback to /u/{id} pagination if nothing was found
+    if (aggregated.length === 0 && !/^\d+$/.test(channelId)) {
+        for (let page = 1; page <= Math.max(2, maxPages); page++) {
+            const suffix = page === 1 ? '' : `?page=${page}`;
+            try {
+                const html = await fetchTextWithRace(`https://rutube.ru/u/${channelId}/videos/${suffix}`);
+                const pageVideos = extractVideosFromHtml(html);
+                if (!pageVideos.length) break;
+                pageVideos.forEach(v => {
+                    if (v.id && !seenIds.has(v.id)) {
+                        seenIds.add(v.id);
+                        aggregated.push(v);
+                    }
+                });
+                if (pageVideos.length < 10) break;
+            } catch {
+                break;
+            }
+        }
+    }
+
+    return aggregated;
 };
 
 export const fetchVideos = async (
@@ -508,39 +534,66 @@ export const fetchVideos = async (
       return { videos, nextUrl: next };
   }
 
-  let results: any[] = [];
-  let next: string | null = null;
-  let attempts = 0;
+  // Guard against bad IDs to avoid hammering proxies
+  if (!category.rutubeId) return { videos: [], nextUrl: null };
 
-  // Strategy 1: Standard APIs
-  let initialUrls = [];
+  // --- CHANNEL STRATEGY: try API first, then HTML scraping
   if (category.type === 'channel') {
-    initialUrls = [
-        `${BASE_API}/metainfo/tv/${category.rutubeId}/video/?sort=created_ts&type=all&client=android&format=json`, // TV API often works better
-        `${BASE_API}/video/person/${category.rutubeId}/?client=android&format=json`,
-        `${BASE_API}/search/video/?author=${category.rutubeId}&client=android&format=json`
-    ];
-  } else {
-    initialUrls = [`${BASE_API}/playlist/custom/${category.rutubeId}/videos/?client=android&format=json`];
+      let channelId = category.rutubeId;
+      if (!isValidRutubeId(channelId)) {
+          const resolved = await resolveRutubeId(channelId, 'channel');
+          if (!resolved || !isValidRutubeId(resolved)) {
+              return { videos: [], nextUrl: null };
+          }
+          channelId = resolved;
+      }
+      const apiUrl = `${BASE_API}/video/person/${channelId}/?client=android&format=json`;
+      const apiRes = await fetchSinglePage(apiUrl);
+      const apiVideos = apiRes.results.map(item => mapRutubeItem(item, settings)).filter((item): item is RutubeVideo => item !== null);
+
+      if (apiVideos.length > 0) {
+          if (!fetchAll) {
+              return { videos: apiVideos, nextUrl: apiRes.next };
+          }
+
+          let allVideos = [...apiVideos];
+          let cursor = apiRes.next;
+          let page = 0;
+          const MAX_PAGES = 30;
+
+          while (cursor && page < MAX_PAGES) {
+              const { results: nextRes, next: nextNext } = await fetchSinglePage(cursor);
+              allVideos = [...allVideos, ...nextRes.map(item => mapRutubeItem(item, settings)).filter((item): item is RutubeVideo => item !== null)];
+              cursor = nextNext;
+              page++;
+          }
+
+          return { videos: allVideos, nextUrl: null };
+      }
+
+      const maxPages = fetchAll ? 8 : 3;
+      const scraped = await scrapeVideosPaginated(channelId, maxPages);
+      const videos = scraped.map(item => mapRutubeItem(item, settings)).filter((item): item is RutubeVideo => item !== null);
+      return { videos, nextUrl: null };
   }
 
-  // Iterate through API strategies
+  // --- PLAYLIST STRATEGY: keep JSON API, but fail fast on invalid ID
+  if (category.type === 'playlist' && !isValidRutubeId(category.rutubeId)) {
+      return { videos: [], nextUrl: null };
+  }
+
+  let results: any[] = [];
+  let next: string | null = null;
+
+  const initialUrls = [`${BASE_API}/playlist/custom/${category.rutubeId}/videos/?client=android&format=json`];
+
   for (const url of initialUrls) {
-      if (results.length > 0) break;
       const res = await fetchSinglePage(url);
       if (res.results.length > 0) {
           results = res.results;
           next = res.next;
           break;
       }
-      // Small delay between strategies
-      await new Promise(r => setTimeout(r, 500));
-  }
-  
-  // Strategy 3: Scraping
-  if (results.length === 0 && category.type === 'channel') {
-      results = await scrapeVideosFromHtml(category.rutubeId);
-      next = null; 
   }
   
   const mapAndFilter = (res: any[]) => res.map(item => mapRutubeItem(item, settings)).filter((item): item is RutubeVideo => item !== null);
@@ -549,11 +602,10 @@ export const fetchVideos = async (
       return { videos: mapAndFilter(results), nextUrl: next };
   }
 
-  // Fetch all Logic
   let allVideos = mapAndFilter(results);
   let cursor = next;
   let page = 0;
-  const MAX_PAGES = 50;
+  const MAX_PAGES = 30;
 
   while(cursor && page < MAX_PAGES) {
       const { results: nextRes, next: nextNext } = await fetchSinglePage(cursor);
@@ -607,11 +659,7 @@ export const fetchChannelPlaylists = async (rutubeId: string): Promise<CategoryD
   };
 
   const endpoints = [
-    `${BASE_API}/metainfo/tv/${rutubeId}/video-albums/?client=android&format=json`,
-    `${BASE_API}/playlist/user/${rutubeId}/?client=android&format=json`, 
-    `${BASE_API}/profile/user/${rutubeId}/playlists/?client=android&format=json`,
-    `${BASE_API}/video/person/${rutubeId}/playlists/?client=android&format=json`,
-    `${BASE_API}/channel/${rutubeId}/playlists/?client=android&format=json` 
+    `${BASE_API}/playlist/user/${rutubeId}/?client=android&format=json`
   ];
 
   for (const endpoint of endpoints) {
@@ -635,9 +683,11 @@ export const fetchChannelPlaylists = async (rutubeId: string): Promise<CategoryD
   }
   
   const urlsToCheck = [
-      `https://rutube.ru/channel/${rutubeId}/playlists/`,
-      `https://rutube.ru/u/${rutubeId}/playlists/`
+      `https://rutube.ru/channel/${rutubeId}/playlists/`
   ];
+  if (!/^\d+$/.test(rutubeId)) {
+      urlsToCheck.push(`https://rutube.ru/u/${rutubeId}/playlists/`);
+  }
 
   for (const pageUrl of urlsToCheck) {
     try {

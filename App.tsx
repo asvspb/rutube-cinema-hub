@@ -549,7 +549,8 @@ const App: React.FC = () => {
                         rutubeId: channel.rutubeId,
                         type: 'channel'
                     };
-                    return fetchVideos(tempCategory, ratingSettings);
+                    // Fetch more videos for home feed to ensure we have enough content
+                    return fetchVideos(tempCategory, ratingSettings, null, false);
                 });
 
                 const results = await Promise.all(promises);
@@ -557,8 +558,35 @@ const App: React.FC = () => {
                 if (isMounted) {
                     let allVideos: RutubeVideo[] = [];
                     results.forEach(res => {
-                        if (res.videos) allVideos = [...allVideos, ...res.videos];
+                        if (res.videos && res.videos.length > 0) {
+                            allVideos = [...allVideos, ...res.videos];
+                        }
                     });
+
+                    // If we still have few videos, try to fetch more for each channel
+                    if (allVideos.length < 40 && isMounted) {
+                         const morePromises = channels.map(channel => {
+                            const tempCategory: CategoryDef = {
+                                id: `home-temp-more-${channel.rutubeId}`,
+                                label: 'All',
+                                rutubeId: channel.rutubeId,
+                                type: 'channel'
+                            };
+                            // Try to fetch all or at least more pages if possible
+                            return fetchVideos(tempCategory, ratingSettings, null, true);
+                        });
+                        const moreResults = await Promise.all(morePromises);
+                        moreResults.forEach(res => {
+                            if (res.videos) {
+                                // Add only unique videos
+                                res.videos.forEach(v => {
+                                    if (!allVideos.find(existing => existing.id === v.id)) {
+                                        allVideos.push(v);
+                                    }
+                                });
+                            }
+                        });
+                    }
 
                     allVideos.sort((a, b) => new Date(b.created_ts).getTime() - new Date(a.created_ts).getTime());
                     

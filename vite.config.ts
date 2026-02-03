@@ -10,6 +10,12 @@ export default defineConfig(({ mode }) => {
         // App runs on 9229 (DB planned for 9009).
         port: 9229,
         host: '0.0.0.0',
+        proxy: {
+          '/api': {
+            target: 'http://localhost:9230',
+            changeOrigin: true,
+          }
+        },
       },
       plugins: [react()],
       define: {

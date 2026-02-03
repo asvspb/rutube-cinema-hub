@@ -94,14 +94,15 @@ app.get('/api/proxy', async (req, res) => {
     for (const [key, value] of response.headers.entries()) {
       if (key.toLowerCase() !== 'access-control-allow-origin' && 
           key.toLowerCase() !== 'content-security-policy' &&
-          key.toLowerCase() !== 'transfer-encoding') {
+          key.toLowerCase() !== 'transfer-encoding' &&
+          key.toLowerCase() !== 'content-encoding') {
         res.setHeader(key, value);
       }
     }
 
     // Send the response body
-    const text = await response.text();
-    res.send(text);
+    const buffer = await response.arrayBuffer();
+    res.send(Buffer.from(buffer));
   } catch (e) {
     console.error('Proxy request error:', e);
     res.status(500).json({ error: 'Proxy request failed', details: e.message });
