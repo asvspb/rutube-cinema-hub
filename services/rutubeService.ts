@@ -367,7 +367,13 @@ const fetchSinglePage = async (url: string): Promise<{ results: any[], next: str
 
     if (data && (Array.isArray(data.results) || data.results)) {
        const results = Array.isArray(data.results) ? data.results : [];
-       const next = data.has_next ? data.next : null;
+       let next: string | null = null;
+       if (typeof data.next === 'string' && data.next.length > 0) {
+         next = data.next;
+       }
+       if (data.has_next === false || data.has_next === 0) {
+         next = null;
+       }
        return { results, next };
     }
   } catch (e) { /* ignore */ }
@@ -559,11 +565,24 @@ export const fetchVideos = async (
           let allVideos = [...apiVideos];
           let cursor = apiRes.next;
           let page = 0;
-          const MAX_PAGES = 30;
+          const pageSize = apiVideos.length || 20;
+          const expectedTotalPages = category.itemCount && category.itemCount > 0
+            ? Math.ceil(category.itemCount / Math.max(1, pageSize))
+            : null;
+          const MAX_TOTAL_PAGES = 200;
+          const maxAdditionalPages = expectedTotalPages !== null
+            ? Math.min(Math.max(expectedTotalPages - 1, 0), MAX_TOTAL_PAGES - 1)
+            : MAX_TOTAL_PAGES - 1;
+          const seenCursors = new Set<string>();
 
-          while (cursor && page < MAX_PAGES) {
+          while (cursor && page < maxAdditionalPages && !seenCursors.has(cursor)) {
+              seenCursors.add(cursor);
               const { results: nextRes, next: nextNext } = await fetchSinglePage(cursor);
               allVideos = [...allVideos, ...nextRes.map(item => mapRutubeItem(item, settings)).filter((item): item is RutubeVideo => item !== null)];
+              if (category.itemCount && allVideos.length >= category.itemCount) {
+                  cursor = null;
+                  break;
+              }
               cursor = nextNext;
               page++;
           }
@@ -605,11 +624,24 @@ export const fetchVideos = async (
   let allVideos = mapAndFilter(results);
   let cursor = next;
   let page = 0;
-  const MAX_PAGES = 30;
+  const pageSize = results.length || 20;
+  const expectedTotalPages = category.itemCount && category.itemCount > 0
+    ? Math.ceil(category.itemCount / Math.max(1, pageSize))
+    : null;
+  const MAX_TOTAL_PAGES = 200;
+  const maxAdditionalPages = expectedTotalPages !== null
+    ? Math.min(Math.max(expectedTotalPages - 1, 0), MAX_TOTAL_PAGES - 1)
+    : MAX_TOTAL_PAGES - 1;
+  const seenCursors = new Set<string>();
 
-  while(cursor && page < MAX_PAGES) {
+  while (cursor && page < maxAdditionalPages && !seenCursors.has(cursor)) {
+      seenCursors.add(cursor);
       const { results: nextRes, next: nextNext } = await fetchSinglePage(cursor);
       allVideos = [...allVideos, ...mapAndFilter(nextRes)];
+      if (category.itemCount && allVideos.length >= category.itemCount) {
+          cursor = null;
+          break;
+      }
       cursor = nextNext;
       page++;
   }

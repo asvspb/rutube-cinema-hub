@@ -555,42 +555,52 @@ const App: React.FC = () => {
 
                 const results = await Promise.all(promises);
                 
+                let initialVideos: RutubeVideo[] = [];
                 if (isMounted) {
-                    let allVideos: RutubeVideo[] = [];
+                    const byId = new Map<string, RutubeVideo>();
                     results.forEach(res => {
                         if (res.videos && res.videos.length > 0) {
-                            allVideos = [...allVideos, ...res.videos];
+                            res.videos.forEach(v => {
+                                if (!byId.has(v.id)) {
+                                    byId.set(v.id, v);
+                                }
+                            });
                         }
                     });
 
-                    // If we still have few videos, try to fetch more for each channel
-                    if (allVideos.length < 40 && isMounted) {
-                         const morePromises = channels.map(channel => {
-                            const tempCategory: CategoryDef = {
-                                id: `home-temp-more-${channel.rutubeId}`,
-                                label: 'All',
-                                rutubeId: channel.rutubeId,
-                                type: 'channel'
-                            };
-                            // Try to fetch all or at least more pages if possible
-                            return fetchVideos(tempCategory, ratingSettings, null, true);
-                        });
-                        const moreResults = await Promise.all(morePromises);
-                        moreResults.forEach(res => {
-                            if (res.videos) {
-                                // Add only unique videos
-                                res.videos.forEach(v => {
-                                    if (!allVideos.find(existing => existing.id === v.id)) {
-                                        allVideos.push(v);
-                                    }
-                                });
-                            }
-                        });
-                    }
+                    initialVideos = Array.from(byId.values());
+                    initialVideos.sort((a, b) => new Date(b.created_ts).getTime() - new Date(a.created_ts).getTime());
+                    setVideos(initialVideos);
+                    setIsVideoLoading(false);
+                }
 
-                    allVideos.sort((a, b) => new Date(b.created_ts).getTime() - new Date(a.created_ts).getTime());
-                    
-                    setVideos(allVideos);
+                // Background: fetch full lists and merge
+                const fullPromises = channels.map(channel => {
+                    const tempCategory: CategoryDef = {
+                        id: `home-temp-full-${channel.rutubeId}`,
+                        label: 'All',
+                        rutubeId: channel.rutubeId,
+                        type: 'channel'
+                    };
+                    return fetchVideos(tempCategory, ratingSettings, null, true);
+                });
+
+                const fullResults = await Promise.all(fullPromises);
+                if (isMounted) {
+                    const mergedById = new Map<string, RutubeVideo>();
+                    initialVideos.forEach(v => mergedById.set(v.id, v));
+                    fullResults.forEach(res => {
+                        if (res.videos && res.videos.length > 0) {
+                            res.videos.forEach(v => {
+                                if (!mergedById.has(v.id)) {
+                                    mergedById.set(v.id, v);
+                                }
+                            });
+                        }
+                    });
+                    const merged = Array.from(mergedById.values());
+                    merged.sort((a, b) => new Date(b.created_ts).getTime() - new Date(a.created_ts).getTime());
+                    setVideos(merged);
                 }
             } catch (e) {
                 console.error("Home feed error", e);
@@ -631,11 +641,69 @@ const App: React.FC = () => {
       try {
         if (!activeCategory.rutubeId) throw new Error("Invalid category ID");
 
+        const shouldFetchAll = isFetchAllMode || activeCategory.type === 'playlist';
+
+        if (shouldFetchAll && activeCategory.type === 'channel') {
+            const firstPage = await fetchVideos(activeCategory, ratingSettings, null, false);
+            if (!isMounted) return;
+
+            setVideos(firstPage.videos || []);
+            setNextPageUrl(firstPage.nextUrl);
+            setVideoCache(prev => ({
+                ...prev,
+                [activeCategory.id]: { data: firstPage.videos || [], nextUrl: firstPage.nextUrl }
+            }));
+            setIsVideoLoading(false);
+
+            if (firstPage.nextUrl) {
+                setIsLoadingMore(true);
+                let cursor: string | null = firstPage.nextUrl;
+                let aggregated: RutubeVideo[] = [...(firstPage.videos || [])];
+                let page = 0;
+                const MAX_PAGES = 200;
+                const seenCursors = new Set<string>();
+
+                try {
+                    while (cursor && isMounted && page < MAX_PAGES && !seenCursors.has(cursor)) {
+                        seenCursors.add(cursor);
+                        const { videos: moreVideos, nextUrl } = await fetchVideos(activeCategory, ratingSettings, cursor);
+                        if (!isMounted) return;
+                        if (moreVideos && moreVideos.length > 0) {
+                            aggregated = [...aggregated, ...moreVideos];
+                            setVideos(aggregated);
+                            setVideoCache(prev => ({
+                                ...prev,
+                                [activeCategory.id]: { data: aggregated, nextUrl }
+                            }));
+                            if (activeCategory.itemCount && aggregated.length >= activeCategory.itemCount) {
+                                cursor = null;
+                                break;
+                            }
+                        }
+                        cursor = nextUrl;
+                        page++;
+                    }
+                } catch (err) {
+                    console.error("Background fetch failed:", err);
+                } finally {
+                    if (isMounted) {
+                        setNextPageUrl(null);
+                        setVideoCache(prev => ({
+                            ...prev,
+                            [activeCategory.id]: { data: aggregated, nextUrl: null }
+                        }));
+                        setIsLoadingMore(false);
+                    }
+                }
+            }
+            return;
+        }
+
         const { videos: newVideos, nextUrl } = await fetchVideos(
           activeCategory, 
           ratingSettings, 
           null, 
-          isFetchAllMode
+          shouldFetchAll
         );
         
         if (isMounted) {
@@ -771,13 +839,16 @@ const App: React.FC = () => {
 
   const activeMenuChannel = channels.find(c => c.id === activeChannelMenuId);
 
-  const handleRefresh = () => {
+  const handleRefresh = (fetchAll: boolean = false) => {
     if (!activeCategory && viewMode !== 'home') return;
     
     if (viewMode === 'home') {
         setRefreshKey(prev => prev + 1);
         return;
     }
+
+    setIsFetchAllMode(fetchAll);
+    setCurrentPage(1);
 
     setVideoCache(prev => {
         const next = { ...prev };

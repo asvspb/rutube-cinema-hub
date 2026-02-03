@@ -13,7 +13,7 @@ interface CategoryFilterProps {
   onAddClick: () => void;
   onRemove: (category: CategoryDef) => void;
   onRename: (category: CategoryDef, newName: string) => void;
-  onRefresh: () => void;
+  onRefresh: (fetchAll?: boolean) => void;
   onReorder: (newOrder: CategoryDef[]) => void;
   onRefine?: (category: CategoryDef) => void; // New prop
 }
@@ -226,7 +226,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                   <>
                      <button
                         onClick={() => {
-                          onRefresh();
+                          onRefresh(true);
                           closeMenu();
                         }}
                         className="w-full text-left px-3 py-2 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3 transition-colors"
