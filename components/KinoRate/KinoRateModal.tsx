@@ -251,7 +251,7 @@ export const KinoRateModal: React.FC<KinoRateModalProps> = ({ initialQuery, cont
           >
              <div className="flex items-center justify-center gap-2">
               <Archive className="w-4 h-4" />
-              Архив (Топ 900)
+              Топ-1000 (Архив IMDB)
             </div>
           </button>
         </div>

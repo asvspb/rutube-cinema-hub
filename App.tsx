@@ -1169,7 +1169,6 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#000917] text-white">
       <nav className="fixed top-0 left-0 right-0 h-16 bg-[#000917]/95 backdrop-blur z-40 border-b border-zinc-800">
-        
         <div className="absolute left-0 top-0 h-full flex items-center pl-4 md:pl-8 z-50 pointer-events-none">
           <div className="pointer-events-auto">
             <button 
@@ -1183,8 +1182,8 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-full max-w-7xl mx-auto flex items-center relative z-40 pointer-events-none px-4 md:px-8">
-           <div className="pointer-events-auto w-full overflow-hidden flex justify-start pl-52 xl:pl-0 transition-[padding] duration-300">
+        <div className="w-full h-full max-w-7xl mx-auto flex items-center px-4 md:px-8">
+           <div className="flex-1 min-w-0 overflow-hidden pl-52 2xl:pl-0 transition-[padding] duration-300">
              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-full group">
                 <Reorder.Group 
                   axis="x" 
