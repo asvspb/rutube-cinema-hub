@@ -17,7 +17,13 @@ const PORT = process.env.PORT || 9230; // Using a different port than the fronte
 app.use(cors());
 app.use(express.json());
 
-const LOG_FILE = path.join(__dirname, 'error_logs.json');
+const LOG_FILE = path.join(__dirname, 'logs', 'error_logs.json');
+
+// Ensure logs directory exists
+const LOGS_DIR = path.join(__dirname, 'logs');
+if (!fs.existsSync(LOGS_DIR)) {
+  fs.mkdirSync(LOGS_DIR, { recursive: true });
+}
 
 // Helper to write logs
 const writeLog = (logEntry) => {
