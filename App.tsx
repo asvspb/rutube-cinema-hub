@@ -157,13 +157,22 @@ const App: React.FC = () => {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.every(c => c && c.id && c.label)) {
-          const missingDefaults = DEFAULT_CHANNELS.filter(def => 
-            !parsed.some(savedChannel => savedChannel.rutubeId === def.rutubeId)
+          // Filter out removed system channels from saved state
+          const filteredSaved = parsed.filter(savedChannel => 
+            !savedChannel.isSystem || DEFAULT_CHANNELS.some(def => def.rutubeId === savedChannel.rutubeId)
           );
-          if (missingDefaults.length > 0) {
-             return [...parsed, ...missingDefaults];
+          
+          const missingDefaults = DEFAULT_CHANNELS.filter(def => 
+            !filteredSaved.some(savedChannel => savedChannel.rutubeId === def.rutubeId)
+          );
+          
+          if (missingDefaults.length > 0 || filteredSaved.length !== parsed.length) {
+             const result = [...filteredSaved, ...missingDefaults];
+             // Update localStorage immediately to prevent re-loading on next refresh
+             localStorage.setItem('rutube_cinema_v2_channels', JSON.stringify(result));
+             return result;
           }
-          return parsed;
+          return filteredSaved;
         }
       }
     } catch (e) { console.error('Failed to load channels', e); }

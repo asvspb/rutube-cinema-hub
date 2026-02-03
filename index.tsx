@@ -1,6 +1,10 @@
 import React, { ReactNode, ErrorInfo } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { logger } from './services/loggerService';
+
+// Initialize global error logging
+logger.initGlobalHandlers();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -27,7 +31,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
+    logger.error("Uncaught error in ErrorBoundary", { errorInfo }, error);
   }
 
   handleReset = () => {

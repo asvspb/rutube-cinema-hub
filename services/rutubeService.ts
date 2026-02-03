@@ -1,15 +1,10 @@
 
 import { RutubeApiResponse, RutubeVideo, CategoryDef, ChannelDef, SortOption, RatingSettings, ChannelInfo } from '../types';
+import { logger } from './loggerService';
 
 const BASE_API = 'https://rutube.ru/api';
 
 export const DEFAULT_CHANNELS: ChannelDef[] = [
-  { 
-    id: '32869', 
-    label: 'ТВ Центр', 
-    rutubeId: '32869', 
-    isSystem: true 
-  },
   { 
     id: '32869212', 
     label: 'Смотри кино', 
@@ -37,15 +32,6 @@ export const DEFAULT_CHANNELS: ChannelDef[] = [
 ];
 
 export const DEFAULT_PLAYLISTS_BY_CHANNEL: Record<string, CategoryDef[]> = {
-  '32869': [
-    { 
-      id: 'all-32869', 
-      label: 'Все видео', 
-      rutubeId: '32869', 
-      type: 'channel', 
-      isSystem: true 
-    }
-  ],
   '32869212': [
     { 
       id: 'all-32869212', 
@@ -131,9 +117,12 @@ export const parseRutubeUrl = (url: string): { id: string, type: 'channel' | 'pl
 
 const getProxies = () => [
   // 1. PRIMARY STRATEGY: Self-hosted / Local Middleware
-  (target: string) => `/api/proxy?url=${encodeURIComponent(target)}`,
+  (target: string) => `http://localhost:9230/api/proxy?url=${encodeURIComponent(target)}`,
 
-  // 2. FALLBACK: Public Proxies (Updated to more reliable ones)
+  // 2. FALLBACK: Direct access (Works in Russia without VPN)
+  (target: string) => target,
+
+  // 3. FALLBACK: Public Proxies
   (target: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`,
   (target: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
   (target: string) => `https://corsproxy.io/?${encodeURIComponent(target)}`,
@@ -160,17 +149,24 @@ const fetchTextWithRace = async (targetUrl: string): Promise<string> => {
               if (text.length > 20 && !text.includes('Proxy Error') && !text.includes('Access Denied')) {
                 resolve(text);
               } else {
-                reject(new Error('Proxy error or empty'));
+                const errorMsg = text.includes('Access Denied') ? 'Access Denied' : 'Proxy error or empty';
+                logger.warn(`Proxy response issue: ${errorMsg}`, { url, text: text.substring(0, 100) });
+                reject(new Error(errorMsg));
               }
             } catch (e) {
+              logger.error('Failed to read proxy response', { url }, e as Error);
               reject(e);
             }
           } else {
+            logger.warn(`Proxy returned status ${res.status}`, { url });
             reject(new Error(`Status ${res.status}`));
           }
         })
         .catch(e => {
           clearTimeout(timeoutId);
+          if (e.name !== 'AbortError') {
+            logger.error('Proxy fetch failed', { url }, e as Error);
+          }
           reject(e);
         });
     });
@@ -194,6 +190,7 @@ const fetchTextWithRace = async (targetUrl: string): Promise<string> => {
       }).catch(() => {
         errorsCount++;
         if (errorsCount === requests.length && !resolved) {
+          logger.error('All proxies failed for URL', { targetUrl });
           reject(new Error('All proxies failed'));
         }
       });
