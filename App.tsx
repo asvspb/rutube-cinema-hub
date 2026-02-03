@@ -15,7 +15,7 @@ import { ImportPlaylistsModal } from './components/ImportPlaylistsModal';
 import { ChannelHeader } from './components/ChannelHeader';
 import { HistoryModal } from './components/HistoryModal';
 import { KinoRateModal } from './components/KinoRate/KinoRateModal';
-import { findMovieInTop250, TOP_250_MOVIES } from './services/top250Data';
+import { findBestMovieMatch, TOP_250_MOVIES } from './services/top250Data';
 
 const RECOMMENDED_CHANNELS = [
   { id: '32869212', label: 'Смотри кино', color: 'bg-gradient-to-br from-orange-500 to-red-600' },
@@ -1144,7 +1144,7 @@ const App: React.FC = () => {
         // Skip if already has detailed metadata
         if (metadataCache[video.title]) return;
 
-        const found = findMovieInTop250(video.title);
+        const found = findBestMovieMatch(video.title);
         if (found) {
             newMetadata.push({
                 title: video.title, // Map directly to Rutube title here

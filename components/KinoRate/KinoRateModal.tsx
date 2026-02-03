@@ -4,7 +4,7 @@ import { X, Search, Loader2, Sparkles, Check, AlertCircle, Database, LayoutGrid,
 import { MovieRatingData, BatchItem } from '../../types';
 import { searchMovieRatings, analyzeBatchWithAgent } from '../../services/geminiService';
 import { RatingChart } from './RatingChart';
-import { TOP_250_MOVIES } from '../../services/top250Data';
+import { TOP_250_MOVIES, TOP_IMDB_MOVIES } from '../../services/top250Data';
 
 interface KinoRateModalProps {
   initialQuery?: string;
@@ -154,14 +154,20 @@ export const KinoRateModal: React.FC<KinoRateModalProps> = ({ initialQuery, cont
 
   // Logic for Top Lists
   const getTopListData = useMemo(() => {
-    let data = [...TOP_250_MOVIES];
+    const base =
+      mode === 'top900'
+        ? TOP_IMDB_MOVIES
+        : TOP_250_MOVIES;
+
+    let data = [...base];
     
-    // For "Top 250", sort by rating DESC and take top 250
     if (mode === 'top250') {
         data.sort((a, b) => (b.currentRating || 0) - (a.currentRating || 0));
         data = data.slice(0, 250);
+    } else if (mode === 'top900') {
+        data.sort((a, b) => (b.currentRating || 0) - (a.currentRating || 0));
+        data = data.slice(0, 900);
     }
-    // For "Top 900" (Archive), show all (we treat the file as the archive)
     
     if (listSearch) {
         const q = listSearch.toLowerCase();
