@@ -28,6 +28,12 @@ export const DEFAULT_CHANNELS: ChannelDef[] = [
     label: 'Твое кино', 
     rutubeId: '38284124', 
     isSystem: true 
+  },
+  { 
+    id: '33284182', 
+    label: 'СмотретьOnline', 
+    rutubeId: '33284182', 
+    isSystem: true 
   }
 ];
 
@@ -64,6 +70,15 @@ export const DEFAULT_PLAYLISTS_BY_CHANNEL: Record<string, CategoryDef[]> = {
       id: 'all-38284124', 
       label: 'Все видео', 
       rutubeId: '38284124', 
+      type: 'channel', 
+      isSystem: true 
+    }
+  ],
+  '33284182': [
+    { 
+      id: 'all-33284182', 
+      label: 'Все видео', 
+      rutubeId: '33284182', 
       type: 'channel', 
       isSystem: true 
     }
