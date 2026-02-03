@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@google/genai": "^1.39.0",
+    "axios": "^1.13.4",
     "buffer": "^6.0.3",
+    "cheerio": "^1.2.0",
     "clsx": "latest",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
