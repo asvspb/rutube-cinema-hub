@@ -139,10 +139,12 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 <div className="group/item relative">
                   <button
                     onClick={() => onSelect(cat)}
+                    title={cat.label}
                     className={`
                       relative
                       px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all duration-200
                       flex items-center justify-center cursor-grab active:cursor-grabbing select-none
+                      max-w-[min(420px,80vw)]
                       ${isActive 
                         ? 'bg-[#0047b9] text-white shadow-lg shadow-blue-900/20 pr-9' 
                         : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
@@ -152,7 +154,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                     <div className="overflow-hidden w-0 group-hover/item:w-5 transition-[width] duration-200 ease-out flex items-center">
                         <GripVertical className="w-3.5 h-3.5 text-zinc-600 mr-1.5" />
                     </div>
-                    {cat.label}
+                    <span className="block min-w-0 truncate">{cat.label}</span>
                     
                     {isActive && (
                       <div
