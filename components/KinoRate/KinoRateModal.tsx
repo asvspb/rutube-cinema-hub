@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Search, Loader2, Sparkles, Check, AlertCircle, Database, LayoutGrid, Download, List, Trophy, Archive, Save } from 'lucide-react';
+import { X, Search, Loader2, Sparkles, Check, AlertCircle, Database, LayoutGrid, Download, List, Trophy, Archive, Save, ExternalLink } from 'lucide-react';
 import { MovieRatingData, BatchItem } from '../../types';
 import { searchMovieRatings, analyzeBatchWithAgent } from '../../services/geminiService';
 import { RatingChart } from './RatingChart';
@@ -166,7 +166,7 @@ export const KinoRateModal: React.FC<KinoRateModalProps> = ({ initialQuery, cont
         data = data.slice(0, 250);
     } else if (mode === 'top900') {
         data.sort((a, b) => (b.currentRating || 0) - (a.currentRating || 0));
-        data = data.slice(0, 900);
+        data = data.slice(0, 1000);
     }
     
     if (listSearch) {
@@ -483,14 +483,17 @@ export const KinoRateModal: React.FC<KinoRateModalProps> = ({ initialQuery, cont
                                 <tr>
                                     <th className="px-4 py-3">#</th>
                                     <th className="px-4 py-3">Название</th>
+                                    <th className="px-4 py-3">Год</th>
                                     <th className="px-4 py-3 text-right">Рейтинг</th>
                                     <th className="px-4 py-3">Награды</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-800">
                                 {displayedListItems.map((movie, idx) => {
-                                    const hasOscar = movie.awards.some(a => a.type === 'Oscar');
-                                    const oscarWins = movie.awards.filter(a => a.type === 'Oscar' && a.status === 'Won').length;
+                                    const oscarAwards = movie.awards.filter(a => a.type === 'Oscar');
+                                    const hasOscar = oscarAwards.length > 0;
+                                    const isOscarWinner = oscarAwards.some(a => a.status === 'Won');
+                                    const isOscarNominee = !isOscarWinner && oscarAwards.some(a => a.status === 'Nominated' || a.status === 'Nominee' || !a.status);
                                     
                                     return (
                                         <tr 
@@ -502,20 +505,50 @@ export const KinoRateModal: React.FC<KinoRateModalProps> = ({ initialQuery, cont
                                                 {(listPage - 1) * ITEMS_PER_LIST_PAGE + idx + 1}
                                             </td>
                                             <td className="px-4 py-3 text-white">
-                                                <div className="font-medium">{movie.title}</div>
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <div className="font-medium truncate">{movie.title}</div>
+                                                    {mode === 'top250' ? (
+                                                      <a
+                                                        href={movie.imdbUrl || `https://www.imdb.com/title/tt${movie.id}/`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-zinc-500 hover:text-zinc-200 transition-colors"
+                                                        title="Открыть IMDb"
+                                                      >
+                                                        IMDb
+                                                        <ExternalLink className="w-3 h-3" />
+                                                      </a>
+                                                    ) : (
+                                                      <a
+                                                        href={movie.top250Url || `http://top250.info/movie/?${movie.id}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-zinc-500 hover:text-zinc-200 transition-colors"
+                                                        title="Открыть на top250.info"
+                                                      >
+                                                        top250
+                                                        <ExternalLink className="w-3 h-3" />
+                                                      </a>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 font-mono text-zinc-500 w-20">
+                                                {movie.year || '-'}
                                             </td>
                                             <td className="px-4 py-3 text-right font-bold text-[#f5c518]">
                                                 {movie.currentRating || '-'}
                                             </td>
                                             <td className="px-4 py-3">
                                                 {hasOscar && (
-                                                    <div className="flex items-center gap-1.5 text-xs">
-                                                        <Trophy className={`w-3.5 h-3.5 ${oscarWins > 0 ? 'text-yellow-500 fill-yellow-500' : 'text-zinc-500'}`} />
-                                                        {oscarWins > 0 ? (
-                                                            <span className="text-yellow-500 font-bold">{oscarWins}</span>
-                                                        ) : (
-                                                            <span className="text-zinc-500">Nom</span>
-                                                        )}
+                                                    <div
+                                                      className="flex items-center"
+                                                      title={isOscarWinner ? 'Оскар: победитель' : isOscarNominee ? 'Оскар: номинант' : 'Оскар'}
+                                                    >
+                                                        <Trophy
+                                                          className={`w-4 h-4 ${isOscarWinner ? 'text-yellow-500 fill-yellow-500' : 'text-zinc-400 fill-zinc-400'}`}
+                                                        />
                                                     </div>
                                                 )}
                                             </td>
@@ -524,7 +557,7 @@ export const KinoRateModal: React.FC<KinoRateModalProps> = ({ initialQuery, cont
                                 })}
                                 {displayedListItems.length === 0 && (
                                     <tr>
-                                        <td colSpan={4} className="px-4 py-8 text-center text-zinc-500">
+                                        <td colSpan={5} className="px-4 py-8 text-center text-zinc-500">
                                             Ничего не найдено
                                         </td>
                                     </tr>

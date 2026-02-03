@@ -13,6 +13,8 @@ export interface TopMovie {
   year: number | null;
   currentRating: number | null;
   awards: Award[];
+  imdbUrl?: string;
+  top250Url?: string;
   source: 'top250' | 'topIMDB';
 }
 
@@ -21,16 +23,57 @@ export interface MatchResult extends TopMovie {
 }
 
 // ---------- Dataset loading ----------
+const normalizeWhitespace = (s: string) => s.trim().replace(/\s+/g, ' ');
+
+const parseOscarAward = (text: string): Award | null => {
+  const t = normalizeWhitespace(text);
+  const lower = t.toLowerCase();
+  if (!lower.includes('oscar')) return null;
+
+  // Common patterns in our datasets:
+  // - "Won Oscar"
+  // - "Nominated to Oscar"
+  if (/\b(won|winner)\b/.test(lower)) {
+    return { type: 'Oscar', status: 'Won', description: t };
+  }
+
+  if (/\b(nominated|nominee)\b/.test(lower)) {
+    return { type: 'Oscar', status: 'Nominated', description: t };
+  }
+
+  return { type: 'Oscar', status: '', description: t };
+};
+
 const toAwardObjects = (awards: any[]): Award[] =>
   (Array.isArray(awards) ? awards : [])
     .map((a) => {
-      if (typeof a === 'string') return { type: a, status: '', description: a };
-      if (a && typeof a === 'object')
+      if (typeof a === 'string') {
+        const s = normalizeWhitespace(a);
+        return parseOscarAward(s) ?? { type: s, status: '', description: s };
+      }
+
+      if (a && typeof a === 'object') {
+        const rawType = normalizeWhitespace(String(a.type ?? a.title ?? a.name ?? 'award'));
+        const rawStatus = a.status ? normalizeWhitespace(String(a.status)) : '';
+        const rawDescription = a.description
+          ? normalizeWhitespace(String(a.description))
+          : rawType;
+
+        const parsedOscar = parseOscarAward(rawType) ?? parseOscarAward(rawDescription);
+        if (parsedOscar) {
+          return {
+            ...parsedOscar,
+            status: rawStatus || parsedOscar.status
+          };
+        }
+
         return {
-          type: String(a.type ?? a.title ?? a.name ?? 'award'),
-          status: a.status ? String(a.status) : '',
-          description: a.description ? String(a.description) : String(a.type ?? '')
+          type: rawType,
+          status: rawStatus,
+          description: rawDescription
         };
+      }
+
       return null;
     })
     .filter(Boolean) as Award[];
@@ -42,20 +85,62 @@ const normalizeDataset = (json: any, source: 'top250' | 'topIMDB'): TopMovie[] =
       const imdbId = String(m.imdbId ?? m.id ?? '').replace(/^tt/, '');
       const title = String(m.title ?? m.name ?? '').trim();
       if (!title || !imdbId) return null;
+      const imdbUrl = typeof m.url === 'string' && m.url.trim().length > 0
+        ? String(m.url)
+        : imdbId
+          ? `https://www.imdb.com/title/tt${imdbId}/`
+          : undefined;
+
+      const top250Url = typeof m.source_url === 'string' && m.source_url.trim().length > 0
+        ? String(m.source_url)
+        : imdbId
+          ? `http://top250.info/movie/?${imdbId}`
+          : undefined;
+
       return {
         title,
         id: imdbId,
         year: Number.isFinite(m.year) ? m.year : m.year ? parseInt(String(m.year), 10) || null : m.year ?? null,
         currentRating: m.rating ?? m.currentRating ?? null,
         awards: toAwardObjects(m.awards ?? []),
+        imdbUrl,
+        top250Url,
         source
       } as TopMovie;
     })
     .filter(Boolean) as TopMovie[];
 };
 
-export const TOP_250_MOVIES: TopMovie[] = normalizeDataset(top250Json, 'top250');
-export const TOP_IMDB_MOVIES: TopMovie[] = normalizeDataset(topImdbJson, 'topIMDB');
+const rawTop250: TopMovie[] = normalizeDataset(top250Json, 'top250');
+const rawTopImdb: TopMovie[] = normalizeDataset(topImdbJson, 'topIMDB');
+
+// If Top 250 items have missing awards, fall back to the Top 1000 dataset (same imdb ids).
+const awardsById = new Map<string, Award[]>();
+rawTopImdb.forEach((m) => awardsById.set(m.id, m.awards));
+
+const mergeAwards = (a: Award[], b: Award[]): Award[] => {
+  if (b.length === 0) return a;
+  if (a.length === 0) return b;
+
+  const seen = new Set<string>();
+  const out: Award[] = [];
+
+  for (const aw of [...a, ...b]) {
+    const key = `${aw.type}|${aw.status ?? ''}|${aw.description ?? ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(aw);
+  }
+
+  return out;
+};
+
+export const TOP_250_MOVIES: TopMovie[] = rawTop250.map((m) => ({
+  ...m,
+  awards: mergeAwards(m.awards, awardsById.get(m.id) ?? [])
+}));
+
+export const TOP_IMDB_MOVIES: TopMovie[] = rawTopImdb;
 
 // ---------- Matching helpers ----------
 const stripDiacritics = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
