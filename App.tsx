@@ -1641,7 +1641,7 @@ const App: React.FC = () => {
               <div className="p-1.5 bg-zinc-900">
                 {!isEditingChannel ? (
                   <>
-                     <button
+                      <button
                         onClick={() => {
                           setChannelToImport(activeMenuChannel);
                           closeChannelMenu();
@@ -1650,6 +1650,12 @@ const App: React.FC = () => {
                       >
                         <ListPlus className="w-4 h-4 text-zinc-400" />
                         <span>Импорт плейлистов</span>
+                        <span
+                          className="ml-auto text-xs font-mono text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded"
+                          title="Загружено плейлистов с Rutube"
+                        >
+                          {isChannelLoading ? '...' : channelAvailablePlaylists.length}
+                        </span>
                       </button>
 
                       <button

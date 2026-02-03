@@ -103,6 +103,12 @@ export const ImportPlaylistsModal: React.FC<ImportPlaylistsModalProps> = ({
               <ListPlus className="w-5 h-5 text-blue-500" />
               Импорт плейлистов
             </h2>
+            <span
+              className="text-xs font-mono text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded"
+              title="Загружено плейлистов"
+            >
+              {loading ? '...' : playlists.length}
+            </span>
             <button 
               onClick={handleRefresh} 
               disabled={loading}
