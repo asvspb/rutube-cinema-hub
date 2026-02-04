@@ -15,7 +15,6 @@ interface CategoryFilterProps {
   onRename: (category: CategoryDef, newName: string) => void;
   onRefresh: (fetchAll?: boolean) => void;
   onReorder: (newOrder: CategoryDef[]) => void;
-  onRefine?: (category: CategoryDef) => void; // New prop
 }
 
 export const CategoryFilter: React.FC<CategoryFilterProps> = ({ 
@@ -27,8 +26,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   onRemove,
   onRename,
   onRefresh,
-  onReorder,
-  onRefine
+  onReorder
 }) => {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
@@ -247,18 +245,6 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                         <span>Весь плейлист</span>
                       </button>
 
-                      {onRefine && (
-                        <button
-                          onClick={() => {
-                            onRefine(activeMenuCategory);
-                            closeMenu();
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3 transition-colors"
-                        >
-                          <Sparkles className="w-4 h-4 text-purple-400" />
-                          <span>Уточнить рейтинг (База)</span>
-                        </button>
-                      )}
 
                       <button
                         onClick={() => setIsEditing(true)}

@@ -354,6 +354,17 @@ const batchSchema = {
   items: movieRatingSchema,
 };
 
+const extractImdbUrl = (sources) => {
+  if (!Array.isArray(sources)) return undefined;
+  
+  for (const url of sources) {
+    if (typeof url === 'string' && url.includes('imdb.com/title/')) {
+      return url;
+    }
+  }
+  return undefined;
+};
+
 const geminiSearchMovieRatings = async (query) => {
   if (!geminiClient) {
     throw new Error('Gemini provider disabled or missing GEMINI_API_KEY');
@@ -386,7 +397,9 @@ const geminiSearchMovieRatings = async (query) => {
     ?.map((c) => c.web?.uri)
     .filter((uri) => typeof uri === 'string');
 
-  return { ...data, sources };
+  const imdbUrl = extractImdbUrl(sources);
+  
+  return { ...data, sources, imdbUrl };
 };
 
 const geminiAnalyzeBatch = async (queries) => {

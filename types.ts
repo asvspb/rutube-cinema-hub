@@ -71,9 +71,12 @@ export interface MovieRatingData {
   kpRating: number;       // Kinopoisk Rating
   kpVotes: string;        // Approximate votes
   imdbRating: number;     // IMDb Rating
+  imdbUrl?: string;       // IMDb URL (for AI-fetched data)
   description: string;    // Short engaging plot summary in Russian
   sources?: string[];     // URLs from grounding
   awards?: string[];      // Array of awards strings (e.g. "Oscar Won", "Oscar Nominated")
+  dataSource?: 'local' | 'ai';  // Track where the data came from
+  aiAttempts?: number;    // Track number of AI search attempts
 }
 
 export interface BatchItem {

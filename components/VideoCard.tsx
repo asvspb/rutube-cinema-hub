@@ -1,6 +1,6 @@
 
 import React, { useMemo } from 'react';
-import { Play, Star, Flame, Check, Heart, Clock, Trophy, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
+import { Play, Star, Flame, Check, Heart, Clock, Trophy, TrendingUp, Sparkles, Loader2, Crown } from 'lucide-react';
 import { RutubeVideo, RatingSettings, MovieRatingData } from '../types';
 import { formatDuration, formatViews, formatRelativeTime } from '../services/rutubeService';
 
@@ -180,9 +180,48 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
               {externalData && (
                 <div className="animate-in fade-in zoom-in duration-300 flex flex-col gap-1 items-start">
                     {externalData.imdbRating > 0 && (
-                      <div className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center justify-center w-fit" title="IMDb Rating">
-                        IMDb {externalData.imdbRating}
-                      </div>
+                      externalData.imdbUrl ? (
+                        <a 
+                          href={externalData.imdbUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit hover:bg-[#e6b800] transition-colors group/imdb relative"
+                          title={externalData.dataSource === 'local' ? 'Перейти на IMDB (из Top 250/1000)' : 'Перейти на IMDB'}
+                        >
+                          {externalData.dataSource === 'local' && (
+                            <>
+                              <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
+                              <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 bg-zinc-900/95 border border-zinc-700 rounded text-[10px] text-white whitespace-nowrap opacity-0 group-hover/imdb:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
+                                {externalData.originalTitle && <div className="font-bold">{externalData.originalTitle}</div>}
+                                {externalData.year && <div className="text-zinc-400">Год: {externalData.year}</div>}
+                                {externalData.awards && externalData.awards.length > 0 && (
+                                  <div className="text-yellow-400 mt-0.5">{externalData.awards.join(', ')}</div>
+                                )}
+                                <div className="text-zinc-500 mt-0.5">Из Top 250/1000</div>
+                              </div>
+                            </>
+                          )}
+                          {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
+                        </a>
+                      ) : (
+                        <div className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit group/imdb relative" title={externalData.dataSource === 'local' ? 'Рейтинг из коллекции Top 250/1000' : 'IMDb Rating'}>
+                          {externalData.dataSource === 'local' && (
+                            <>
+                              <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
+                              <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 bg-zinc-900/95 border border-zinc-700 rounded text-[10px] text-white whitespace-nowrap opacity-0 group-hover/imdb:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
+                                {externalData.originalTitle && <div className="font-bold">{externalData.originalTitle}</div>}
+                                {externalData.year && <div className="text-zinc-400">Год: {externalData.year}</div>}
+                                {externalData.awards && externalData.awards.length > 0 && (
+                                  <div className="text-yellow-400 mt-0.5">{externalData.awards.join(', ')}</div>
+                                )}
+                                <div className="text-zinc-500 mt-0.5">Из Top 250/1000</div>
+                              </div>
+                            </>
+                          )}
+                          {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
+                        </div>
+                      )
                     )}
                     {externalData.kpRating > 0 && (
                       <div className="px-1.5 py-0.5 rounded-md bg-[#f60] text-white text-[10px] font-bold shadow-sm flex items-center justify-center w-fit" title="Kinopoisk Rating">
@@ -205,7 +244,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
                 </div>
               )}
               
-               {!externalData && (
+               {(!externalData || (externalData.imdbRating === 0 && externalData.kpRating === 0)) && (
                  <button 
                    onClick={handleCheckExternal}
                    disabled={isLoadingMetadata}
@@ -216,7 +255,13 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
                         : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white opacity-0 group-hover:opacity-100'
                       }
                    `}
-                   title={isLoadingMetadata ? "Загрузка данных..." : "Проверить рейтинги с AI"}
+                   title={
+                     isLoadingMetadata 
+                       ? "Загрузка данных..." 
+                       : (!externalData || externalData.aiAttempts === 0)
+                         ? "Запросить в локальной базе"
+                         : "Запросить через поисковик"
+                   }
                  >
                    {isLoadingMetadata ? (
                      <>

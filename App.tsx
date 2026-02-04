@@ -1113,32 +1113,103 @@ const App: React.FC = () => {
     setIsUserMenuOpen(false);
   };
 
+  const handleClearMetadataCache = () => {
+    if (confirm('Очистить весь кеш рейтингов? Это действие нельзя отменить.')) {
+      setMetadataCache({});
+      setIsUserMenuOpen(false);
+      alert('Кеш рейтингов успешно очищен!');
+    }
+  };
+
   // NEW: Direct metadata fetch without modal
   const [loadingMetadataFor, setLoadingMetadataFor] = useState<Set<string>>(new Set());
   
   const handleAnalyzeVideo = async (title: string) => {
-    // Skip if already loading or already has data
-    if (loadingMetadataFor.has(title) || metadataCache[title]) {
+    // Check if already loading
+    if (loadingMetadataFor.has(title)) {
       return;
     }
 
-    setLoadingMetadataFor(prev => new Set(prev).add(title));
-
-    try {
-      const { searchMovieRatings } = await import('./services/llmService');
-      const result = await searchMovieRatings(title);
-      
-      if (result) {
-        handleSaveMetadata([result], title);
+    // Check if already has valid data with rating
+    const existing = metadataCache[title];
+    if (existing && (existing.imdbRating > 0 || existing.kpRating > 0)) {
+      // Already has rating, do nothing
+      return;
+    }
+    
+    // First attempt: check local database (only if no existing record)
+    if (!existing) {
+      const localMatch = findBestMovieMatch(title);
+      if (localMatch) {
+        const metadata: MovieRatingData = {
+          title: title,
+          originalTitle: localMatch.title,
+          year: localMatch.title.match(/\((\d{4})\)/)?.[1] || '',
+          kpRating: 0,
+          kpVotes: '',
+          imdbRating: localMatch.currentRating || 0,
+          imdbUrl: localMatch.imdbUrl,
+          description: '',
+          awards: localMatch.awards?.map(a => `${a.type} ${a.status || ''}`).filter(Boolean),
+          dataSource: 'local',
+          aiAttempts: 0
+        };
+        handleSaveMetadata([metadata], title);
+        return;
       }
-    } catch (error) {
-      console.error('Failed to fetch metadata:', error);
-    } finally {
-      setLoadingMetadataFor(prev => {
-        const next = new Set(prev);
-        next.delete(title);
-        return next;
-      });
+      
+      // No local match found, mark as failed local search
+      const noLocalData: MovieRatingData = {
+        title: title,
+        originalTitle: '',
+        year: '',
+        kpRating: 0,
+        kpVotes: '',
+        imdbRating: 0,
+        description: '',
+        dataSource: undefined,
+        aiAttempts: 0
+      };
+      handleSaveMetadata([noLocalData], title);
+      return;
+    }
+
+    // Subsequent attempts: use AI search (only if local search failed and no rating yet)
+    if (existing && existing.imdbRating === 0 && existing.kpRating === 0) {
+      setLoadingMetadataFor(prev => new Set(prev).add(title));
+
+      try {
+        const { searchMovieRatings } = await import('./services/llmService');
+        const result = await searchMovieRatings(title);
+        
+        if (result && (result.imdbRating > 0 || result.kpRating > 0)) {
+          // AI found valid ratings
+          result.dataSource = 'ai';
+          result.aiAttempts = (existing.aiAttempts || 0) + 1;
+          handleSaveMetadata([result], title);
+        } else {
+          // AI search failed or returned no rating, increment attempt counter
+          const updatedMetadata = {
+            ...existing,
+            aiAttempts: (existing.aiAttempts || 0) + 1
+          };
+          handleSaveMetadata([updatedMetadata], title);
+        }
+      } catch (error) {
+        console.error('Failed to fetch metadata:', error);
+        // Increment attempt counter even on error
+        const updatedMetadata = {
+          ...existing,
+          aiAttempts: (existing.aiAttempts || 0) + 1
+        };
+        handleSaveMetadata([updatedMetadata], title);
+      } finally {
+        setLoadingMetadataFor(prev => {
+          const next = new Set(prev);
+          next.delete(title);
+          return next;
+        });
+      }
     }
   };
 
@@ -1162,38 +1233,6 @@ const App: React.FC = () => {
     });
   };
 
-  // --- NEW: Refine Playlist Logic (Local DB) ---
-  const handleRefinePlaylist = () => {
-    if (!videos.length) return;
-    
-    // Iterate visible videos and match against TOP_250_MOVIES
-    const newMetadata: MovieRatingData[] = [];
-    
-    videos.forEach(video => {
-        // Skip if already has detailed metadata
-        if (metadataCache[video.title]) return;
-
-        const found = findBestMovieMatch(video.title);
-        if (found) {
-            newMetadata.push({
-                title: video.title, // Map directly to Rutube title here
-                originalTitle: found.title,
-                year: found.title.match(/\((\d{4})\)/)?.[1] || '',
-                kpRating: 0, 
-                kpVotes: '',
-                imdbRating: found.currentRating || 0,
-                description: '', // We don't have this in simple DB
-                awards: found.awards.map(a => `${a.type} ${a.status}`)
-            });
-        }
-    });
-
-    if (newMetadata.length > 0) {
-        // Here we are doing a "batch" update where the item.title is ALREADY the Rutube title
-        // so we don't pass a single contextKey
-        handleSaveMetadata(newMetadata);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#000917] text-white">
@@ -1397,6 +1436,14 @@ const App: React.FC = () => {
                           <Settings className="w-4 h-4" />
                           <span>Настройки</span>
                         </button>
+
+                        <button 
+                          onClick={handleClearMetadataCache}
+                          className="w-full text-left px-3 py-2 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4 text-orange-500" />
+                          <span>Очистить кеш рейтингов</span>
+                        </button>
                         
                         <div className="h-px bg-zinc-800 my-2 mx-1" />
                         
@@ -1509,7 +1556,6 @@ const App: React.FC = () => {
                     onRename={handleRenamePlaylist}
                     onRefresh={handleRefresh}
                     onReorder={handleReorderPlaylists}
-                    onRefine={handleRefinePlaylist}
                   />
                 </div>
             )}

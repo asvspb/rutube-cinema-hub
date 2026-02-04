@@ -190,14 +190,23 @@ const scoreMatch = (query: string, candidate: TopMovie, queryYear: number | null
   return score;
 };
 
-const findBestInDataset = (query: string, dataset: TopMovie[], threshold = 0.45): MatchResult | undefined => {
+const findBestInDataset = (query: string, dataset: TopMovie[], threshold = 0.6): MatchResult | undefined => {
   const queryYear = extractYear(query);
   let best: MatchResult | undefined;
+  
+  // Check if query looks like a series episode (e.g., contains "серия", "сезон", "эпизод")
+  const queryLower = query.toLowerCase();
+  const isSeriesEpisode = /серия|сезон|эпизод|episode|season/i.test(query);
+  
   for (const movie of dataset) {
     const s = scoreMatch(query, movie, queryYear);
     if (!best || s > best.score) best = { ...movie, score: s };
   }
-  return best && best.score >= threshold ? best : undefined;
+  
+  // If query is a series episode, require much higher threshold
+  const effectiveThreshold = isSeriesEpisode ? 0.85 : threshold;
+  
+  return best && best.score >= effectiveThreshold ? best : undefined;
 };
 
 // ---------- Public API ----------
@@ -207,7 +216,7 @@ export const findMovieInTop250 = (title: string): TopMovie | undefined => {
 };
 
 export const findMovieInTopIMDB = (title: string): TopMovie | undefined => {
-  const match = findBestInDataset(title, TOP_IMDB_MOVIES, 0.4);
+  const match = findBestInDataset(title, TOP_IMDB_MOVIES, 0.6);
   return match;
 };
 
