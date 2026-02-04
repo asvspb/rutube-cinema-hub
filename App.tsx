@@ -1113,6 +1113,35 @@ const App: React.FC = () => {
     setIsUserMenuOpen(false);
   };
 
+  // NEW: Direct metadata fetch without modal
+  const [loadingMetadataFor, setLoadingMetadataFor] = useState<Set<string>>(new Set());
+  
+  const handleAnalyzeVideo = async (title: string) => {
+    // Skip if already loading or already has data
+    if (loadingMetadataFor.has(title) || metadataCache[title]) {
+      return;
+    }
+
+    setLoadingMetadataFor(prev => new Set(prev).add(title));
+
+    try {
+      const { searchMovieRatings } = await import('./services/llmService');
+      const result = await searchMovieRatings(title);
+      
+      if (result) {
+        handleSaveMetadata([result], title);
+      }
+    } catch (error) {
+      console.error('Failed to fetch metadata:', error);
+    } finally {
+      setLoadingMetadataFor(prev => {
+        const next = new Set(prev);
+        next.delete(title);
+        return next;
+      });
+    }
+  };
+
   // --- NEW: Save Metadata Logic ---
   const handleSaveMetadata = (newItems: MovieRatingData[], contextKey?: string) => {
     setMetadataCache(prev => {
@@ -1587,7 +1616,8 @@ const App: React.FC = () => {
                         status={videoStatuses[video.id]}
                         onStatusToggle={() => handleToggleVideoStatus(video.id)}
                         ratingSettings={ratingSettings}
-                        onAnalyze={openKinoRate}
+                        onAnalyze={handleAnalyzeVideo}
+                        isLoadingMetadata={loadingMetadataFor.has(video.title)}
                         externalMetadata={metadataCache} // Pass metadata cache
                       />
                    ))}

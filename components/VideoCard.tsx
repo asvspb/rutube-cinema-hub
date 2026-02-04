@@ -1,6 +1,6 @@
 
 import React, { useMemo } from 'react';
-import { Play, Star, Flame, Check, Heart, Clock, Trophy, TrendingUp, Sparkles } from 'lucide-react';
+import { Play, Star, Flame, Check, Heart, Clock, Trophy, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
 import { RutubeVideo, RatingSettings, MovieRatingData } from '../types';
 import { formatDuration, formatViews, formatRelativeTime } from '../services/rutubeService';
 
@@ -10,11 +10,12 @@ interface VideoCardProps {
   status?: 'watched' | 'liked' | 'watch_later';
   onStatusToggle?: () => void;
   ratingSettings?: RatingSettings;
-  onAnalyze?: (title: string) => void;
+  onAnalyze?: (title: string) => Promise<void>;
   externalMetadata?: Record<string, MovieRatingData>; // Global cache
+  isLoadingMetadata?: boolean;
 }
 
-export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, onStatusToggle, ratingSettings, onAnalyze, externalMetadata }) => {
+export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, onStatusToggle, ratingSettings, onAnalyze, externalMetadata, isLoadingMetadata }) => {
   
   // Resolve external data from the global cache using the video title
   const externalData = useMemo(() => {
@@ -207,13 +208,25 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
                {!externalData && (
                  <button 
                    onClick={handleCheckExternal}
+                   disabled={isLoadingMetadata}
                    className={`
                       px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm flex items-center justify-center w-fit transition-all duration-200 mt-1
-                      bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white opacity-0 group-hover:opacity-100
+                      ${isLoadingMetadata 
+                        ? 'bg-blue-600/30 text-blue-300 cursor-wait opacity-100' 
+                        : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white opacity-0 group-hover:opacity-100'
+                      }
                    `}
-                   title="Проверить рейтинги с AI"
+                   title={isLoadingMetadata ? "Загрузка данных..." : "Проверить рейтинги с AI"}
                  >
-                   <Sparkles className="w-3 h-3 mr-1" /> AI
+                   {isLoadingMetadata ? (
+                     <>
+                       <Loader2 className="w-3 h-3 mr-1 animate-spin" /> AI
+                     </>
+                   ) : (
+                     <>
+                       <Sparkles className="w-3 h-3 mr-1" /> AI
+                     </>
+                   )}
                  </button>
                )}
             </div>
