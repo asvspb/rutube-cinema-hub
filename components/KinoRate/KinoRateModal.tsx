@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, Search, Loader2, Sparkles, Check, AlertCircle, Database, LayoutGrid, Download, List, Trophy, Archive, Save, ExternalLink } from 'lucide-react';
 import { MovieRatingData, BatchItem } from '../../types';
-import { searchMovieRatings, analyzeBatchWithAgent } from '../../services/geminiService';
+import { searchMovieRatings, analyzeBatchWithAgent } from '../../services/llmService';
 import { RatingChart } from './RatingChart';
 import { TOP_250_MOVIES, TOP_IMDB_MOVIES } from '../../services/top250Data';
 
