@@ -1,6 +1,120 @@
 
 # Rutube Cinema Hub
 
+## 📋 Установка, настройка и запуск приложения
+
+### Требования
+
+- Node.js (версия 18 или выше)
+- npm или yarn
+- curl (для тестирования)
+
+### Установка
+
+1. Клонируйте репозиторий:
+   ```bash
+   git clone https://github.com/your-username/rutube-cinema-hub.git
+   cd rutube-cinema-hub
+   ```
+
+2. Установите зависимости:
+   ```bash
+   npm install
+   ```
+
+### Настройка
+
+1. Создайте файл `.env` в корне проекта на основе шаблона `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Отредактируйте файл `.env`, добавив свои API-ключи:
+   ```env
+   # API ключи для KinoRate AI
+   GEMINI_API_KEY=ваш_ключ_gemini
+   MISTRAL_API_KEY=ваш_ключ_mistral
+   
+   # Модели для LLM (опционально)
+   GEMINI_MODEL_NAME=gemini-2.5-flash
+   MISTRAL_MODEL_NAME=mistral-medium-2505
+   
+   # Выбор провайдера LLM (gemini, mistral, auto)
+   LLM_PROVIDER=auto
+   
+   # Порт для backend сервера (по умолчанию 9230)
+   PORT=9230
+   ```
+
+3. Убедитесь, что у вас есть API-ключи для:
+   - Google Gemini (для получения данных о фильмах)
+   - Mistral AI (альтернативный провайдер, опционально)
+
+### Запуск
+
+#### Вариант 1: Запуск в режиме разработки (рекомендуется)
+
+Для одновременного запуска frontend (Vite) и backend серверов:
+
+```bash
+npm run dev:all
+```
+
+После запуска:
+- Frontend будет доступен по адресу: http://localhost:9229
+- Backend будет работать на порту: http://localhost:9230
+- Прокси-эндпоинт: http://localhost:9230/api/proxy
+
+#### Вариант 2: Запуск по отдельности
+
+1. Запустите backend сервер:
+   ```bash
+   npm run server
+   ```
+
+2. В новом терминале запустите frontend (Vite):
+   ```bash
+   npm run dev
+   ```
+
+#### Вариант 3: Запуск в продакшен-режиме
+
+1. Соберите проект:
+   ```bash
+   npm run build
+   ```
+
+2. Запустите продакшен-сервер:
+   ```bash
+   npm run server
+   ```
+
+Приложение будет доступно по адресу: http://localhost:9230
+
+### Тестирование
+
+Для проверки работоспособности приложения запустите smoke-тест:
+
+```bash
+npm run test
+```
+
+Или запустите тесты API отдельно:
+
+```bash
+npm run test:api
+```
+
+### Скрипты
+
+- `npm run dev` - запуск frontend сервера (Vite) на порту 9229
+- `npm run build` - сборка проекта для продакшена
+- `npm run preview` - предпросмотр продакшен-сборки
+- `npm run server` - запуск backend сервера на порту 9230
+- `npm run dev:all` - запуск frontend и backend серверов одновременно
+- `npm run test` - запуск smoke-тестов
+- `npm run test:api` - запуск тестов API
+
 ## 🤖 Инструкции для AI-агентов и Разработчиков
 
 Этот документ содержит критически важную информацию об архитектуре приложения, особенно касающуюся обхода блокировок и CORS.
