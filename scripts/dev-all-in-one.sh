@@ -40,7 +40,7 @@ check_dependencies() {
   fi
 
   # Проверяем, установлен ли concurrently
-  if ! npx concurrently --version >/dev/null 2>&1; then
+  if ! npx --yes concurrently --version >/dev/null 2>&1; then
     print_info "Установка concurrently..."
     npm install --no-save concurrently
   fi
