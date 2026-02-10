@@ -3,6 +3,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(() => {
+    const proxyTarget = process.env.VITE_PROXY_TARGET || 'http://localhost:9230';
+
     return {
       server: {
         // App runs on 9229 (DB planned for 9009).
@@ -10,7 +12,7 @@ export default defineConfig(() => {
         host: '0.0.0.0',
         proxy: {
           '/api': {
-            target: 'http://localhost:9230',
+            target: proxyTarget,
             changeOrigin: true,
           }
         },

@@ -51,6 +51,25 @@
 
 ### Запуск
 
+#### Вариант 0: Docker Compose (frontend + backend)
+
+Запускает два сервиса с авто‑перезагрузкой и пробросом портов:
+
+```bash
+docker compose up
+```
+
+После запуска:
+- Frontend: http://localhost:9229
+- Backend: http://localhost:9230
+- Прокси-эндпоинт: http://localhost:9230/api/proxy
+
+Опционально после старта можно запустить smoke‑тест:
+
+```bash
+npm run test
+```
+
 #### Вариант 1: Запуск в режиме разработки (рекомендуется)
 
 Для одновременного запуска frontend (Vite) и backend серверов:
