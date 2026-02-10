@@ -218,36 +218,20 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
                           className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit hover:bg-[#e6b800] transition-colors group/imdb relative"
-                          title={externalData.dataSource === 'local' ? 'Перейти на IMDB (из Top 250/1000)' : 'Перейти на IMDB'}
+                          title={externalData.dataSource === 'local' ? 'Перейти на IMDB' : 'Перейти на IMDB'}
                         >
                           {externalData.dataSource === 'local' && (
                             <>
                               <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
-                              <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 bg-zinc-900/95 border border-zinc-700 rounded text-[10px] text-white whitespace-nowrap opacity-0 group-hover/imdb:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
-                                {externalData.originalTitle && <div className="font-bold">{externalData.originalTitle}</div>}
-                                {externalData.year && <div className="text-zinc-400">Год: {externalData.year}</div>}
-                                {externalData.awards && externalData.awards.length > 0 && (
-                                  <div className="text-yellow-400 mt-0.5">{externalData.awards.join(', ')}</div>
-                                )}
-                                <div className="text-zinc-500 mt-0.5">Из Top 250/1000</div>
-                              </div>
                             </>
                           )}
                           {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
                         </a>
                       ) : (
-                        <div className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit group/imdb relative" title={externalData.dataSource === 'local' ? 'Рейтинг из коллекции Top 250/1000' : 'IMDb Rating'}>
+                        <div className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit group/imdb relative" title={externalData.dataSource === 'local' ? 'Рейтинг из коллекции' : 'IMDb Rating'}>
                           {externalData.dataSource === 'local' && (
                             <>
                               <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
-                              <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 bg-zinc-900/95 border border-zinc-700 rounded text-[10px] text-white whitespace-nowrap opacity-0 group-hover/imdb:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
-                                {externalData.originalTitle && <div className="font-bold">{externalData.originalTitle}</div>}
-                                {externalData.year && <div className="text-zinc-400">Год: {externalData.year}</div>}
-                                {externalData.awards && externalData.awards.length > 0 && (
-                                  <div className="text-yellow-400 mt-0.5">{externalData.awards.join(', ')}</div>
-                                )}
-                                <div className="text-zinc-500 mt-0.5">Из Top 250/1000</div>
-                              </div>
                             </>
                           )}
                           {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
@@ -276,34 +260,51 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
               )}
               
                {(!externalData || (externalData.imdbRating === 0 && externalData.kpRating === 0)) && (
-                 <button 
-                   onClick={handleCheckExternal}
-                   disabled={isLoadingMetadata}
-                   className={`
-                      px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm flex items-center justify-center w-fit transition-all duration-200 mt-1
-                      ${isLoadingMetadata 
-                        ? 'bg-blue-600/30 text-blue-300 cursor-wait opacity-100' 
-                        : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white opacity-0 group-hover:opacity-100'
-                      }
-                   `}
-                   title={
-                     isLoadingMetadata 
-                       ? "Загрузка данных..." 
-                       : (!externalData || externalData.aiAttempts === 0)
-                         ? "Запросить в локальной базе"
-                         : "Запросить через поисковик"
-                   }
-                 >
-                   {isLoadingMetadata ? (
-                     <>
-                       <Loader2 className="w-3 h-3 mr-1 animate-spin" /> AI
-                     </>
-                   ) : (
-                     <>
-                       <Sparkles className="w-3 h-3 mr-1" /> AI
-                     </>
-                   )}
-                 </button>
+                 <div className="relative group/ai-btn">
+                   <button
+                     onClick={handleCheckExternal}
+                     disabled={isLoadingMetadata}
+                     className={`
+                        px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm flex items-center justify-center w-fit transition-all duration-200
+                        ${isLoadingMetadata
+                          ? 'bg-blue-600/30 text-blue-300 cursor-wait'
+                          : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white'
+                        }
+                     `}
+                   >
+                     {isLoadingMetadata ? (
+                       <>
+                         <Loader2 className="w-3 h-3 mr-1 animate-spin" /> AI
+                       </>
+                     ) : (
+                       <>
+                         <Sparkles className="w-3 h-3 mr-1" /> AI
+                       </>
+                     )}
+                   </button>
+
+                   {/* AI Button Tooltip */}
+                   <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/ai-btn:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/ai-btn:translate-y-0 text-left z-30">
+                       <div className="text-xs font-bold text-blue-400 mb-1 flex items-center gap-1">
+                         <Sparkles className="w-3 h-3 text-blue-400" />
+                         AI Анализ
+                       </div>
+                       <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
+                         {isLoadingMetadata
+                           ? "Загрузка данных..."
+                           : (!externalData || externalData.aiAttempts === 0)
+                             ? "Поиск в локальной базе данных и через поисковик"
+                             : "Запросить через поисковик"}
+                       </div>
+                       <div className="bg-zinc-800/50 rounded p-1.5">
+                         <div className="text-[10px] text-zinc-500">
+                           {isLoadingMetadata
+                             ? "Пожалуйста, подождите..."
+                             : "Нажмите для анализа видео с помощью ИИ"}
+                         </div>
+                       </div>
+                   </div>
+                 </div>
                )}
             </div>
         </div>
