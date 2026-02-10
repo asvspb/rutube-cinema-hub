@@ -211,49 +211,103 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
               {externalData && (
                 <div className="animate-in fade-in zoom-in duration-300 flex flex-col gap-1 items-start">
                     {externalData.imdbRating > 0 && (
-                      externalData.imdbUrl ? (
-                        <a 
-                          href={externalData.imdbUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit hover:bg-[#e6b800] transition-colors group/imdb relative"
-                          title={externalData.dataSource === 'local' ? 'Перейти на IMDB' : 'Перейти на IMDB'}
-                        >
-                          {externalData.dataSource === 'local' && (
-                            <>
-                              <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
-                            </>
-                          )}
-                          {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
-                        </a>
-                      ) : (
-                        <div className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit group/imdb relative" title={externalData.dataSource === 'local' ? 'Рейтинг из коллекции' : 'IMDb Rating'}>
-                          {externalData.dataSource === 'local' && (
-                            <>
-                              <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
-                            </>
-                          )}
-                          {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
+                      <div className="relative group/imdb-tooltip">
+                        {externalData.imdbUrl ? (
+                          <a
+                            href={externalData.imdbUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit hover:bg-[#e6b800] transition-colors group/imdb relative"
+                          >
+                            {externalData.dataSource === 'local' && (
+                              <>
+                                <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
+                              </>
+                            )}
+                            {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
+                          </a>
+                        ) : (
+                          <div className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit group/imdb relative">
+                            {externalData.dataSource === 'local' && (
+                              <>
+                                <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
+                              </>
+                            )}
+                            {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
+                          </div>
+                        )}
+                        
+                        {/* IMDB Tooltip */}
+                        <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/imdb-tooltip:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/imdb-tooltip:translate-y-0 text-left z-30">
+                            <div className="text-xs font-bold text-[#f5c518] mb-1 flex items-center gap-1">
+                              <span className="inline-block w-3 h-3 rounded-sm bg-[#f5c518] text-black text-[8px] flex items-center justify-center font-bold">IM</span>
+                              IMDB
+                            </div>
+                            <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
+                              {externalData.dataSource === 'local' ? 'Рейтинг из коллекции' : 'IMDb Rating'}
+                            </div>
+                            <div className="bg-zinc-800/50 rounded p-1.5">
+                              <div className="flex justify-between text-[10px]">
+                                  <span className="text-zinc-500">Рейтинг IMDB:</span>
+                                  <span className="text-[#f5c518] font-mono font-bold">{externalData.imdbRating}</span>
+                              </div>
+                            </div>
                         </div>
-                      )
-                    )}
-                    {externalData.kpRating > 0 && (
-                      <div className="px-1.5 py-0.5 rounded-md bg-[#f60] text-white text-[10px] font-bold shadow-sm flex items-center justify-center w-fit" title="Kinopoisk Rating">
-                        KP {externalData.kpRating}
+                      </div>
+                     )}
+                     {externalData.kpRating > 0 && (
+                      <div className="relative group/kp-tooltip">
+                        <div className="px-1.5 py-0.5 rounded-md bg-[#f60] text-white text-[10px] font-bold shadow-sm flex items-center justify-center w-fit">
+                          KP {externalData.kpRating}
+                        </div>
+                        
+                        {/* KP Tooltip */}
+                        <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/kp-tooltip:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/kp-tooltip:translate-y-0 text-left z-30">
+                            <div className="text-xs font-bold text-[#f60] mb-1 flex items-center gap-1">
+                              <span className="inline-block w-3 h-3 rounded-sm bg-[#f60] text-white text-[8px] flex items-center justify-center font-bold">KP</span>
+                              КиноПоиск
+                            </div>
+                            <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
+                              Рейтинг КиноПоиск
+                            </div>
+                            <div className="bg-zinc-800/50 rounded p-1.5">
+                              <div className="flex justify-between text-[10px]">
+                                  <span className="text-zinc-500">Рейтинг KP:</span>
+                                  <span className="text-[#f60] font-mono font-bold">{externalData.kpRating}</span>
+                              </div>
+                            </div>
+                        </div>
                       </div>
                     )}
                     {(wonOscar || nominatedOscar) && (
-                      <div 
-                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm flex items-center justify-center w-fit gap-1 cursor-help relative group/oscar
-                          ${wonOscar 
-                            ? 'bg-gradient-to-r from-yellow-600 to-yellow-400 text-black border border-yellow-300' 
-                            : 'bg-zinc-700 text-zinc-300 border border-zinc-600'}
-                        `}
-                        title={wonOscar ? "Победитель Оскар (Academy Award Winner)" : "Номинант на Оскар"}
-                      >
-                        <Trophy className={`w-3 h-3 ${wonOscar ? 'fill-black text-black' : 'fill-current'}`} />
-                        {wonOscar ? 'Oscar' : 'Nom'}
+                      <div className="relative group/oscar-tooltip">
+                        <div
+                          className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm flex items-center justify-center w-fit gap-1 cursor-help relative
+                            ${wonOscar
+                              ? 'bg-gradient-to-r from-yellow-600 to-yellow-400 text-black border border-yellow-300'
+                              : 'bg-zinc-700 text-zinc-300 border border-zinc-600'}
+                          `}
+                        >
+                          <Trophy className={`w-3 h-3 ${wonOscar ? 'fill-black text-black' : 'fill-current'}`} />
+                          {wonOscar ? 'Oscar' : 'Nom'}
+                        </div>
+                        
+                        {/* Oscar Tooltip */}
+                        <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/oscar-tooltip:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/oscar-tooltip:translate-y-0 text-left z-30">
+                            <div className="text-xs font-bold text-yellow-400 mb-1 flex items-center gap-1">
+                              <Trophy className={`w-3 h-3 ${wonOscar ? 'fill-yellow-400 text-yellow-400' : 'fill-current'}`} />
+                              {wonOscar ? 'Oscar Победитель' : 'Oscar Номинант'}
+                            </div>
+                            <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
+                              {wonOscar ? "Победитель Оскар (Academy Award Winner)" : "Номинант на Оскар"}
+                            </div>
+                            <div className="bg-zinc-800/50 rounded p-1.5">
+                              <div className="text-[10px] text-zinc-500">
+                                {wonOscar ? 'Награда за выдающиеся достижения в кинематографе' : 'Номинация на премию Оскар'}
+                              </div>
+                            </div>
+                        </div>
                       </div>
                     )}
                 </div>
