@@ -1,21 +1,23 @@
 
 import React, { useMemo } from 'react';
-import { Play, Star, Flame, Check, Heart, Clock, Trophy, TrendingUp, Sparkles, Loader2, Crown } from 'lucide-react';
+import { Play, Star, Flame, Check, Heart, Clock, Trophy, TrendingUp, Sparkles, Loader2, Crown, ThumbsDown } from 'lucide-react';
 import { RutubeVideo, RatingSettings, MovieRatingData } from '../types';
 import { formatDuration, formatViews, formatRelativeTime } from '../services/rutubeService';
 
 interface VideoCardProps {
   video: RutubeVideo;
   onClick: (video: RutubeVideo) => void;
-  status?: 'watched' | 'liked' | 'watch_later';
-  onStatusToggle?: () => void;
+  watchedStatus?: 'watched' | 'watch_later';
+  likedStatus?: 'liked' | 'disliked';
+  onWatchedToggle?: () => void;
+  onLikedToggle?: () => void;
   ratingSettings?: RatingSettings;
   onAnalyze?: (title: string) => Promise<void>;
   externalMetadata?: Record<string, MovieRatingData>; // Global cache
   isLoadingMetadata?: boolean;
 }
 
-export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, onStatusToggle, ratingSettings, onAnalyze, externalMetadata, isLoadingMetadata }) => {
+export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedStatus, likedStatus, onWatchedToggle, onLikedToggle, ratingSettings, onAnalyze, externalMetadata, isLoadingMetadata }) => {
   
   // Resolve external data from the global cache using the video title
   const externalData = useMemo(() => {
@@ -26,9 +28,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
   // Determine if video is "Hot" based on Gravity
   const isHot = (video.gravity || 0) > 2.0;
 
-  const handleStatusClick = (e: React.MouseEvent) => {
+  const handleWatchedClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onStatusToggle) onStatusToggle();
+    if (onWatchedToggle) onWatchedToggle();
+  };
+
+  const handleLikedClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onLikedToggle) onLikedToggle();
   };
 
   const handleCheckExternal = (e: React.MouseEvent) => {
@@ -38,27 +45,40 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
     }
   };
 
-  // Status Icon Logic
-  let StatusIcon = Heart;
-  let statusColorClass = "text-zinc-400 group-hover/btn:text-white";
-  let containerVisibleClass = "opacity-0 group-hover:opacity-100"; 
-  let buttonBgClass = "bg-black/60 hover:bg-zinc-800/80";
+  // Watched Status Icon Logic
+  let WatchedIcon = Clock;
+  let watchedColorClass = "text-zinc-400 group-hover/btn:text-white";
+  let watchedContainerVisibleClass = "opacity-0 group-hover:opacity-100";
+  let watchedButtonBgClass = "bg-black/60 hover:bg-zinc-800/80";
 
-  if (status === 'liked') {
-    StatusIcon = Heart;
-    statusColorClass = "text-red-500 fill-red-500";
-    containerVisibleClass = "opacity-100"; 
-    buttonBgClass = "bg-red-500/10 hover:bg-red-500/20";
-  } else if (status === 'watched') {
-    StatusIcon = Check;
-    statusColorClass = "text-green-500";
-    containerVisibleClass = "opacity-100";
-    buttonBgClass = "bg-green-500/10 hover:bg-green-500/20";
-  } else if (status === 'watch_later') {
-    StatusIcon = Clock;
-    statusColorClass = "text-blue-400";
-    containerVisibleClass = "opacity-100";
-    buttonBgClass = "bg-blue-500/10 hover:bg-blue-500/20";
+  if (watchedStatus === 'watched') {
+    WatchedIcon = Check;
+    watchedColorClass = "text-green-500";
+    watchedContainerVisibleClass = "opacity-100";
+    watchedButtonBgClass = "bg-green-500/10 hover:bg-green-500/20";
+  } else if (watchedStatus === 'watch_later') {
+    WatchedIcon = Clock;
+    watchedColorClass = "text-blue-400";
+    watchedContainerVisibleClass = "opacity-100";
+    watchedButtonBgClass = "bg-blue-500/10 hover:bg-blue-500/20";
+  }
+
+  // Liked Status Icon Logic
+  let LikedIcon = Heart;
+  let likedColorClass = "text-zinc-400 group-hover/btn:text-white";
+  let likedContainerVisibleClass = "opacity-0 group-hover:opacity-100";
+  let likedButtonBgClass = "bg-black/60 hover:bg-zinc-800/80";
+
+  if (likedStatus === 'liked') {
+    LikedIcon = Heart;
+    likedColorClass = "text-red-500 fill-red-500";
+    likedContainerVisibleClass = "opacity-100";
+    likedButtonBgClass = "bg-red-500/10 hover:bg-red-500/20";
+  } else if (likedStatus === 'disliked') {
+    LikedIcon = ThumbsDown;
+    likedColorClass = "text-gray-400";
+    likedContainerVisibleClass = "opacity-100";
+    likedButtonBgClass = "bg-gray-500/10 hover:bg-gray-500/20";
   }
 
   const getAgeText = () => {
@@ -73,19 +93,30 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
     } catch(e) { return '-'; }
   };
   
-  const getStatusTooltipText = () => {
-    if (status === 'liked') return 'Понравилось';
-    if (status === 'watched') return 'Просмотрено';
-    if (status === 'watch_later') return 'Посмотреть позже';
+  const getWatchedTooltipText = () => {
+    if (watchedStatus === 'watched') return 'Просмотрено';
+    if (watchedStatus === 'watch_later') return 'Посмотреть позже';
+    return 'Просмотрено';
+  };
+
+  const getNextWatchedStatusText = () => {
+    if (!watchedStatus) return 'Следующий: Просмотрено';
+    if (watchedStatus === 'watched') return 'Следующий: Посмотреть позже';
+    if (watchedStatus === 'watch_later') return 'Следующий: Убрать отметку';
+    return 'Следующий: Просмотрено';
+  };
+
+  const getLikedTooltipText = () => {
+    if (likedStatus === 'liked') return 'Нравится';
+    if (likedStatus === 'disliked') return 'Не нравится';
     return 'Нравится';
   };
 
-  const getNextStatusText = () => {
-    if (!status) return 'Следующий: Понравилось';
-    if (status === 'liked') return 'Следующий: Просмотрено';
-    if (status === 'watched') return 'Следующий: Посмотреть позже';
-    if (status === 'watch_later') return 'Следующий: Убрать отметку';
-    return '';
+  const getNextLikedStatusText = () => {
+    if (!likedStatus) return 'Следующий: Нравится';
+    if (likedStatus === 'liked') return 'Следующий: Не нравится';
+    if (likedStatus === 'disliked') return 'Следующий: Убрать оценку';
+    return 'Следующий: Нравится';
   };
 
   const isExperimental = ratingSettings?.useExperimentalStrategy;
@@ -307,20 +338,39 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
           {formatDuration(video.duration)}
         </div>
 
-        {/* Status Toggle Button with Tooltip (Bottom Left) */}
-        <div className={`absolute bottom-2 left-2 z-30 flex flex-col items-start group/status ${containerVisibleClass} transition-opacity duration-200`}>
-           <div className="absolute bottom-full mb-2 px-2.5 py-1.5 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover/status:opacity-100 transition-opacity duration-200 pointer-events-none">
-              <div className="font-bold">{getStatusTooltipText()}</div>
-              <div className="text-[10px] text-zinc-400 font-normal mt-0.5">{getNextStatusText()}</div>
+        {/* Status Toggle Buttons with Tooltips (Bottom Left) - Watched/Later and Like/Dislike */}
+        <div className="absolute bottom-2 left-2 z-10 flex flex-row items-end gap-1 group/status-container">
+          {/* Watched/Later Button with Tooltip */}
+          <div className={`flex flex-col items-start group/watched ${watchedContainerVisibleClass} transition-opacity duration-200`}>
+            <div className="absolute bottom-full mb-2 px-2.5 py-1.5 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover/watched:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+              <div className="font-bold">{getWatchedTooltipText()}</div>
+              <div className="text-[10px] text-zinc-400 font-normal mt-0.5">{getNextWatchedStatusText()}</div>
               <div className="absolute top-full left-4 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-700" />
-           </div>
+            </div>
 
-           <button
-             onClick={handleStatusClick}
-             className={`p-1.5 rounded-full ${buttonBgClass} backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20`}
-           >
-             <StatusIcon className={`w-4 h-4 ${statusColorClass}`} />
-           </button>
+            <button
+              onClick={handleWatchedClick}
+              className={`p-1.5 rounded-full ${watchedButtonBgClass} backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20`}
+            >
+              <WatchedIcon className={`w-4 h-4 ${watchedColorClass}`} />
+            </button>
+          </div>
+
+          {/* Like/Dislike Button with Tooltip */}
+          <div className={`flex flex-col items-start group/liked ${likedContainerVisibleClass} transition-opacity duration-200`}>
+            <div className="absolute bottom-full mb-2 left-0 right-0 px-2.5 py-1.5 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover/liked:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+              <div className="font-bold">{getLikedTooltipText()}</div>
+              <div className="text-[10px] text-zinc-400 font-normal mt-0.5">{getNextLikedStatusText()}</div>
+              <div className="absolute top-full left-4 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-700" />
+            </div>
+
+            <button
+              onClick={handleLikedClick}
+              className={`p-1.5 rounded-full ${likedButtonBgClass} backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20`}
+            >
+              <LikedIcon className={`w-4 h-4 ${likedColorClass}`} />
+            </button>
+          </div>
         </div>
 
         {/* Hover Play Icon */}
