@@ -112,7 +112,7 @@ start_services() {
 
   # Определяем команды для каждого сервиса
   VITE_CMD="npm run dev"
-  BACKEND_CMD="npx nodemon --watch server.js --watch services/ --watch .env --ext js,json server.js"
+  BACKEND_CMD="npx nodemon --watch server/index.js --watch server/ --watch .env --ext js,json server/index.js"
 
   # Запускаем все сервисы одновременно с помощью concurrently
   print_info "Запуск Vite (9229) и Backend (9230) серверов..."

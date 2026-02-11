@@ -25,4 +25,4 @@ services:
     ports:
       - "9230:9230"
     command: >-
-      sh -c "npm install --no-audit --no-fund && npx --yes nodemon --watch server.js --watch services/ --watch .env --ext js,json server.js"
+      sh -c "npm install --no-audit --no-fund && npx --yes nodemon --watch server/index.js --watch server/ --watch .env --ext js,json server/index.js"

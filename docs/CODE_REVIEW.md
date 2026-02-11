@@ -9,7 +9,7 @@
 
 ## Краткий обзор архитектуры
 - **Frontend**: React 18.3.1 + TypeScript + Tailwind CSS + Framer Motion 11.0.24.
-- **Backend**: Express 5.2.1 (`server.js`, 635 строк) с прокси `/api/proxy` и эндпоинтами KinoRate AI.
+- **Backend**: Express 5.2.1 (`server/index.js`, 635 строк) с прокси `/api/proxy` и эндпоинтами KinoRate AI.
 - **Интеграции**: Rutube API/скрапинг (мульти-стратегия), LLM провайдеры (Gemini/Mistral) с авто-fallback.
 - **Сборка**: Vite 6.2.0 (dev-сервер :9229, прокси API на :9230).
 - **Визуализация**: Recharts 2.12.3 для графиков рейтингов.
@@ -19,7 +19,7 @@
 |---|---|---|
 | `App.tsx` | 1846 | Главный компонент (монолит) |
 | `services/rutubeService.ts` | 969 | Ядро: парсинг, прокси, рейтинг |
-| `server.js` | 635 | Backend: прокси + AI API |
+| `server/index.js` | 635 | Backend: прокси + AI API |
 | `components/VideoCard.tsx` | 348 | Карточка видео с рейтингами |
 | `services/top250Data.ts` | 229 | Локальная база фильмов |
 | `types.ts` | 88 | Доменные типы |
@@ -100,7 +100,7 @@ Movie title ──→ top250Data (локальная БД) ──→ LLM API (Ge
     - Усиление: ADR (Architecture Decision Records); автогенерация API-документации.
 
 12) **Валидация прокси-запросов на сервере.**
-    - Проверка домена `rutube.ru` в `server.js` (строки 580-583).
+    - Проверка домена `rutube.ru` в `server/index.js` (строки 580-583).
     - Усиление: строгий allowlist с поддоменами; блокировка приватных IP.
 
 ## Текущие проблемы и рекомендуемые решения
@@ -110,7 +110,7 @@ Movie title ──→ top250Data (локальная БД) ──→ LLM API (Ge
 1) **Мёртвый код: `services/geminiService.ts` (108 строк).**
    - Файл использует `process.env.API_KEY` — недоступен в браузере, вызовет crash при импорте.
    - Содержит хардкод модели `gemini-3-flash-preview` (не существует).
-   - Дублирует логику, уже реализованную на сервере в `server.js`.
+   - Дублирует логику, уже реализованную на сервере в `server/index.js`.
    - **Решение**: удалить файл или перенести на серверную сторону.
 
 2) **Крупный монолитный компонент `App.tsx` (1846 строк, 30+ useState).**
@@ -146,7 +146,7 @@ Movie title ──→ top250Data (локальная БД) ──→ LLM API (Ge
    - Нет runtime-валидации ответов Rutube API и LLM.
    - **Решение**: Zod/Valibot схемы, отбрасывание невалидных данных, логирование.
 
-9) **Смешение concerns в `server.js` (635 строк).**
+9) **Смешение concerns в `server/index.js` (635 строк).**
    - Роуты, middleware, бизнес-логика, конфигурация — всё в одном файле.
    - **Решение**: `server/routes/`, `server/services/`, `server/middleware/`, `server/config/`.
 
@@ -181,11 +181,11 @@ Movie title ──→ top250Data (локальная БД) ──→ LLM API (Ge
 
 | Находка | Серьёзность | Где | Рекомендация |
 |---|---|---|---|
-| CORS без ограничений | 🟡 Средняя | `server.js` | Ограничить origins |
+| CORS без ограничений | 🟡 Средняя | `server/index.js` | Ограничить origins |
 | Прокси без rate limiting | 🟡 Средняя | `/api/proxy` | Добавить rate limiter |
 | Нет санитизации пользовательского ввода | 🟡 Средняя | Названия каналов/плейлистов | XSS-фильтрация |
-| API-ключи только через env | 🟢 Хорошо | `server.js` | Уже реализовано ✓ |
-| Валидация домена прокси | 🟢 Хорошо | `server.js:580-583` | Уже реализовано ✓, расширить allowlist |
+| API-ключи только через env | 🟢 Хорошо | `server/index.js` | Уже реализовано ✓ |
+| Валидация домена прокси | 🟢 Хорошо | `server/index.js:580-583` | Уже реализовано ✓, расширить allowlist |
 | Нет CSP заголовков | 🟡 Средняя | Сервер | Добавить Content-Security-Policy |
 | Нет HTTPS enforcement | 🟡 Средняя | Деплой | Настроить при публикации |
 
@@ -257,7 +257,7 @@ Movie title ──→ top250Data (локальная БД) ──→ LLM API (Ge
 | TD-3 | Зафиксировать версии `clsx`, `tailwind-merge` | 🔴 Критический | Низкая | -1 |
 | TD-4 | Заменить `confirm()`/`alert()` на модалки | 🟡 Важный | Средняя | 0 |
 | TD-5 | Декомпозиция App.tsx (1846 → ~300 строк) | 🟡 Важный | Высокая | 1 |
-| TD-6 | Декомпозиция server.js (635 → модули) | 🟡 Важный | Средняя | 1 |
+| TD-6 | Декомпозиция server/index.js (635 → модули) | 🟡 Важный | Средняя | 1 |
 | TD-7 | Перенос в `src/` + алиасы | 🟢 Улучшение | Средняя | 4 |
 | TD-8 | Добавить Zod/Valibot валидацию | 🟡 Важный | Средняя | 1-2 |
 | TD-9 | Настроить ESLint + Prettier | 🟢 Улучшение | Низкая | 0 |
@@ -274,7 +274,7 @@ Movie title ──→ top250Data (локальная БД) ──→ LLM API (Ge
 - [ ] Убрать `@ts-ignore` в `App.tsx:855` — исправить типы.
 - [ ] Зафиксировать версии: `clsx: "latest"` → `clsx: "2.1.1"`, `tailwind-merge: "latest"` → `tailwind-merge: "2.6.0"`.
 - [ ] Добавить `.nvmrc` с версией Node.js.
-- [ ] Добавить `GET /health` эндпоинт в `server.js` (5 строк).
+- [ ] Добавить `GET /health` эндпоинт в `server/index.js` (5 строк).
 
 ### Этап 0 — Быстрые улучшения (1-3 дня)
 > Безопасность, стабильность, DX (Developer Experience).
@@ -297,7 +297,7 @@ Movie title ──→ top250Data (локальная БД) ──→ LLM API (Ge
   - UI-компоненты: `Layout`, `Header`, `VideoGrid`, `Modals`, `Pagination`, `ChannelSidebar`.
   - `StorageService` — типизированная абстракция над localStorage.
   - Цель: `App.tsx` < 300 строк, только композиция.
-- **Декомпозиция `server.js`**:
+- **Декомпозиция `server/index.js`**:
   - `server/routes/proxy.js`, `server/routes/ai.js`, `server/routes/health.js`.
   - `server/services/llm.js`, `server/services/proxy.js`.
   - `server/middleware/cors.js`, `server/middleware/rateLimit.js`, `server/middleware/requestId.js`.

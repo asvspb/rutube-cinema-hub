@@ -77,7 +77,7 @@ VITE_PID=$!
 
 # Запускаем backend сервер через nodemon для отслеживания изменений
 echo "Запуск backend сервера на порту 9230 с отслеживанием изменений..."
-npx nodemon server.js &
+npx nodemon server/index.js &
 BACKEND_PID=$!
 
 # Запускаем тестирование в фоне

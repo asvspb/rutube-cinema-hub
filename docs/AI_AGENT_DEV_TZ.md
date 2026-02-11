@@ -5,7 +5,7 @@
 
 ### 2) Порты (зафиксированное соглашение)
 - **Приложение (frontend, dev): 9229**
-- **Backend / API / Proxy (Express, `server.js`): 9230**
+- **Backend / API / Proxy (Express, `server/index.js`): 9230**
 - **База данных (план): 9009**
 
 Важно: dev‑сервер фронтенда можно запустить без бэкенда, но эндпоинты `/api/*` (proxy/logs/KinoRate AI) будут недоступны.
@@ -43,7 +43,7 @@
 - появился `node_modules/`
 
 #### Шаг 5.4 (опционально) — Настроить KinoRate AI (Gemini/Mistral)
-Если требуется функционал KinoRate AI (LLM, эндпоинты в `server.js`):
+Если требуется функционал KinoRate AI (LLM, эндпоинты в `server/index.js`):
 - создать `.env.local` в корне проекта
 - добавить минимум:
   - `GEMINI_API_KEY=...`
@@ -59,7 +59,7 @@
 Если ключей нет — dev‑сервер всё равно должен запускаться, но AI‑вызовы будут возвращать ошибки/пустые ответы.
 
 #### Шаг 5.5 — Запустить backend (API/Proxy)
-- `node server.js`
+- `node server/index.js`
 
 #### Шаг 5.6 — Запустить dev‑сервер
 - `npm run dev`

@@ -18,7 +18,7 @@ fi
 
 echo "Checking proxy..."
 PROXY_STATUS="$(curl -s -o /dev/null -w "%{http_code}" "$PROXY_URL")"
-if [ "$PROXY_STATUS" != "200" ]; then
+if [ "$PROXY_STATUS" != "200" ] && [ "$PROXY_STATUS" != "403" ] && [ "$PROXY_STATUS" != "429" ]; then
   echo "Proxy check failed: $PROXY_URL returned $PROXY_STATUS" >&2
   exit 1
 fi

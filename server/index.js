@@ -19,7 +19,10 @@ const __dirname = path.dirname(__filename);
 // Precedence: explicit process env > .env.local > .env
 const envFromFiles = {};
 // NOTE: user preference: .env takes priority over .env.local
-const envPaths = [path.join(__dirname, '.env.local'), path.join(__dirname, '.env')];
+const envPaths = [
+  path.join(__dirname, '..', '.env.local'),
+  path.join(__dirname, '..', '.env')
+];
 for (const p of envPaths) {
   if (!fs.existsSync(p)) continue;
   try {
@@ -254,8 +257,32 @@ const aiLimiter = rateLimit({
 app.post('/api/logs', (req, res) => {
   const logEntry = req.body;
   console.log('[CLIENT LOG]', logEntry);
-  writeLog(logEntry);
+  writeLog({
+    source: 'client',
+    ...logEntry
+  });
   res.status(200).json({ status: 'ok' });
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+  writeLog({
+    level: 'error',
+    source: 'server',
+    message: 'Unhandled promise rejection',
+    context: { reason }
+  });
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+  writeLog({
+    level: 'error',
+    source: 'server',
+    message: 'Uncaught exception',
+    stack: error?.stack,
+    context: { message: error?.message }
+  });
 });
 
 // --- KinoRate AI (LLM providers: Gemini + Mistral) ---
@@ -841,8 +868,24 @@ app.get('/api/proxy', proxyLimiter, async (req, res) => {
   }
 });
 
+// Error handler
+app.use((err, req, res, next) => {
+  writeLog({
+    level: 'error',
+    source: 'server',
+    message: 'Unhandled server error',
+    context: {
+      method: req.method,
+      url: req.originalUrl,
+      message: err?.message
+    },
+    stack: err?.stack
+  });
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 // Serve static files from the dist directory if in production mode
-app.use(express.static('dist'));
+app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Rutube Cinema Hub Proxy Server running on port ${PORT}`);

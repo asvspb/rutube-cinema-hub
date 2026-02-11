@@ -175,7 +175,7 @@ rutube-cinema-hub/
 **Action items**:
 - [ ] Move `App.tsx`, `index.tsx`, `types.ts` to `src/` folder
 - [ ] Move screenshots to `docs/screenshots/`
-- [ ] Move server.js to `server/` or `backend/`
+- [ ] Move server/index.js to `server/` or `backend/`
 - [ ] Create README.md files in each folder
 
 ---

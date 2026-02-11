@@ -15,7 +15,7 @@
 
 ## P2 — Декомпозиция монолитов (1–2 недели)
 1. Разделить `App.tsx` на hooks + UI-компоненты.
-2. Разделить `server.js` на `routes/`, `services/`, `middleware/`.
+2. Разделить `server/index.js` на `routes/`, `services/`, `middleware/`.
 3. Вынести абстракцию `StorageService`.
 
 ## P3 — Тестирование (1–2 недели)

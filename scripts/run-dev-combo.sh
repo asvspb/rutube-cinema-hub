@@ -33,7 +33,7 @@ npx concurrently \
   --prefix-colors "blue,yellow" \
   --kill-others-on-fail \
   "npm run dev" \
-  "npx nodemon --watch server.js --watch services/ --watch .env server.js"
+  "npx nodemon --watch server/index.js --watch server/ --watch .env server/index.js"
 
 # После запуска серверов, запускаем тестирование
 echo "Running smoke tests..."

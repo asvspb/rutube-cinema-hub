@@ -45,6 +45,19 @@
 ./scripts/smoke-test.sh
 ```
 
+### `monitor-error-logs.sh`
+
+Скрипт мониторинга `server/logs/error_logs.json` и вывода новых ошибок.
+
+**Использование:**
+```bash
+./scripts/monitor-error-logs.sh
+```
+
+Опции через env:
+- `INTERVAL_SEC=5` (интервал опроса)
+- `EXIT_ON_ERROR=true` (завершать с кодом 2 при появлении новых ошибок)
+
 ## Запуск через npm
 
 Также можно запустить главный скрипт через npm:

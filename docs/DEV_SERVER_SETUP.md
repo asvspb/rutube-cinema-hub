@@ -5,10 +5,10 @@
 
 ### Порты (принятое соглашение)
 - **App (frontend, Vite dev-server): 9229**
-- **API/Proxy server (Express, `server.js`): 9230**
+- **API/Proxy server (Express, `server/index.js`): 9230**
 - **DB (план): 9009**
 
-> Примечание: бэкенд (`server.js`) нужен для эндпоинтов `/api/*` (прокси Rutube, логирование, KinoRate AI).
+> Примечание: бэкенд (`server/index.js`) нужен для эндпоинтов `/api/*` (прокси Rutube, логирование, KinoRate AI).
 
 ---
 
@@ -29,7 +29,7 @@
 ---
 
 ### Переменные окружения (опционально)
-Если вы используете **KinoRate AI** (LLM) функции (см. эндпоинты в `server.js`), создайте файл `.env.local` в корне проекта:
+Если вы используете **KinoRate AI** (LLM) функции (см. эндпоинты в `server/index.js`), создайте файл `.env.local` в корне проекта:
 
 ```bash
 # Gemini (по умолчанию)
@@ -55,7 +55,7 @@ LLM_MAX_TOKENS=512
 
 ### Запуск API/Proxy сервера (backend)
 В отдельном терминале:
-- `node server.js`
+- `node server/index.js`
 
 Ожидаемый адрес:
 - `http://localhost:9230`

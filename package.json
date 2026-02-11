@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "node server.js",
+    "server": "node server/index.js",
     "dev:all": "bash scripts/dev-all-in-one.sh",
     "test": "bash scripts/smoke-test.sh",
     "test:api": "node --test tests/*.test.js",
-    "test:security": "node tests/test-validation-functions.js"
+    "test:security": "node tests/test-validation-functions.js",
+    "test:migration": "bash scripts/test-after-migration.sh",
+    "monitor:logs": "bash scripts/monitor-error-logs.sh"
   },
   "dependencies": {
     "@google/genai": "^1.39.0",

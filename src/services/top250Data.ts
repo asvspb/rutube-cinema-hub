@@ -1,5 +1,5 @@
-import top250Json from '../scripts/top250-2025.json';
-import topImdbJson from '../scripts/topIMDB.json';
+import top250Json from '../../scripts/top250-2025.json';
+import topImdbJson from '../../scripts/topIMDB.json';
 
 export interface Award {
   type: string;

@@ -74,7 +74,7 @@
 - `App.tsx` - Новая логика `handleAnalyzeVideo` с двухэтапной проверкой
 - `components/VideoCard.tsx` - Визуализация короны, разные тултипы, ссылка на IMDB
 - `components/CategoryFilter.tsx` - Удален пункт меню "Уточнить рейтинг"
-- `server.js` - Функция `extractImdbUrl()` для извлечения URL из источников
+- `server/index.js` - Функция `extractImdbUrl()` для извлечения URL из источников
 - `services/llmService.ts` - Без изменений (API поддерживает новые поля)
 
 **Новая структура данных**:
