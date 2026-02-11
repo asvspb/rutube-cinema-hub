@@ -166,46 +166,65 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
         {/* Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-300" />
 
-        {/* Rating Badge (Top Left) */}
+        {/* Rating and Like/Dislike Container (Top Left) */}
         <div className="absolute top-2 left-2 z-20 flex flex-col items-start gap-1">
-            {/* Internal Rating */}
-            <div className="relative group/rating">
-              <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-bold shadow-sm cursor-help transition-colors duration-300 ${getRatingColor(displayRating)}`}>
-                  {isBoosted ? <TrendingUp className="w-3 h-3" /> : <Star className="w-3 h-3 fill-current" />}
-                  <span>{displayRating.toFixed(1)}</span>
+            {/* Internal Rating and Like/Dislike Button in one row */}
+            <div className="flex items-center gap-1">
+              {/* Internal Rating */}
+              <div className="relative group/rating">
+                <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-bold shadow-sm cursor-help transition-colors duration-300 ${getRatingColor(displayRating)}`}>
+                    {isBoosted ? <TrendingUp className="w-3 h-3" /> : <Star className="w-3 h-3 fill-current" />}
+                    <span>{displayRating.toFixed(1)}</span>
+                </div>
+
+                {/* Rating Tooltip */}
+                <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/rating:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/rating:translate-y-0 text-left z-30">
+                    <div className="text-xs font-bold text-white mb-1 flex items-center gap-1">
+                      {isBoosted ? <TrendingUp className="w-3 h-3 text-purple-400" /> : <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
+                      Рейтинг {displayRating.toFixed(1)}
+                    </div>
+
+                    {isBoosted ? (
+                      <div className="text-[10px] text-purple-300 mb-2 leading-tight">
+                          Рейтинг повышен до уровня {imdbRating > kpRating ? 'IMDb' : 'KP'} ({bestExternalRating}), так как внутренний рейтинг ({rawRating.toFixed(1)}) ниже.
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
+                          {isExperimental
+                          ? 'Пороговый рейтинг. Зависит от общего количества просмотров.'
+                          : 'Динамический рейтинг. Зависит от скорости набора просмотров.'}
+                      </div>
+                    )}
+
+                    <div className="bg-zinc-800/50 rounded p-1.5 space-y-1">
+                      <div className="flex justify-between text-[10px]">
+                          <span className="text-zinc-500">Просмотры:</span>
+                          <span className="text-zinc-300 font-mono">{formatViews(video.views)}</span>
+                      </div>
+                      {!isExperimental && (
+                          <div className="flex justify-between text-[10px]">
+                              <span className="text-zinc-500">Возраст:</span>
+                              <span className="text-zinc-300 font-mono">{getAgeText()}</span>
+                          </div>
+                      )}
+                    </div>
+                </div>
               </div>
 
-              {/* Rating Tooltip */}
-              <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/rating:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/rating:translate-y-0 text-left z-30">
-                  <div className="text-xs font-bold text-white mb-1 flex items-center gap-1">
-                    {isBoosted ? <TrendingUp className="w-3 h-3 text-purple-400" /> : <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
-                    Рейтинг {displayRating.toFixed(1)}
-                  </div>
-                  
-                  {isBoosted ? (
-                    <div className="text-[10px] text-purple-300 mb-2 leading-tight">
-                        Рейтинг повышен до уровня {imdbRating > kpRating ? 'IMDb' : 'KP'} ({bestExternalRating}), так как внутренний рейтинг ({rawRating.toFixed(1)}) ниже.
-                    </div>
-                  ) : (
-                    <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
-                        {isExperimental 
-                        ? 'Пороговый рейтинг. Зависит от общего количества просмотров.' 
-                        : 'Динамический рейтинг. Зависит от скорости набора просмотров.'}
-                    </div>
-                  )}
-                  
-                  <div className="bg-zinc-800/50 rounded p-1.5 space-y-1">
-                    <div className="flex justify-between text-[10px]">
-                        <span className="text-zinc-500">Просмотры:</span>
-                        <span className="text-zinc-300 font-mono">{formatViews(video.views)}</span>
-                    </div>
-                    {!isExperimental && (
-                        <div className="flex justify-between text-[10px]">
-                            <span className="text-zinc-500">Возраст:</span>
-                            <span className="text-zinc-300 font-mono">{getAgeText()}</span>
-                        </div>
-                    )}
-                  </div>
+              {/* Like/Dislike Button with Tooltip */}
+              <div className={`flex flex-col items-start group/liked ${likedContainerVisibleClass} transition-opacity duration-200`}>
+                <div className="absolute bottom-full mb-2 left-0 px-2.5 py-1.5 w-56 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover/liked:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                  <div className="font-bold">{getLikedTooltipText()}</div>
+                  <div className="text-[10px] text-zinc-400 font-normal mt-0.5">{getNextLikedStatusText()}</div>
+                  <div className="absolute top-full left-4 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-700" />
+                </div>
+
+                <button
+                  onClick={handleLikedClick}
+                  className={`p-1.5 rounded-full ${likedButtonBgClass} backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20`}
+                >
+                  <LikedIcon className={`w-4 h-4 ${likedColorClass}`} />
+                </button>
               </div>
             </div>
 
@@ -240,7 +259,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
                             {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
                           </div>
                         )}
-                        
+
                         {/* IMDB Tooltip */}
                         <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/imdb-tooltip:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/imdb-tooltip:translate-y-0 text-left z-30">
                             <div className="text-xs font-bold text-[#f5c518] mb-1 flex items-center gap-1">
@@ -264,7 +283,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
                         <div className="px-1.5 py-0.5 rounded-md bg-[#f60] text-white text-[10px] font-bold shadow-sm flex items-center justify-center w-fit">
                           KP {externalData.kpRating}
                         </div>
-                        
+
                         {/* KP Tooltip */}
                         <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/kp-tooltip:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/kp-tooltip:translate-y-0 text-left z-30">
                             <div className="text-xs font-bold text-[#f60] mb-1 flex items-center gap-1">
@@ -295,7 +314,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
                           <Trophy className={`w-3 h-3 ${wonOscar ? 'fill-black text-black' : 'fill-current'}`} />
                           {wonOscar ? 'Oscar' : 'Nom'}
                         </div>
-                        
+
                         {/* Oscar Tooltip */}
                         <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/oscar-tooltip:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/oscar-tooltip:translate-y-0 text-left z-30">
                             <div className="text-xs font-bold text-yellow-400 mb-1 flex items-center gap-1">
@@ -315,7 +334,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
                     )}
                 </div>
               )}
-              
+
             </div>
         </div>
 
@@ -349,7 +368,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
           {formatDuration(video.duration)}
         </div>
 
-        {/* Status Toggle Buttons with Tooltips (Bottom Left) - Watched/Later and Like/Dislike */}
+        {/* Status Toggle Buttons with Tooltips (Bottom Left) - Watched/Later and AI Analysis */}
         <div className="absolute bottom-2 left-2 z-10 flex flex-row items-end gap-1 group/status-container">
           {/* Watched/Later Button with Tooltip */}
           <div className={`flex flex-col items-start group/watched ${watchedContainerVisibleClass} transition-opacity duration-200`}>
@@ -364,22 +383,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
               className={`p-1.5 rounded-full ${watchedButtonBgClass} backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20`}
             >
               <WatchedIcon className={`w-4 h-4 ${watchedColorClass}`} />
-            </button>
-          </div>
-
-          {/* Like/Dislike Button with Tooltip */}
-          <div className={`flex flex-col items-start group/liked ${likedContainerVisibleClass} transition-opacity duration-200`}>
-            <div className="absolute bottom-full mb-2 left-0 px-2.5 py-1.5 w-56 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover/liked:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-              <div className="font-bold">{getLikedTooltipText()}</div>
-              <div className="text-[10px] text-zinc-400 font-normal mt-0.5">{getNextLikedStatusText()}</div>
-              <div className="absolute top-full left-4 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-700" />
-            </div>
-
-            <button
-              onClick={handleLikedClick}
-              className={`p-1.5 rounded-full ${likedButtonBgClass} backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20`}
-            >
-              <LikedIcon className={`w-4 h-4 ${likedColorClass}`} />
             </button>
           </div>
 
