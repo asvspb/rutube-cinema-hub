@@ -213,10 +213,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
 
               {/* Like/Dislike Button with Tooltip */}
               <div className={`flex flex-col items-start group/liked ${likedContainerVisibleClass} transition-opacity duration-200`}>
-                <div className="absolute bottom-full mb-2 left-0 px-2.5 py-1.5 w-56 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover/liked:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                <div className="absolute top-full mt-2 left-0 px-2.5 py-1.5 w-56 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover/liked:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
                   <div className="font-bold">{getLikedTooltipText()}</div>
                   <div className="text-[10px] text-zinc-400 font-normal mt-0.5">{getNextLikedStatusText()}</div>
-                  <div className="absolute top-full left-4 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-700" />
+                  <div className="absolute bottom-full left-4 -translate-x-1/2 -mb-1 border-4 border-transparent border-b-zinc-700" />
                 </div>
 
                 <button
