@@ -1,10 +1,16 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
+import dns from 'dns';
+import { promisify } from 'util';
+
+const dnsLookup = promisify(dns.lookup);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,8 +38,54 @@ for (const [key, value] of Object.entries(envFromFiles)) {
 const app = express();
 const PORT = process.env.PORT || 9230; // Using a different port than the frontend
 
-// Enable CORS for all routes
-app.use(cors());
+// Security Configuration
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:4173', 'http://127.0.0.1:5173', 'http://127.0.0.1:4173'];
+const PROXY_RATE_LIMIT_WINDOW_MS = parseInt(process.env.PROXY_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000; // 15 minutes
+const PROXY_RATE_LIMIT_MAX_REQUESTS = parseInt(process.env.PROXY_RATE_LIMIT_MAX_REQUESTS) || 100; // requests per window
+const PROXY_MAX_REDIRECTS = parseInt(process.env.PROXY_MAX_REDIRECTS) || 5;
+const AI_RATE_LIMIT_WINDOW_MS = parseInt(process.env.AI_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000; // 15 minutes
+const AI_RATE_LIMIT_MAX_REQUESTS = parseInt(process.env.AI_RATE_LIMIT_MAX_REQUESTS) || 50; // requests per window
+const ALLOWED_DOMAINS = (process.env.ALLOWED_PROXY_DOMAINS || 'rutube.ru,*.rutube.ru,api.rutube.ru').split(',').map(domain => domain.trim());
+
+// Apply security headers
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "https:"],
+        objectSrc: ["'none'"],
+      },
+    },
+    frameguard: {
+      action: 'deny',
+    },
+    noSniff: true,
+    referrerPolicy: {
+      policy: 'same-origin',
+    },
+  })
+);
+
+// Configure CORS with whitelist
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 const LOG_FILE = path.join(__dirname, 'logs', 'error_logs.json');
@@ -63,6 +115,140 @@ const writeLog = (logEntry) => {
     console.error('Failed to write log:', e);
   }
 };
+
+// Function to check if an IP is private/local
+const isPrivateIP = (ip) => {
+  // Special handling for exact IPv6 localhost
+  if (ip === '::1') return true;
+  
+  // For IPv6 addresses with ports like ::1:8080, extract the IP part
+  // Split by ':' and handle the parts appropriately
+  const parts = ip.split(':');
+  
+  // If it starts with '::', handle specially
+  if (parts[0] === '' && parts[1] === '') {
+    // This is an IPv6 address starting with '::'
+    // For ::1 specifically, we already handled it above
+    // For other cases like ::ffff:127.0.0.1, check the full address
+    if (ip.startsWith('::1') && ip !== '::1') {
+      // This is ::1 followed by something else, which is still localhost
+      return true;
+    }
+    if (ip.startsWith('::ffff:127.')) {
+      // IPv4-mapped IPv6 address for localhost
+      return true;
+    }
+    if (ip.startsWith('::ffff:192.168.') || 
+        ip.startsWith('::ffff:10.') || 
+        ip.startsWith('::ffff:172.')) {
+      // IPv4-mapped IPv6 addresses for private ranges
+      return true;
+    }
+  }
+  
+  // For other addresses, extract the base IP without port
+  // If there are more than 2 colons, it's likely IPv6
+  if (parts.length > 2) {
+    // This is likely an IPv6 address
+    // Handle compressed format and extract the base address
+    if (ip.startsWith('fc') || ip.startsWith('fd')) return true; // unique local addresses
+    if (ip.startsWith('fe80')) return true; // link-local addresses
+    if (ip.startsWith('::1')) return true; // localhost IPv6
+  } else {
+    // This is likely IPv4 or IPv4-like
+    const cleanIP = parts[0];
+    
+    // IPv4 private ranges
+    if (cleanIP.startsWith('10.')) return true;
+    if (cleanIP.startsWith('172.') && parseInt(cleanIP.split('.')[1], 10) >= 16 && parseInt(cleanIP.split('.')[1], 10) <= 31) return true;
+    if (cleanIP.startsWith('192.168.')) return true;
+    if (cleanIP.startsWith('127.')) return true;
+    if (cleanIP.startsWith('0.')) return true;
+    
+    // IPv6 private ranges (when extracted without the :: issue)
+    if (cleanIP.startsWith('fc') || cleanIP.startsWith('fd')) return true; // unique local addresses
+    if (cleanIP.startsWith('fe80')) return true; // link-local addresses
+  }
+  
+  return false;
+};
+
+// Function to check if hostname is in allowed domains
+const isAllowedDomain = (hostname) => {
+  for (const allowedDomain of ALLOWED_DOMAINS) {
+    if (allowedDomain.startsWith('*.')) {
+      // Wildcard domain check (e.g., *.rutube.ru)
+      const domainPattern = allowedDomain.substring(2); // Remove '*.'
+      if (hostname === domainPattern || hostname.endsWith('.' + domainPattern)) {
+        return true;
+      }
+    } else {
+      // Exact domain match
+      if (hostname === allowedDomain) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+// Function to validate URL and check for security issues
+const validateAndResolveURL = async (urlString) => {
+  try {
+    const parsedUrl = new URL(urlString);
+    const hostname = parsedUrl.hostname;
+
+    // Block direct localhost references
+    if (hostname === 'localhost') {
+      throw new Error('Hostname "localhost" is not allowed');
+    }
+
+    // Validate resolved hostname even if literal IP is provided
+    if (isPrivateIP(hostname)) {
+      throw new Error(`Resolved IP '${hostname}' is a private IP address`);
+    }
+
+    // Check if domain is in allowlist
+    if (!isAllowedDomain(hostname)) {
+      throw new Error(`Domain '${hostname}' is not in the allowed domains list`);
+    }
+
+    // Resolve hostname to IP and check if it's a private IP
+    const resolved = await dnsLookup(hostname);
+    if (isPrivateIP(resolved.address)) {
+      throw new Error(`Resolved IP '${resolved.address}' is a private IP address`);
+    }
+
+    return parsedUrl;
+  } catch (error) {
+    if (error.code === 'ENOTFOUND') {
+      throw new Error(`Hostname could not be resolved: ${urlString}`);
+    }
+    throw error;
+  }
+};
+
+// Rate limiting for proxy endpoint
+const proxyLimiter = rateLimit({
+  windowMs: PROXY_RATE_LIMIT_WINDOW_MS,
+  max: PROXY_RATE_LIMIT_MAX_REQUESTS,
+  message: {
+    error: 'Too many requests to proxy endpoint, please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting for AI endpoints
+const aiLimiter = rateLimit({
+  windowMs: AI_RATE_LIMIT_WINDOW_MS,
+  max: AI_RATE_LIMIT_MAX_REQUESTS,
+  message: {
+    error: 'Too many requests to AI endpoints, please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Logging endpoint
 app.post('/api/logs', (req, res) => {
@@ -526,7 +712,7 @@ const kinoRateBatch = async (queries) => {
 };
 
 // KinoRate AI endpoints
-app.post('/api/ai/kinorate/search', async (req, res) => {
+app.post('/api/ai/kinorate/search', aiLimiter, async (req, res) => {
   const query = req.body?.query;
   if (!query || typeof query !== 'string') {
     res.status(400).json({
@@ -541,11 +727,15 @@ app.post('/api/ai/kinorate/search', async (req, res) => {
     res.status(200).json(normalizeKinoRatePayload(data));
   } catch (e) {
     console.error('KinoRate AI search error:', e);
-    res.status(500).json({ error: 'KinoRate AI search failed' });
+    if (e.message && e.message.includes('Too many requests')) {
+      res.status(429).json({ error: 'Rate limit exceeded' });
+    } else {
+      res.status(500).json({ error: 'KinoRate AI search failed' });
+    }
   }
 });
 
-app.post('/api/ai/kinorate/batch', async (req, res) => {
+app.post('/api/ai/kinorate/batch', aiLimiter, async (req, res) => {
   const queries = req.body?.queries;
   if (!Array.isArray(queries) || !queries.every((q) => typeof q === 'string')) {
     res.status(400).json({
@@ -560,12 +750,45 @@ app.post('/api/ai/kinorate/batch', async (req, res) => {
     res.status(200).json(normalizeKinoRatePayload(data));
   } catch (e) {
     console.error('KinoRate AI batch error:', e);
-    res.status(500).json({ error: 'KinoRate AI batch failed' });
+    if (e.message && e.message.includes('Too many requests')) {
+      res.status(429).json({ error: 'Rate limit exceeded' });
+    } else {
+      res.status(500).json({ error: 'KinoRate AI batch failed' });
+    }
   }
 });
 
+const forwardProxyRequest = async (urlString, init) => {
+  let currentUrl = urlString;
+  let response;
+
+  for (let redirectCount = 0; redirectCount <= PROXY_MAX_REDIRECTS; redirectCount += 1) {
+    await validateAndResolveURL(currentUrl);
+
+    response = await fetch(currentUrl, {
+      ...init,
+      redirect: 'manual',
+    });
+
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (!location) {
+        return response;
+      }
+
+      const nextUrl = new URL(location, currentUrl).toString();
+      currentUrl = nextUrl;
+      continue;
+    }
+
+    return response;
+  }
+
+  throw new Error('Too many redirects');
+};
+
 // Define the proxy route for Rutube API calls
-app.get('/api/proxy', async (req, res) => {
+app.get('/api/proxy', proxyLimiter, async (req, res) => {
   const targetUrl = req.query.url;
 
   if (!targetUrl) {
@@ -574,16 +797,7 @@ app.get('/api/proxy', async (req, res) => {
   }
 
   try {
-    const parsedTarget = new URL(targetUrl);
-
-    // Validate that the target URL is from rutube.ru domain
-    if (!parsedTarget.hostname.endsWith('.rutube.ru') && parsedTarget.hostname !== 'rutube.ru') {
-      res.status(403).json({ error: 'Only rutube.ru domains are allowed' });
-      return;
-    }
-
-    // Make the actual request to the target URL
-    const response = await fetch(targetUrl, {
+    const response = await forwardProxyRequest(targetUrl, {
       method: req.method,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -593,11 +807,6 @@ app.get('/api/proxy', async (req, res) => {
         'Origin': 'https://rutube.ru'
       }
     });
-
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     if (req.method === 'OPTIONS') {
       res.sendStatus(200);
@@ -609,7 +818,7 @@ app.get('/api/proxy', async (req, res) => {
 
     // Forward response headers (except those that might conflict)
     for (const [key, value] of response.headers.entries()) {
-      if (key.toLowerCase() !== 'access-control-allow-origin' && 
+      if (key.toLowerCase() !== 'access-control-allow-origin' &&
           key.toLowerCase() !== 'content-security-policy' &&
           key.toLowerCase() !== 'transfer-encoding' &&
           key.toLowerCase() !== 'content-encoding') {
@@ -622,7 +831,13 @@ app.get('/api/proxy', async (req, res) => {
     res.send(Buffer.from(buffer));
   } catch (e) {
     console.error('Proxy request error:', e);
-    res.status(500).json({ error: 'Proxy request failed', details: e.message });
+    if (e.message.includes('not in the allowed domains list') || e.message.includes('private IP address') || e.message.includes('Hostname "localhost"') || e.message.includes('Too many redirects')) {
+      res.status(403).json({ error: e.message });
+    } else if (e.message.includes('Too many requests')) {
+      res.status(429).json({ error: 'Rate limit exceeded' });
+    } else {
+      res.status(500).json({ error: 'Proxy request failed', details: e.message });
+    }
   }
 });
 

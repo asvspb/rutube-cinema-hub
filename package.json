@@ -10,7 +10,8 @@
     "server": "node server.js",
     "dev:all": "bash scripts/dev-all-in-one.sh",
     "test": "bash scripts/smoke-test.sh",
-    "test:api": "node --test tests/*.test.js"
+    "test:api": "node --test tests/*.test.js",
+    "test:security": "node tests/test-validation-functions.js"
   },
   "dependencies": {
     "@google/genai": "^1.39.0",
@@ -21,12 +22,15 @@
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
     "framer-motion": "11.0.24",
+    "helmet": "^8.1.0",
     "http-proxy-middleware": "^3.0.5",
     "lucide-react": "0.344.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "recharts": "2.12.3",
+    "supertest": "^7.2.2",
     "tailwind-merge": "latest"
   },
   "devDependencies": {
