@@ -40,3 +40,5 @@ coverage
 
 # Runtime / generated
 error_logs.json
+
+/generated/prisma
