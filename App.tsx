@@ -896,7 +896,6 @@ const App: React.FC = () => {
 
     setVideoCache(prev => {
         const next = { ...prev };
-        // @ts-ignore
         if (activeCategory) delete next[activeCategory.id];
         return next;
     });
