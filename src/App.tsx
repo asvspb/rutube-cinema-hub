@@ -881,7 +881,7 @@ const App: React.FC = () => {
     closeChannelMenu();
   };
 
-  const activeMenuChannel = channels.find(c => c.id === activeChannelMenuId);
+  const activeMenuChannel = activeChannelMenuId ? channels.find(c => c.id === activeChannelMenuId) : undefined;
 
   const handleRefresh = (fetchAll: boolean = false) => {
     if (!activeCategory && viewMode !== 'home') return;
@@ -1775,7 +1775,9 @@ const App: React.FC = () => {
                   <>
                       <button
                         onClick={() => {
-                          setChannelToImport(activeMenuChannel);
+                          if (activeMenuChannel) {
+                            setChannelToImport(activeMenuChannel);
+                          }
                           closeChannelMenu();
                         }}
                         className="w-full text-left px-3 py-2 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3 transition-colors"
@@ -1800,7 +1802,7 @@ const App: React.FC = () => {
 
                       <div className="h-px bg-zinc-800 my-1.5 mx-1" />
                       <button
-                        onClick={() => handleRemoveChannel(activeMenuChannel.id)}
+                        onClick={() => activeMenuChannel && handleRemoveChannel(activeMenuChannel.id)}
                         className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-zinc-800 hover:text-red-300 flex items-center gap-3 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
