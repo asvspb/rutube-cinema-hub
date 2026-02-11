@@ -51,6 +51,9 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
   let watchedContainerVisibleClass = "opacity-0 group-hover:opacity-100";
   let watchedButtonBgClass = "bg-black/60 hover:bg-zinc-800/80";
 
+  // AI button should only be visible on hover
+  const aiContainerVisibleClass = "opacity-0 group-hover:opacity-100";
+
   if (watchedStatus === 'watched') {
     WatchedIcon = Check;
     watchedColorClass = "text-green-500";
@@ -382,7 +385,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
 
           {/* AI Analysis Button with Tooltip */}
           {(!externalData || (externalData.imdbRating === 0 && externalData.kpRating === 0)) && (
-            <div className={`flex flex-col items-start group/ai-btn ${watchedContainerVisibleClass} transition-opacity duration-200`}>
+            <div className={`flex flex-col items-start group/ai-btn ${aiContainerVisibleClass} transition-opacity duration-200`}>
               <div className="absolute bottom-full mb-2 left-0 px-2.5 py-1.5 w-56 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md break-words opacity-0 group-hover/ai-btn:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
                 <div className="font-bold text-blue-400 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-blue-400" />
