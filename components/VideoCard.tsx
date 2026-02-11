@@ -313,53 +313,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
                 </div>
               )}
               
-               {(!externalData || (externalData.imdbRating === 0 && externalData.kpRating === 0)) && (
-                 <div className="relative group/ai-btn">
-                   <button
-                     onClick={handleCheckExternal}
-                     disabled={isLoadingMetadata}
-                     className={`
-                        px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm flex items-center justify-center w-fit transition-all duration-200
-                        ${isLoadingMetadata
-                          ? 'bg-blue-600/30 text-blue-300 cursor-wait'
-                          : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white'
-                        }
-                     `}
-                   >
-                     {isLoadingMetadata ? (
-                       <>
-                         <Loader2 className="w-3 h-3 mr-1 animate-spin" /> AI
-                       </>
-                     ) : (
-                       <>
-                         <Sparkles className="w-3 h-3 mr-1" /> AI
-                       </>
-                     )}
-                   </button>
-
-                   {/* AI Button Tooltip */}
-                   <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/ai-btn:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/ai-btn:translate-y-0 text-left z-30">
-                       <div className="text-xs font-bold text-blue-400 mb-1 flex items-center gap-1">
-                         <Sparkles className="w-3 h-3 text-blue-400" />
-                         AI Анализ
-                       </div>
-                       <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
-                         {isLoadingMetadata
-                           ? "Загрузка данных..."
-                           : (!externalData || externalData.aiAttempts === 0)
-                             ? "Поиск в локальной базе данных и через поисковик"
-                             : "Запросить через поисковик"}
-                       </div>
-                       <div className="bg-zinc-800/50 rounded p-1.5">
-                         <div className="text-[10px] text-zinc-500">
-                           {isLoadingMetadata
-                             ? "Пожалуйста, подождите..."
-                             : "Нажмите для анализа видео с помощью ИИ"}
-                         </div>
-                       </div>
-                   </div>
-                 </div>
-               )}
             </div>
         </div>
 
@@ -426,6 +379,39 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedSta
               <LikedIcon className={`w-4 h-4 ${likedColorClass}`} />
             </button>
           </div>
+
+          {/* AI Analysis Button with Tooltip */}
+          {(!externalData || (externalData.imdbRating === 0 && externalData.kpRating === 0)) && (
+            <div className={`flex flex-col items-start group/ai-btn ${watchedContainerVisibleClass} transition-opacity duration-200`}>
+              <div className="absolute bottom-full mb-2 left-0 px-2.5 py-1.5 w-56 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md break-words opacity-0 group-hover/ai-btn:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                <div className="font-bold text-blue-400 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-blue-400" />
+                  AI Анализ
+                </div>
+                <div className="text-[10px] text-zinc-400 font-normal mt-0.5">
+                  {isLoadingMetadata
+                    ? "Загрузка данных..."
+                    : (!externalData || externalData.aiAttempts === 0)
+                      ? "Поиск в локальной базе данных и через поисковик"
+                      : "Запросить через поисковик"}
+                </div>
+                <div className="absolute top-full left-4 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-700" />
+              </div>
+
+              <button
+                onClick={handleCheckExternal}
+                disabled={isLoadingMetadata}
+                className={`
+                  p-1.5 rounded-full ${isLoadingMetadata
+                    ? 'bg-blue-600/30 text-blue-300 cursor-wait'
+                    : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white'
+                  } backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20
+                `}
+              >
+                <Sparkles className={`w-4 h-4 ${isLoadingMetadata ? 'text-blue-300' : 'text-blue-400 group-hover/btn:text-white'}`} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Hover Play Icon */}
