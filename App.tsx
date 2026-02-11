@@ -1709,13 +1709,6 @@ const App: React.FC = () => {
                </div>
             ) : (
                <>
-                 <Pagination 
-                   currentPage={currentPage}
-                   totalPages={totalPages}
-                   onPageChange={handlePageChange}
-                   className="mb-6"
-                 />
-
                  <div className={getGridClass()}>
                    {displayedVideos.map((video) => (
                       <VideoCard
@@ -1733,8 +1726,8 @@ const App: React.FC = () => {
                       />
                    ))}
                  </div>
-                 
-                 <Pagination 
+
+                 <Pagination
                    currentPage={currentPage}
                    totalPages={totalPages}
                    onPageChange={handlePageChange}
