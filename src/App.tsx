@@ -15,6 +15,8 @@ import { ImportPlaylistsModal } from './components/ImportPlaylistsModal';
 import { ChannelHeader } from './components/ChannelHeader';
 import { HistoryModal } from './components/HistoryModal';
 import { KinoRateModal } from './components/KinoRate/KinoRateModal';
+import { ConfirmModal } from './components/ConfirmModal';
+import { NotificationModal } from './components/NotificationModal';
 import { findBestMovieMatch, TOP_250_MOVIES } from './services/top250Data';
 
 const RECOMMENDED_CHANNELS = [
@@ -298,10 +300,19 @@ const App: React.FC = () => {
   const [selectedVideo, setSelectedVideo] = useState<RutubeVideo | null>(null);
   const [isAddPlaylistModalOpen, setIsAddPlaylistModalOpen] = useState(false);
   const [isAddChannelModalOpen, setIsAddChannelModalOpen] = useState(false);
-  
+
   const [isKinoRateOpen, setIsKinoRateOpen] = useState(false);
   const [kinoRateQuery, setKinoRateQuery] = useState('');
   const [kinoRateContext, setKinoRateContext] = useState<string | null>(null);
+
+  // State for custom modals
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState('');
+  const [confirmCallback, setConfirmCallback] = useState<() => void>(() => {});
+  
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationType, setNotificationType] = useState<'success' | 'error' | 'warning' | 'info'>('info');
 
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -1176,11 +1187,19 @@ const App: React.FC = () => {
   };
 
   const handleClearMetadataCache = () => {
-    if (confirm('Очистить весь кеш рейтингов? Это действие нельзя отменить.')) {
+    setConfirmMessage('Очистить весь кеш рейтингов? Это действие нельзя отменить.');
+    setConfirmCallback(() => () => {
       setMetadataCache({});
       setIsUserMenuOpen(false);
-      alert('Кеш рейтингов успешно очищен!');
-    }
+      showNotification('Кеш рейтингов успешно очищен!', 'success');
+    });
+    setIsConfirmModalOpen(true);
+  };
+
+  const showNotification = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    setNotificationMessage(message);
+    setNotificationType(type);
+    setIsNotificationModalOpen(true);
   };
 
   // NEW: Direct metadata fetch without modal
@@ -1894,6 +1913,29 @@ const App: React.FC = () => {
            contextKey={kinoRateContext}
            onClose={() => setIsKinoRateOpen(false)}
            onSaveMetadata={handleSaveMetadata} // Pass save callback
+        />
+      )}
+
+      {/* Confirmation Modal */}
+      {isConfirmModalOpen && (
+        <ConfirmModal
+          isOpen={isConfirmModalOpen}
+          message={confirmMessage}
+          onConfirm={() => {
+            confirmCallback();
+            setIsConfirmModalOpen(false);
+          }}
+          onCancel={() => setIsConfirmModalOpen(false)}
+        />
+      )}
+
+      {/* Notification Modal */}
+      {isNotificationModalOpen && (
+        <NotificationModal
+          isOpen={isNotificationModalOpen}
+          message={notificationMessage}
+          type={notificationType}
+          onClose={() => setIsNotificationModalOpen(false)}
         />
       )}
 
