@@ -46,7 +46,7 @@ const parseOscarAward = (text: string): Award | null => {
 
 const toAwardObjects = (awards: any[]): Award[] =>
   (Array.isArray(awards) ? awards : [])
-    .map((a) => {
+    .map(a => {
       if (typeof a === 'string') {
         const s = normalizeWhitespace(a);
         return parseOscarAward(s) ?? { type: s, status: '', description: s };
@@ -55,22 +55,20 @@ const toAwardObjects = (awards: any[]): Award[] =>
       if (a && typeof a === 'object') {
         const rawType = normalizeWhitespace(String(a.type ?? a.title ?? a.name ?? 'award'));
         const rawStatus = a.status ? normalizeWhitespace(String(a.status)) : '';
-        const rawDescription = a.description
-          ? normalizeWhitespace(String(a.description))
-          : rawType;
+        const rawDescription = a.description ? normalizeWhitespace(String(a.description)) : rawType;
 
         const parsedOscar = parseOscarAward(rawType) ?? parseOscarAward(rawDescription);
         if (parsedOscar) {
           return {
             ...parsedOscar,
-            status: rawStatus || parsedOscar.status
+            status: rawStatus || parsedOscar.status,
           };
         }
 
         return {
           type: rawType,
           status: rawStatus,
-          description: rawDescription
+          description: rawDescription,
         };
       }
 
@@ -79,33 +77,39 @@ const toAwardObjects = (awards: any[]): Award[] =>
     .filter(Boolean) as Award[];
 
 const normalizeDataset = (json: any, source: 'top250' | 'topIMDB'): TopMovie[] => {
-  const movies = Array.isArray(json) ? json : json?.movies ?? [];
+  const movies = Array.isArray(json) ? json : (json?.movies ?? []);
   return movies
     .map((m: any) => {
       const imdbId = String(m.imdbId ?? m.id ?? '').replace(/^tt/, '');
       const title = String(m.title ?? m.name ?? '').trim();
       if (!title || !imdbId) return null;
-      const imdbUrl = typeof m.url === 'string' && m.url.trim().length > 0
-        ? String(m.url)
-        : imdbId
-          ? `https://www.imdb.com/title/tt${imdbId}/`
-          : undefined;
+      const imdbUrl =
+        typeof m.url === 'string' && m.url.trim().length > 0
+          ? String(m.url)
+          : imdbId
+            ? `https://www.imdb.com/title/tt${imdbId}/`
+            : undefined;
 
-      const top250Url = typeof m.source_url === 'string' && m.source_url.trim().length > 0
-        ? String(m.source_url)
-        : imdbId
-          ? `http://top250.info/movie/?${imdbId}`
-          : undefined;
+      const top250Url =
+        typeof m.source_url === 'string' && m.source_url.trim().length > 0
+          ? String(m.source_url)
+          : imdbId
+            ? `http://top250.info/movie/?${imdbId}`
+            : undefined;
 
       return {
         title,
         id: imdbId,
-        year: Number.isFinite(m.year) ? m.year : m.year ? parseInt(String(m.year), 10) || null : m.year ?? null,
+        year: Number.isFinite(m.year)
+          ? m.year
+          : m.year
+            ? parseInt(String(m.year), 10) || null
+            : (m.year ?? null),
         currentRating: m.rating ?? m.currentRating ?? null,
         awards: toAwardObjects(m.awards ?? []),
         imdbUrl,
         top250Url,
-        source
+        source,
       } as TopMovie;
     })
     .filter(Boolean) as TopMovie[];
@@ -116,7 +120,7 @@ const rawTopImdb: TopMovie[] = normalizeDataset(topImdbJson, 'topIMDB');
 
 // If Top 250 items have missing awards, fall back to the Top 1000 dataset (same imdb ids).
 const awardsById = new Map<string, Award[]>();
-rawTopImdb.forEach((m) => awardsById.set(m.id, m.awards));
+rawTopImdb.forEach(m => awardsById.set(m.id, m.awards));
 
 const mergeAwards = (a: Award[], b: Award[]): Award[] => {
   if (b.length === 0) return a;
@@ -135,9 +139,9 @@ const mergeAwards = (a: Award[], b: Award[]): Award[] => {
   return out;
 };
 
-export const TOP_250_MOVIES: TopMovie[] = rawTop250.map((m) => ({
+export const TOP_250_MOVIES: TopMovie[] = rawTop250.map(m => ({
   ...m,
-  awards: mergeAwards(m.awards, awardsById.get(m.id) ?? [])
+  awards: mergeAwards(m.awards, awardsById.get(m.id) ?? []),
 }));
 
 export const TOP_IMDB_MOVIES: TopMovie[] = rawTopImdb;
@@ -190,22 +194,26 @@ const scoreMatch = (query: string, candidate: TopMovie, queryYear: number | null
   return score;
 };
 
-const findBestInDataset = (query: string, dataset: TopMovie[], threshold = 0.6): MatchResult | undefined => {
+const findBestInDataset = (
+  query: string,
+  dataset: TopMovie[],
+  threshold = 0.6
+): MatchResult | undefined => {
   const queryYear = extractYear(query);
   let best: MatchResult | undefined;
-  
+
   // Check if query looks like a series episode (e.g., contains "серия", "сезон", "эпизод")
   const queryLower = query.toLowerCase();
   const isSeriesEpisode = /серия|сезон|эпизод|episode|season/i.test(query);
-  
+
   for (const movie of dataset) {
     const s = scoreMatch(query, movie, queryYear);
     if (!best || s > best.score) best = { ...movie, score: s };
   }
-  
+
   // If query is a series episode, require much higher threshold
   const effectiveThreshold = isSeriesEpisode ? 0.85 : threshold;
-  
+
   return best && best.score >= effectiveThreshold ? best : undefined;
 };
 
@@ -223,6 +231,9 @@ export const findMovieInTopIMDB = (title: string): TopMovie | undefined => {
 export const findBestMovieMatch = (title: string): TopMovie | undefined => {
   const a = findMovieInTop250(title);
   const b = findMovieInTopIMDB(title);
-  if (a && b) return (scoreMatch(title, a, extractYear(title)) >= scoreMatch(title, b, extractYear(title))) ? a : b;
+  if (a && b)
+    return scoreMatch(title, a, extractYear(title)) >= scoreMatch(title, b, extractYear(title))
+      ? a
+      : b;
   return a ?? b;
 };

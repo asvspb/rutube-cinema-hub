@@ -1,28 +1,30 @@
 services:
   frontend:
-    image: node:18-alpine
+    image: node:20-alpine
     working_dir: /app
     environment:
       VITE_PROXY_TARGET: http://backend:9230
+      HUSKY: '0'
     volumes:
       - ./:/app
       - /app/node_modules
     ports:
-      - "9229:9229"
+      - '9229:9229'
     command: >-
       sh -c "npm install --no-audit --no-fund && npm run dev"
     depends_on:
       - backend
 
   backend:
-    image: node:18-alpine
+    image: node:20-alpine
     working_dir: /app
     environment:
-      PORT: "9230"
+      PORT: '9230'
+      HUSKY: '0'
     volumes:
       - ./:/app
       - /app/node_modules
     ports:
-      - "9230:9230"
+      - '9230:9230'
     command: >-
       sh -c "npm install --no-audit --no-fund && npx --yes nodemon --watch server/index.js --watch server/ --watch .env --ext js,json server/index.js"

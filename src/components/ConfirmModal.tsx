@@ -18,19 +18,16 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   confirmText = 'Подтвердить',
   cancelText = 'Отмена',
   onConfirm,
-  onCancel
+  onCancel,
 }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-md bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 flex flex-col">
-        
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900 z-10">
-          <h2 className="text-white font-semibold flex items-center gap-2">
-            {title}
-          </h2>
+          <h2 className="text-white font-semibold flex items-center gap-2">{title}</h2>
           <button
             onClick={onCancel}
             className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white"
@@ -42,7 +39,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         {/* Content */}
         <div className="p-6">
           <p className="text-zinc-300 mb-6">{message}</p>
-          
+
           {/* Actions */}
           <div className="flex justify-end gap-3">
             <button

@@ -14,7 +14,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   message,
   type = 'info',
   title,
-  onClose
+  onClose,
 }) => {
   if (!isOpen) return null;
 
@@ -22,14 +22,14 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     success: <CheckCircle className="w-6 h-6 text-green-500" />,
     error: <AlertCircle className="w-6 h-6 text-red-500" />,
     warning: <AlertCircle className="w-6 h-6 text-yellow-500" />,
-    info: <AlertCircle className="w-6 h-6 text-blue-500" />
+    info: <AlertCircle className="w-6 h-6 text-blue-500" />,
   };
 
   const titleMap = {
     success: 'Успешно',
     error: 'Ошибка',
     warning: 'Предупреждение',
-    info: 'Информация'
+    info: 'Информация',
   };
 
   const icon = iconMap[type];
@@ -38,7 +38,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-md bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 flex flex-col">
-        
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900 z-10">
           <h2 className="text-white font-semibold flex items-center gap-2">
@@ -56,7 +55,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         {/* Content */}
         <div className="p-6">
           <p className="text-zinc-300">{message}</p>
-          
+
           {/* Actions */}
           <div className="flex justify-end mt-6">
             <button

@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import fs from 'fs';
@@ -19,10 +20,7 @@ const __dirname = path.dirname(__filename);
 // Precedence: explicit process env > .env.local > .env
 const envFromFiles = {};
 // NOTE: user preference: .env takes priority over .env.local
-const envPaths = [
-  path.join(__dirname, '..', '.env.local'),
-  path.join(__dirname, '..', '.env')
-];
+const envPaths = [path.join(__dirname, '..', '.env.local'), path.join(__dirname, '..', '.env')];
 for (const p of envPaths) {
   if (!fs.existsSync(p)) continue;
   try {
@@ -41,16 +39,17 @@ for (const [key, value] of Object.entries(envFromFiles)) {
 // Environment variable validation
 const requiredEnvVars = ['PORT'];
 const optionalEnvVarsWithDefaults = {
-  'GEMINI_API_KEY': 'Required for Gemini AI provider (fallback to Mistral if not set)',
-  'MISTRAL_API_KEY': 'Required for Mistral AI provider (fallback to Gemini if not set)',
-  'ALLOWED_ORIGINS': 'Default: http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173,http://127.0.0.1:4173',
-  'PROXY_RATE_LIMIT_WINDOW_MS': 'Default: 900000 (15 minutes)',
-  'PROXY_RATE_LIMIT_MAX_REQUESTS': 'Default: 100',
-  'AI_RATE_LIMIT_WINDOW_MS': 'Default: 900000 (15 minutes)',
-  'AI_RATE_LIMIT_MAX_REQUESTS': 'Default: 50',
-  'LLM_PROVIDER': 'Default: auto (can be gemini, mistral, or auto)',
-  'LLM_TIMEOUT_SEC': 'Default: 30',
-  'LLM_MAX_TOKENS': 'Default: 512'
+  GEMINI_API_KEY: 'Required for Gemini AI provider (fallback to Mistral if not set)',
+  MISTRAL_API_KEY: 'Required for Mistral AI provider (fallback to Gemini if not set)',
+  ALLOWED_ORIGINS:
+    'Default: http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173,http://127.0.0.1:4173',
+  PROXY_RATE_LIMIT_WINDOW_MS: 'Default: 900000 (15 minutes)',
+  PROXY_RATE_LIMIT_MAX_REQUESTS: 'Default: 100',
+  AI_RATE_LIMIT_WINDOW_MS: 'Default: 900000 (15 minutes)',
+  AI_RATE_LIMIT_MAX_REQUESTS: 'Default: 50',
+  LLM_PROVIDER: 'Default: auto (can be gemini, mistral, or auto)',
+  LLM_TIMEOUT_SEC: 'Default: 30',
+  LLM_MAX_TOKENS: 'Default: 512',
 };
 
 // Check for required environment variables
@@ -62,7 +61,9 @@ if (missingRequired.length > 0) {
 // Check for optional environment variables and warn if missing
 Object.keys(optionalEnvVarsWithDefaults).forEach(envVar => {
   if (!process.env[envVar]) {
-    console.warn(`[ENV WARN] Optional environment variable '${envVar}' not set. ${optionalEnvVarsWithDefaults[envVar]}`);
+    console.warn(
+      `[ENV WARN] Optional environment variable '${envVar}' not set. ${optionalEnvVarsWithDefaults[envVar]}`
+    );
   }
 });
 
@@ -70,13 +71,21 @@ const app = express();
 const PORT = process.env.PORT || 9230; // Using a different port than the frontend
 
 // Security Configuration
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:4173', 'http://127.0.0.1:5173', 'http://127.0.0.1:4173'];
-const PROXY_RATE_LIMIT_WINDOW_MS = parseInt(process.env.PROXY_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000; // 15 minutes
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:4173',
+];
+const PROXY_RATE_LIMIT_WINDOW_MS =
+  parseInt(process.env.PROXY_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000; // 15 minutes
 const PROXY_RATE_LIMIT_MAX_REQUESTS = parseInt(process.env.PROXY_RATE_LIMIT_MAX_REQUESTS) || 100; // requests per window
 const PROXY_MAX_REDIRECTS = parseInt(process.env.PROXY_MAX_REDIRECTS) || 5;
 const AI_RATE_LIMIT_WINDOW_MS = parseInt(process.env.AI_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000; // 15 minutes
 const AI_RATE_LIMIT_MAX_REQUESTS = parseInt(process.env.AI_RATE_LIMIT_MAX_REQUESTS) || 50; // requests per window
-const ALLOWED_DOMAINS = (process.env.ALLOWED_PROXY_DOMAINS || 'rutube.ru,*.rutube.ru,api.rutube.ru').split(',').map(domain => domain.trim());
+const ALLOWED_DOMAINS = (process.env.ALLOWED_PROXY_DOMAINS || 'rutube.ru,*.rutube.ru,api.rutube.ru')
+  .split(',')
+  .map(domain => domain.trim());
 
 // Apply security headers
 app.use(
@@ -86,8 +95,8 @@ app.use(
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "https:"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'", 'https:'],
         objectSrc: ["'none'"],
       },
     },
@@ -106,18 +115,21 @@ const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
 };
 app.use(cors(corsOptions));
 
-app.use(express.json());
+// Compression middleware
+app.use(compression());
+
+app.use(express.json({ limit: '1mb' }));
 
 const LOG_FILE = path.join(__dirname, 'logs', 'error_logs.json');
 
@@ -128,7 +140,7 @@ if (!fs.existsSync(LOGS_DIR)) {
 }
 
 // Helper to write logs
-const writeLog = (logEntry) => {
+const writeLog = logEntry => {
   try {
     let logs = [];
     if (fs.existsSync(LOG_FILE)) {
@@ -137,7 +149,7 @@ const writeLog = (logEntry) => {
     }
     logs.push({
       timestamp: new Date().toISOString(),
-      ...logEntry
+      ...logEntry,
     });
     // Keep only last 1000 logs
     if (logs.length > 1000) logs = logs.slice(-1000);
@@ -148,14 +160,14 @@ const writeLog = (logEntry) => {
 };
 
 // Function to check if an IP is private/local
-const isPrivateIP = (ip) => {
+const isPrivateIP = ip => {
   // Special handling for exact IPv6 localhost
   if (ip === '::1') return true;
-  
+
   // For IPv6 addresses with ports like ::1:8080, extract the IP part
   // Split by ':' and handle the parts appropriately
   const parts = ip.split(':');
-  
+
   // If it starts with '::', handle specially
   if (parts[0] === '' && parts[1] === '') {
     // This is an IPv6 address starting with '::'
@@ -169,14 +181,16 @@ const isPrivateIP = (ip) => {
       // IPv4-mapped IPv6 address for localhost
       return true;
     }
-    if (ip.startsWith('::ffff:192.168.') || 
-        ip.startsWith('::ffff:10.') || 
-        ip.startsWith('::ffff:172.')) {
+    if (
+      ip.startsWith('::ffff:192.168.') ||
+      ip.startsWith('::ffff:10.') ||
+      ip.startsWith('::ffff:172.')
+    ) {
       // IPv4-mapped IPv6 addresses for private ranges
       return true;
     }
   }
-  
+
   // For other addresses, extract the base IP without port
   // If there are more than 2 colons, it's likely IPv6
   if (parts.length > 2) {
@@ -188,24 +202,29 @@ const isPrivateIP = (ip) => {
   } else {
     // This is likely IPv4 or IPv4-like
     const cleanIP = parts[0];
-    
+
     // IPv4 private ranges
     if (cleanIP.startsWith('10.')) return true;
-    if (cleanIP.startsWith('172.') && parseInt(cleanIP.split('.')[1], 10) >= 16 && parseInt(cleanIP.split('.')[1], 10) <= 31) return true;
+    if (
+      cleanIP.startsWith('172.') &&
+      parseInt(cleanIP.split('.')[1], 10) >= 16 &&
+      parseInt(cleanIP.split('.')[1], 10) <= 31
+    )
+      return true;
     if (cleanIP.startsWith('192.168.')) return true;
     if (cleanIP.startsWith('127.')) return true;
     if (cleanIP.startsWith('0.')) return true;
-    
+
     // IPv6 private ranges (when extracted without the :: issue)
     if (cleanIP.startsWith('fc') || cleanIP.startsWith('fd')) return true; // unique local addresses
     if (cleanIP.startsWith('fe80')) return true; // link-local addresses
   }
-  
+
   return false;
 };
 
 // Function to check if hostname is in allowed domains
-const isAllowedDomain = (hostname) => {
+const isAllowedDomain = hostname => {
   for (const allowedDomain of ALLOWED_DOMAINS) {
     if (allowedDomain.startsWith('*.')) {
       // Wildcard domain check (e.g., *.rutube.ru)
@@ -224,7 +243,7 @@ const isAllowedDomain = (hostname) => {
 };
 
 // Function to validate URL and check for security issues
-const validateAndResolveURL = async (urlString) => {
+const validateAndResolveURL = async urlString => {
   try {
     const parsedUrl = new URL(urlString);
     const hostname = parsedUrl.hostname;
@@ -264,7 +283,7 @@ const proxyLimiter = rateLimit({
   windowMs: PROXY_RATE_LIMIT_WINDOW_MS,
   max: PROXY_RATE_LIMIT_MAX_REQUESTS,
   message: {
-    error: 'Too many requests to proxy endpoint, please try again later.'
+    error: 'Too many requests to proxy endpoint, please try again later.',
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -275,7 +294,7 @@ const aiLimiter = rateLimit({
   windowMs: AI_RATE_LIMIT_WINDOW_MS,
   max: AI_RATE_LIMIT_MAX_REQUESTS,
   message: {
-    error: 'Too many requests to AI endpoints, please try again later.'
+    error: 'Too many requests to AI endpoints, please try again later.',
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -292,29 +311,29 @@ app.post('/api/logs', (req, res) => {
   console.log('[CLIENT LOG]', logEntry);
   writeLog({
     source: 'client',
-    ...logEntry
+    ...logEntry,
   });
   res.status(200).json({ status: 'ok' });
 });
 
-process.on('unhandledRejection', (reason) => {
+process.on('unhandledRejection', reason => {
   console.error('Unhandled promise rejection:', reason);
   writeLog({
     level: 'error',
     source: 'server',
     message: 'Unhandled promise rejection',
-    context: { reason }
+    context: { reason },
   });
 });
 
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
   console.error('Uncaught exception:', error);
   writeLog({
     level: 'error',
     source: 'server',
     message: 'Uncaught exception',
     stack: error?.stack,
-    context: { message: error?.message }
+    context: { message: error?.message },
   });
 });
 
@@ -369,23 +388,22 @@ Rules:
 
 const KINORATE_SYSTEM_INSTRUCTION_GEMINI =
   KINORATE_SYSTEM_INSTRUCTION_BASE +
-  `\n9. Use the googleSearch tool to find up-to-date information.\n`;
+  '\n9. Use the googleSearch tool to find up-to-date information.\n';
 
-const createKinoRateSinglePrompt = (query) =>
+const createKinoRateSinglePrompt = query =>
   `Find ratings and Oscar status for the movie: "${query}".\n` +
-  `Return ONLY valid JSON (no markdown, no code fences) with keys: title (string), originalTitle (string), year (string), kpRating (number), kpVotes (string), imdbRating (number), description (string), awards (optional array of strings).`;
+  'Return ONLY valid JSON (no markdown, no code fences) with keys: title (string), originalTitle (string), year (string), kpRating (number), kpVotes (string), imdbRating (number), description (string), awards (optional array of strings).';
 
-const createKinoRateBatchPrompt = (queries) => {
+const createKinoRateBatchPrompt = queries => {
   const joined = queries.map((q, i) => `${i + 1}. ${q}`).join('\n');
   return (
     `Find ratings and Oscar status for the following movies:\n${joined}\n` +
-    `Return ONLY valid JSON (no markdown, no code fences) as a JSON array of objects in the same order. ` +
-    `Each object must have keys: title (string), originalTitle (string), year (string), kpRating (number), kpVotes (string), imdbRating (number), description (string), awards (optional array of strings).`
+    'Return ONLY valid JSON (no markdown, no code fences) as a JSON array of objects in the same order. ' +
+    'Each object must have keys: title (string), originalTitle (string), year (string), kpRating (number), kpVotes (string), imdbRating (number), description (string), awards (optional array of strings).'
   );
 };
 
-const stripCodeFences = (text) =>
-  text.replace(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
+const stripCodeFences = text => text.replace(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
 
 const extractJsonSubstring = (text, expected) => {
   const s = stripCodeFences(text);
@@ -423,11 +441,11 @@ const parseJsonFromText = (text, expected = 'any') => {
   }
 };
 
-const normalizeStringArray = (value) => {
+const normalizeStringArray = value => {
   if (Array.isArray(value)) {
     return value
-      .filter((v) => typeof v === 'string')
-      .map((v) => v.trim())
+      .filter(v => typeof v === 'string')
+      .map(v => v.trim())
       .filter(Boolean);
   }
   if (typeof value === 'string') {
@@ -437,7 +455,7 @@ const normalizeStringArray = (value) => {
   return [];
 };
 
-const normalizeMovieRatingData = (value) => {
+const normalizeMovieRatingData = value => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
 
   const out = { ...value };
@@ -456,11 +474,7 @@ const normalizeMovieRatingData = (value) => {
     if (Number.isFinite(n)) out.imdbRating = n;
   }
 
-  if (
-    out.kpVotes !== undefined &&
-    out.kpVotes !== null &&
-    typeof out.kpVotes !== 'string'
-  ) {
+  if (out.kpVotes !== undefined && out.kpVotes !== null && typeof out.kpVotes !== 'string') {
     out.kpVotes = String(out.kpVotes);
   }
 
@@ -481,7 +495,7 @@ const normalizeMovieRatingData = (value) => {
   return out;
 };
 
-const normalizeKinoRatePayload = (value) => {
+const normalizeKinoRatePayload = value => {
   if (Array.isArray(value)) return value.map(normalizeMovieRatingData);
   return normalizeMovieRatingData(value);
 };
@@ -501,7 +515,7 @@ const withTimeout = async (promise, timeoutMs, label) => {
   }
 };
 
-const callMistralChat = async (messages) => {
+const callMistralChat = async messages => {
   if (!MISTRAL_ENABLED) {
     throw new Error('Mistral provider disabled or missing MISTRAL_API_KEY');
   }
@@ -544,7 +558,7 @@ const callMistralChat = async (messages) => {
   }
 };
 
-const mistralSearchMovieRatings = async (query) => {
+const mistralSearchMovieRatings = async query => {
   const content = await callMistralChat([
     { role: 'system', content: KINORATE_SYSTEM_INSTRUCTION_BASE },
     { role: 'user', content: createKinoRateSinglePrompt(query) },
@@ -556,7 +570,7 @@ const mistralSearchMovieRatings = async (query) => {
   return parsed;
 };
 
-const mistralAnalyzeBatch = async (queries) => {
+const mistralAnalyzeBatch = async queries => {
   const content = await callMistralChat([
     { role: 'system', content: KINORATE_SYSTEM_INSTRUCTION_BASE },
     { role: 'user', content: createKinoRateBatchPrompt(queries) },
@@ -584,15 +598,7 @@ const movieRatingSchema = {
         "List of major awards status, e.g., 'Oscar Won', 'Oscar Nominated', 'Best Picture'",
     },
   },
-  required: [
-    'title',
-    'originalTitle',
-    'year',
-    'kpRating',
-    'kpVotes',
-    'imdbRating',
-    'description',
-  ],
+  required: ['title', 'originalTitle', 'year', 'kpRating', 'kpVotes', 'imdbRating', 'description'],
 };
 
 const batchSchema = {
@@ -600,9 +606,9 @@ const batchSchema = {
   items: movieRatingSchema,
 };
 
-const extractImdbUrl = (sources) => {
+const extractImdbUrl = sources => {
   if (!Array.isArray(sources)) return undefined;
-  
+
   for (const url of sources) {
     if (typeof url === 'string' && url.includes('imdb.com/title/')) {
       return url;
@@ -611,7 +617,7 @@ const extractImdbUrl = (sources) => {
   return undefined;
 };
 
-const geminiSearchMovieRatings = async (query) => {
+const geminiSearchMovieRatings = async query => {
   if (!geminiClient) {
     throw new Error('Gemini provider disabled or missing GEMINI_API_KEY');
   }
@@ -637,18 +643,15 @@ const geminiSearchMovieRatings = async (query) => {
 
   const data = JSON.parse(text);
 
-  const groundingChunks =
-    response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-  const sources = groundingChunks
-    ?.map((c) => c.web?.uri)
-    .filter((uri) => typeof uri === 'string');
+  const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+  const sources = groundingChunks?.map(c => c.web?.uri).filter(uri => typeof uri === 'string');
 
   const imdbUrl = extractImdbUrl(sources);
-  
+
   return { ...data, sources, imdbUrl };
 };
 
-const geminiAnalyzeBatch = async (queries) => {
+const geminiAnalyzeBatch = async queries => {
   if (!geminiClient) {
     throw new Error('Gemini provider disabled or missing GEMINI_API_KEY');
   }
@@ -689,12 +692,10 @@ const selectProvider = () => {
   return null;
 };
 
-const kinoRateSearch = async (query) => {
+const kinoRateSearch = async query => {
   const selected = selectProvider();
   if (!selected) {
-    throw new Error(
-      'No LLM provider enabled. Configure GEMINI_API_KEY or MISTRAL_API_KEY.'
-    );
+    throw new Error('No LLM provider enabled. Configure GEMINI_API_KEY or MISTRAL_API_KEY.');
   }
 
   if (selected === 'gemini') {
@@ -702,10 +703,7 @@ const kinoRateSearch = async (query) => {
       return { provider: 'gemini', data: await geminiSearchMovieRatings(query) };
     } catch (e) {
       if (LLM_PROVIDER === 'auto' && MISTRAL_ENABLED) {
-        console.warn(
-          '[LLM] Gemini failed, falling back to Mistral:',
-          e?.message || e
-        );
+        console.warn('[LLM] Gemini failed, falling back to Mistral:', e?.message || e);
         return { provider: 'mistral', data: await mistralSearchMovieRatings(query) };
       }
       throw e;
@@ -717,10 +715,7 @@ const kinoRateSearch = async (query) => {
       return { provider: 'mistral', data: await mistralSearchMovieRatings(query) };
     } catch (e) {
       if (LLM_PROVIDER === 'auto' && GEMINI_ENABLED) {
-        console.warn(
-          '[LLM] Mistral failed, falling back to Gemini:',
-          e?.message || e
-        );
+        console.warn('[LLM] Mistral failed, falling back to Gemini:', e?.message || e);
         return { provider: 'gemini', data: await geminiSearchMovieRatings(query) };
       }
       throw e;
@@ -730,12 +725,10 @@ const kinoRateSearch = async (query) => {
   throw new Error(`Unknown LLM provider: ${selected}`);
 };
 
-const kinoRateBatch = async (queries) => {
+const kinoRateBatch = async queries => {
   const selected = selectProvider();
   if (!selected) {
-    throw new Error(
-      'No LLM provider enabled. Configure GEMINI_API_KEY or MISTRAL_API_KEY.'
-    );
+    throw new Error('No LLM provider enabled. Configure GEMINI_API_KEY or MISTRAL_API_KEY.');
   }
 
   if (selected === 'gemini') {
@@ -743,10 +736,7 @@ const kinoRateBatch = async (queries) => {
       return { provider: 'gemini', data: await geminiAnalyzeBatch(queries) };
     } catch (e) {
       if (LLM_PROVIDER === 'auto' && MISTRAL_ENABLED) {
-        console.warn(
-          '[LLM] Gemini failed, falling back to Mistral:',
-          e?.message || e
-        );
+        console.warn('[LLM] Gemini failed, falling back to Mistral:', e?.message || e);
         return { provider: 'mistral', data: await mistralAnalyzeBatch(queries) };
       }
       throw e;
@@ -758,10 +748,7 @@ const kinoRateBatch = async (queries) => {
       return { provider: 'mistral', data: await mistralAnalyzeBatch(queries) };
     } catch (e) {
       if (LLM_PROVIDER === 'auto' && GEMINI_ENABLED) {
-        console.warn(
-          '[LLM] Mistral failed, falling back to Gemini:',
-          e?.message || e
-        );
+        console.warn('[LLM] Mistral failed, falling back to Gemini:', e?.message || e);
         return { provider: 'gemini', data: await geminiAnalyzeBatch(queries) };
       }
       throw e;
@@ -797,7 +784,7 @@ app.post('/api/ai/kinorate/search', aiLimiter, async (req, res) => {
 
 app.post('/api/ai/kinorate/batch', aiLimiter, async (req, res) => {
   const queries = req.body?.queries;
-  if (!Array.isArray(queries) || !queries.every((q) => typeof q === 'string')) {
+  if (!Array.isArray(queries) || !queries.every(q => typeof q === 'string')) {
     res.status(400).json({
       error: 'Missing or invalid "queries" (string[]) in request body',
     });
@@ -860,12 +847,13 @@ app.get('/api/proxy', proxyLimiter, async (req, res) => {
     const response = await forwardProxyRequest(targetUrl, {
       method: req.method,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/json, text/html, */*',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        Accept: 'application/json, text/html, */*',
         'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Referer': 'https://rutube.ru/',
-        'Origin': 'https://rutube.ru'
-      }
+        Referer: 'https://rutube.ru/',
+        Origin: 'https://rutube.ru',
+      },
     });
 
     if (req.method === 'OPTIONS') {
@@ -878,10 +866,12 @@ app.get('/api/proxy', proxyLimiter, async (req, res) => {
 
     // Forward response headers (except those that might conflict)
     for (const [key, value] of response.headers.entries()) {
-      if (key.toLowerCase() !== 'access-control-allow-origin' &&
-          key.toLowerCase() !== 'content-security-policy' &&
-          key.toLowerCase() !== 'transfer-encoding' &&
-          key.toLowerCase() !== 'content-encoding') {
+      if (
+        key.toLowerCase() !== 'access-control-allow-origin' &&
+        key.toLowerCase() !== 'content-security-policy' &&
+        key.toLowerCase() !== 'transfer-encoding' &&
+        key.toLowerCase() !== 'content-encoding'
+      ) {
         res.setHeader(key, value);
       }
     }
@@ -891,7 +881,12 @@ app.get('/api/proxy', proxyLimiter, async (req, res) => {
     res.send(Buffer.from(buffer));
   } catch (e) {
     console.error('Proxy request error:', e);
-    if (e.message.includes('not in the allowed domains list') || e.message.includes('private IP address') || e.message.includes('Hostname "localhost"') || e.message.includes('Too many redirects')) {
+    if (
+      e.message.includes('not in the allowed domains list') ||
+      e.message.includes('private IP address') ||
+      e.message.includes('Hostname "localhost"') ||
+      e.message.includes('Too many redirects')
+    ) {
       res.status(403).json({ error: e.message });
     } else if (e.message.includes('Too many requests')) {
       res.status(429).json({ error: 'Rate limit exceeded' });
@@ -910,9 +905,9 @@ app.use((err, req, res, next) => {
     context: {
       method: req.method,
       url: req.originalUrl,
-      message: err?.message
+      message: err?.message,
     },
-    stack: err?.stack
+    stack: err?.stack,
   });
   res.status(500).json({ error: 'Internal server error' });
 });

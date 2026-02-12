@@ -31,7 +31,7 @@ export const VideoModal: React.FC<VideoModalProps> = ({ video, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900">
           <h2 className="text-white font-semibold truncate pr-4">{video.title}</h2>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white"
           >
@@ -41,12 +41,12 @@ export const VideoModal: React.FC<VideoModalProps> = ({ video, onClose }) => {
 
         {/* Player Container */}
         <div className="relative aspect-video w-full bg-black">
-          <iframe 
+          <iframe
             src={embedUrl}
             title={video.title}
             className="absolute inset-0 w-full h-full"
-            frameBorder="0" 
-            allow="clipboard-write; autoplay" 
+            frameBorder="0"
+            allow="clipboard-write; autoplay"
             allowFullScreen
           ></iframe>
         </div>
@@ -58,7 +58,7 @@ export const VideoModal: React.FC<VideoModalProps> = ({ video, onClose }) => {
           </p>
         </div>
       </div>
-      
+
       {/* Click outside to close area */}
       <div className="absolute inset-0 -z-10" onClick={onClose} />
     </div>

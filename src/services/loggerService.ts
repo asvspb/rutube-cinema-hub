@@ -1,4 +1,3 @@
-
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
 interface LogEntry {
@@ -15,15 +14,19 @@ class Logger {
   private consolePatched = false;
   private originalConsole = {
     error: console.error.bind(console),
-    warn: console.warn.bind(console)
+    warn: console.warn.bind(console),
   };
 
   private async send(entry: LogEntry, options: { skipConsole?: boolean } = {}) {
     try {
       if (!options.skipConsole) {
         // Also log to console for development
-        const consoleMethod = entry.level === 'error' ? 'error' : entry.level === 'warn' ? 'warn' : 'log';
-        console[consoleMethod](`[${entry.level.toUpperCase()}] ${entry.message}`, entry.context || '');
+        const consoleMethod =
+          entry.level === 'error' ? 'error' : entry.level === 'warn' ? 'warn' : 'log';
+        console[consoleMethod](
+          `[${entry.level.toUpperCase()}] ${entry.message}`,
+          entry.context || ''
+        );
       }
 
       await fetch(LOG_SERVER_URL, {
@@ -52,11 +55,11 @@ class Logger {
   }
 
   error(message: string, context?: any, error?: Error) {
-    this.send({ 
-      level: 'error', 
-      message, 
-      context, 
-      stack: error?.stack 
+    this.send({
+      level: 'error',
+      message,
+      context,
+      stack: error?.stack,
     });
   }
 
@@ -65,7 +68,7 @@ class Logger {
   }
 
   private formatConsoleArgs(args: unknown[]) {
-    return args.map((arg) => {
+    return args.map(arg => {
       if (arg instanceof Error) {
         return { message: arg.message, stack: arg.stack };
       }
@@ -90,7 +93,7 @@ class Logger {
         {
           level: 'error',
           message: 'Console error',
-          context: { args: this.formatConsoleArgs(args) }
+          context: { args: this.formatConsoleArgs(args) },
         },
         { skipConsole: true }
       );
@@ -102,7 +105,7 @@ class Logger {
         {
           level: 'warn',
           message: 'Console warn',
-          context: { args: this.formatConsoleArgs(args) }
+          context: { args: this.formatConsoleArgs(args) },
         },
         { skipConsole: true }
       );
@@ -118,7 +121,7 @@ class Logger {
       return false;
     };
 
-    window.onunhandledrejection = (event) => {
+    window.onunhandledrejection = event => {
       this.error('Unhandled promise rejection', { reason: event.reason });
     };
   }

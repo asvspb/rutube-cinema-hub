@@ -11,6 +11,7 @@
 ### Установка
 
 1. Клонируйте репозиторий:
+
    ```bash
    git clone https://github.com/your-username/rutube-cinema-hub.git
    cd rutube-cinema-hub
@@ -24,11 +25,13 @@
 ### Настройка
 
 1. Создайте файл `.env` в корне проекта на основе шаблона `.env.example`:
+
    ```bash
    cp .env.example .env
    ```
 
 2. Отредактируйте файл `.env`, добавив свои API-ключи:
+
    ```env
    # API ключи для KinoRate AI
    GEMINI_API_KEY=ваш_ключ_gemini
@@ -60,6 +63,7 @@ docker compose up
 ```
 
 После запуска:
+
 - Frontend: http://localhost:9229
 - Backend: http://localhost:9230
 - Прокси-эндпоинт: http://localhost:9230/api/proxy
@@ -79,6 +83,7 @@ npm run dev:all
 ```
 
 После запуска:
+
 - Frontend будет доступен по адресу: http://localhost:9229
 - Backend будет работать на порту: http://localhost:9230
 - Прокси-эндпоинт: http://localhost:9230/api/proxy
@@ -86,6 +91,7 @@ npm run dev:all
 #### Вариант 2: Запуск по отдельности
 
 1. Запустите backend сервер:
+
    ```bash
    npm run server
    ```
@@ -98,6 +104,7 @@ npm run dev:all
 #### Вариант 3: Запуск в продакшен-режиме
 
 1. Соберите проект:
+
    ```bash
    npm run build
    ```
@@ -135,7 +142,7 @@ npm run test:api
 
 ## 🎬 Демонстрация функционала
 
-*(Здесь будет добавлено GIF-демонстрация основного функционала приложения)*
+_(Здесь будет добавлено GIF-демонстрация основного функционала приложения)_
 
 ## ❓ Часто задаваемые вопросы (FAQ)
 
@@ -152,11 +159,13 @@ npm run test:api
 ### 3. Что делать, если видео не загружаются?
 
 Возможные причины:
+
 - Проблемы с доступом к Rutube (географические ограничения)
 - Временные проблемы с API Rutube
 - Проблемы с прокси-серверами
 
 Попробуйте:
+
 - Проверить подключение к интернету
 - Перезагрузить страницу
 - Проверить настройки прокси в конфигурации сервера
@@ -164,12 +173,14 @@ npm run test:api
 ### 4. Как работает система рейтингов KinoRate AI?
 
 Система KinoRate AI использует два подхода:
+
 1. **Локальная база** - проверка встроенной базы из топ-250/1000 фильмов
 2. **AI-запрос** - обращение к LLM для получения информации о фильмах вне топ-списков
 
 ### 5. Какие данные сохраняются в браузере?
 
 Приложение использует localStorage для сохранения:
+
 - Добавленных каналов и плейлистов
 - Настроек интерфейса
 - Истории просмотров
@@ -218,6 +229,7 @@ npm run test:api
 Для обеспечения работы приложения из РФ без VPN и обхода CORS, в `services/rutubeService.ts` заложена логика гибридного проксирования.
 
 **Логика работы фронтенда:**
+
 1.  **Приоритет 1 (Локальный прокси):** Приложение сначала пытается отправить запрос на `/api/proxy?url=...`. Это ожидаемый эндпоинт собственного бэкенда.
 2.  **Приоритет 2 (Публичные прокси):** Если локальный прокси возвращает ошибку (404/Connection Refused), приложение автоматически переключается на публичные сервисы (`corsproxy.io`, `allorigins.win`).
 
@@ -225,42 +237,43 @@ npm run test:api
 
 При реализации серверной части (Node.js/Express/Nginx) необходимо соблюдать следующие спецификации, чтобы фронтенд подхватил их автоматически:
 
-*   **Endpoint:** `GET /api/proxy`
-*   **Query Param:** `url` (целевой URL Rutube API)
-*   **Обязательные заголовки запроса к Rutube:**
-    ```javascript
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'application/json, text/html, */*',
-      'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-      'Referer': 'https://rutube.ru/',
-      'Origin': 'https://rutube.ru'
-    }
-    ```
-*   **CORS:** Сервер должен отдавать заголовки `Access-Control-Allow-Origin`, разрешающие запросы с домена фронтенда (или `*` в режиме разработки).
-*   **Безопасность:** Валидировать параметр `url`, разрешая запросы только к `*.rutube.ru`.
+- **Endpoint:** `GET /api/proxy`
+- **Query Param:** `url` (целевой URL Rutube API)
+- **Обязательные заголовки запроса к Rutube:**
+  ```javascript
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/html, */*',
+    'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Referer': 'https://rutube.ru/',
+    'Origin': 'https://rutube.ru'
+  }
+  ```
+- **CORS:** Сервер должен отдавать заголовки `Access-Control-Allow-Origin`, разрешающие запросы с домена фронтенда (или `*` в режиме разработки).
+- **Безопасность:** Валидировать параметр `url`, разрешая запросы только к `*.rutube.ru`.
 
 ### 3. Стек технологий
 
-*   **Frontend:** React 18, TypeScript.
-*   **Стилизация:** Tailwind CSS.
-*   **Иконки:** Lucide React.
-*   **Анимации:** Framer Motion.
-*   **Сборка:** В текущей версии используется CDN-импорт (`esm.sh`) через `importmap` в `index.html` для запуска без сборщика. Для продакшена рекомендуется миграция на Vite.
+- **Frontend:** React 18, TypeScript.
+- **Стилизация:** Tailwind CSS.
+- **Иконки:** Lucide React.
+- **Анимации:** Framer Motion.
+- **Сборка:** В текущей версии используется CDN-импорт (`esm.sh`) через `importmap` в `index.html` для запуска без сборщика. Для продакшена рекомендуется миграция на Vite.
 
 ### 4. Основные файлы и их назначение
 
-*   **`services/rutubeService.ts`**:
-    *   `getProxies()`: Список стратегий проксирования.
-    *   `fetchTextWithRace()`: Логика параллельного опроса прокси.
-    *   `fetchVideos()`: Основная логика получения контента (API -> Scraping -> Redux State extraction).
-    *   `resolveRutubeId()`: Разрешение ссылок вида `/channel/ID` и `/u/SLUG`.
-*   **`components/CategoryFilter.tsx`**: Компонент фильтрации с поддержкой Drag-n-Drop (Reorder) и контекстного меню.
-*   **`App.tsx`**: Основная логика состояния, кэширование видео (`videoCache`), роутинг каналов.
+- **`services/rutubeService.ts`**:
+  - `getProxies()`: Список стратегий проксирования.
+  - `fetchTextWithRace()`: Логика параллельного опроса прокси.
+  - `fetchVideos()`: Основная логика получения контента (API -> Scraping -> Redux State extraction).
+  - `resolveRutubeId()`: Разрешение ссылок вида `/channel/ID` и `/u/SLUG`.
+- **`components/CategoryFilter.tsx`**: Компонент фильтрации с поддержкой Drag-n-Drop (Reorder) и контекстного меню.
+- **`App.tsx`**: Основная логика состояния, кэширование видео (`videoCache`), роутинг каналов.
 
 ### 5. Особенности получения данных Rutube
 
 Rutube API фрагментирован. Если стандартный JSON API не возвращает данные, сервис использует фоллбэки:
+
 1.  **Redux State Scraping:** Парсинг HTML страницы канала и извлечение `window.reduxState`.
 2.  **Direct Regex:** Поиск JSON-подобных структур в теле страницы.
 3.  **Metainfo API:** Использование эндпоинтов для TV-приложений (они часто стабильнее веб-версии).

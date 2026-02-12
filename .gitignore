@@ -15,6 +15,7 @@ dist
 dist-ssr
 tests
 logs
+stats.html
 
 # Environment variables
 .env

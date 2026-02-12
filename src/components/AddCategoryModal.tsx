@@ -25,7 +25,9 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onA
 
       const parsed = parseRutubeUrl(url);
       if (!parsed) {
-        throw new Error('Некорректная ссылка. Используйте ссылку вида rutube.ru/plst/..., rutube.ru/channel/... или rutube.ru/u/...');
+        throw new Error(
+          'Некорректная ссылка. Используйте ссылку вида rutube.ru/plst/..., rutube.ru/channel/... или rutube.ru/u/...'
+        );
       }
 
       const resolvedId = await resolveRutubeId(parsed.id, parsed.type);
@@ -45,10 +47,9 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onA
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-md bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
-        
         <div className="flex items-center justify-between p-4 border-b border-zinc-800">
           <h2 className="text-white font-semibold">Добавить плейлист</h2>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white"
             disabled={loading}
@@ -60,10 +61,10 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onA
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
           <div>
             <label className="block text-sm text-zinc-400 mb-1.5">Название</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
               placeholder="Например: Любимые фильмы"
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
               autoFocus
@@ -74,10 +75,10 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onA
           <div>
             <label className="block text-sm text-zinc-400 mb-1.5">Ссылка на Rutube</label>
             <div className="relative">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={e => setUrl(e.target.value)}
                 placeholder="https://rutube.ru/plst/..."
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-9 pr-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 disabled={loading}
@@ -97,7 +98,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onA
           )}
 
           <div className="flex justify-end gap-3 mt-2">
-            <button 
+            <button
               type="button"
               onClick={onClose}
               className="px-4 py-2 rounded-lg text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors disabled:opacity-50"
@@ -105,7 +106,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onA
             >
               Отмена
             </button>
-            <button 
+            <button
               type="submit"
               className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
@@ -115,9 +116,8 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onA
             </button>
           </div>
         </form>
-
       </div>
-      
+
       <div className="absolute inset-0 -z-10" onClick={!loading ? onClose : undefined} />
     </div>
   );

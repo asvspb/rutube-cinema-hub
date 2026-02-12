@@ -1,4 +1,3 @@
-
 export interface RutubeVideo {
   id: string;
   title: string;
@@ -43,13 +42,23 @@ export interface ChannelInfo {
   videoCount?: number; // Total videos in channel
 }
 
-export type SortOption = 'date' | 'rating' | 'alphabetical' | 'year' | 'watched' | 'liked' | 'watch_later' | 'views' | 'trend' | 'default';
+export type SortOption =
+  | 'date'
+  | 'rating'
+  | 'alphabetical'
+  | 'year'
+  | 'watched'
+  | 'liked'
+  | 'watch_later'
+  | 'views'
+  | 'trend'
+  | 'default';
 
 export interface RatingSettings {
   // Standard Formula: Base + (log10(views/day) * Multiplier)
-  ratingBase: number; 
+  ratingBase: number;
   ratingLogScale: number;
-  
+
   // Gravity Formula: Views / (Hours + Offset)^Power
   gravityHourOffset: number;
   gravityPower: number;
@@ -65,18 +74,18 @@ export interface RatingSettings {
 }
 
 export interface MovieRatingData {
-  title: string;          // Localized Russian title
-  originalTitle: string;  // Original title
+  title: string; // Localized Russian title
+  originalTitle: string; // Original title
   year: string;
-  kpRating: number;       // Kinopoisk Rating
-  kpVotes: string;        // Approximate votes
-  imdbRating: number;     // IMDb Rating
-  imdbUrl?: string;       // IMDb URL (for AI-fetched data)
-  description: string;    // Short engaging plot summary in Russian
-  sources?: string[];     // URLs from grounding
-  awards?: string[];      // Array of awards strings (e.g. "Oscar Won", "Oscar Nominated")
-  dataSource?: 'local' | 'ai';  // Track where the data came from
-  aiAttempts?: number;    // Track number of AI search attempts
+  kpRating: number; // Kinopoisk Rating
+  kpVotes: string; // Approximate votes
+  imdbRating: number; // IMDb Rating
+  imdbUrl?: string; // IMDb URL (for AI-fetched data)
+  description: string; // Short engaging plot summary in Russian
+  sources?: string[]; // URLs from grounding
+  awards?: string[]; // Array of awards strings (e.g. "Oscar Won", "Oscar Nominated")
+  dataSource?: 'local' | 'ai'; // Track where the data came from
+  aiAttempts?: number; // Track number of AI search attempts
 }
 
 export interface BatchItem {

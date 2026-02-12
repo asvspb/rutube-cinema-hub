@@ -3,11 +3,7 @@
     "title": "IMDb Top 250 Movies",
     "source": "IMDb TSV (primary) + HTML fallback",
     "methodology": "Weighted IMDb ratings; TSV ranking replicated client-side using rating, votes, tie-breakers.",
-    "criteria": [
-      "Feature-length movies",
-      "numVotes ≥ 2500",
-      "Sorted by rating then votes"
-    ],
+    "criteria": ["Feature-length movies", "numVotes ≥ 2500", "Sorted by rating then votes"],
     "update_frequency": "Updated via TSV daily with HTML fallback",
     "data_fields": {
       "rank": "Position in the list",
@@ -40,9 +36,7 @@
       "year": 2025,
       "rating": 9.6,
       "votes": 3172,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT118M",
       "url": "https://www.imdb.com/title/tt38745413/",
       "awards": [],
@@ -54,11 +48,7 @@
       "year": 2026,
       "rating": 9.5,
       "votes": 6581,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Drama"
-      ],
+      "genre": ["Action", "Adventure", "Drama"],
       "duration": "PT147M",
       "url": "https://www.imdb.com/title/tt39122441/",
       "awards": [],
@@ -70,10 +60,7 @@
       "year": 2025,
       "rating": 9.5,
       "votes": 3120,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT141M",
       "url": "https://www.imdb.com/title/tt34000241/",
       "awards": [],
@@ -85,9 +72,7 @@
       "year": 1994,
       "rating": 9.3,
       "votes": 3152370,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT142M",
       "url": "https://www.imdb.com/title/tt0111161/",
       "awards": [
@@ -104,10 +89,7 @@
       "year": 1972,
       "rating": 9.2,
       "votes": 2199858,
-      "genre": [
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Crime", "Drama"],
       "duration": "PT175M",
       "url": "https://www.imdb.com/title/tt0068646/",
       "awards": [
@@ -127,9 +109,7 @@
       "year": 1975,
       "rating": 9.2,
       "votes": 45736,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT85M",
       "url": "https://www.imdb.com/title/tt0252487/",
       "awards": [],
@@ -141,11 +121,7 @@
       "year": 2024,
       "rating": 9.2,
       "votes": 24042,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Animation"
-      ],
+      "genre": ["Action", "Adventure", "Animation"],
       "duration": "PT145M",
       "url": "https://www.imdb.com/title/tt33175825/",
       "awards": [],
@@ -157,11 +133,7 @@
       "year": 2025,
       "rating": 9.2,
       "votes": 2545,
-      "genre": [
-        "Mystery",
-        "Romance",
-        "Thriller"
-      ],
+      "genre": ["Mystery", "Romance", "Thriller"],
       "duration": "PT132M",
       "url": "https://www.imdb.com/title/tt37275151/",
       "awards": [],
@@ -173,11 +145,7 @@
       "year": 2008,
       "rating": 9.1,
       "votes": 3128391,
-      "genre": [
-        "Action",
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Action", "Crime", "Drama"],
       "duration": "PT152M",
       "url": "https://www.imdb.com/title/tt0468569/",
       "awards": [
@@ -197,11 +165,7 @@
       "year": 1993,
       "rating": 9.1,
       "votes": 17512,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Animation"
-      ],
+      "genre": ["Action", "Adventure", "Animation"],
       "duration": "PT135M",
       "url": "https://www.imdb.com/title/tt0259534/",
       "awards": [],
@@ -213,9 +177,7 @@
       "year": 2024,
       "rating": 9.1,
       "votes": 10053,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT104M",
       "url": "https://www.imdb.com/title/tt21272942/",
       "awards": [],
@@ -227,10 +189,7 @@
       "year": 1994,
       "rating": 9.1,
       "votes": 3557,
-      "genre": [
-        "Drama",
-        "War"
-      ],
+      "genre": ["Drama", "War"],
       "duration": "PT123M",
       "url": "https://www.imdb.com/title/tt0383177/",
       "awards": [],
@@ -242,9 +201,7 @@
       "year": 2022,
       "rating": 9.1,
       "votes": 3356,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT120M",
       "url": "https://www.imdb.com/title/tt21093976/",
       "awards": [],
@@ -256,10 +213,7 @@
       "year": 2025,
       "rating": 9.1,
       "votes": 2760,
-      "genre": [
-        "Mystery",
-        "Thriller"
-      ],
+      "genre": ["Mystery", "Thriller"],
       "duration": "PT130M",
       "url": "https://www.imdb.com/title/tt38428591/",
       "awards": [],
@@ -271,11 +225,7 @@
       "year": 2003,
       "rating": 9,
       "votes": 2141161,
-      "genre": [
-        "Adventure",
-        "Drama",
-        "Fantasy"
-      ],
+      "genre": ["Adventure", "Drama", "Fantasy"],
       "duration": "PT201M",
       "url": "https://www.imdb.com/title/tt0167260/",
       "awards": [
@@ -293,11 +243,7 @@
       "year": 1993,
       "rating": 9,
       "votes": 1571336,
-      "genre": [
-        "Biography",
-        "Drama",
-        "History"
-      ],
+      "genre": ["Biography", "Drama", "History"],
       "duration": "PT195M",
       "url": "https://www.imdb.com/title/tt0108052/",
       "awards": [
@@ -316,10 +262,7 @@
       "year": 1974,
       "rating": 9,
       "votes": 1478767,
-      "genre": [
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Crime", "Drama"],
       "duration": "PT202M",
       "url": "https://www.imdb.com/title/tt0071562/",
       "awards": [
@@ -338,10 +281,7 @@
       "year": 1957,
       "rating": 9,
       "votes": 971773,
-      "genre": [
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Crime", "Drama"],
       "duration": "PT96M",
       "url": "https://www.imdb.com/title/tt0050083/",
       "awards": [],
@@ -353,10 +293,7 @@
       "year": 1957,
       "rating": 9,
       "votes": 6847,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT192M",
       "url": "https://www.imdb.com/title/tt0249795/",
       "awards": [],
@@ -368,10 +305,7 @@
       "year": 1991,
       "rating": 9,
       "votes": 6297,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT138M",
       "url": "https://www.imdb.com/title/tt0353975/",
       "awards": [],
@@ -383,9 +317,7 @@
       "year": 2025,
       "rating": 9,
       "votes": 3421,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT118M",
       "url": "https://www.imdb.com/title/tt35918041/",
       "awards": [],
@@ -397,9 +329,7 @@
       "year": 2024,
       "rating": 9,
       "votes": 3183,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT137M",
       "url": "https://www.imdb.com/title/tt32089590/",
       "awards": [],
@@ -411,9 +341,7 @@
       "year": 1988,
       "rating": 9,
       "votes": 2588,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT288M",
       "url": "https://www.imdb.com/title/tt0096403/",
       "awards": [],
@@ -425,11 +353,7 @@
       "year": 2001,
       "rating": 8.9,
       "votes": 2181490,
-      "genre": [
-        "Adventure",
-        "Drama",
-        "Fantasy"
-      ],
+      "genre": ["Adventure", "Drama", "Fantasy"],
       "duration": "PT178M",
       "url": "https://www.imdb.com/title/tt0120737/",
       "awards": [
@@ -449,11 +373,7 @@
       "year": 2016,
       "rating": 8.9,
       "votes": 30889,
-      "genre": [
-        "Crime",
-        "Mystery",
-        "Thriller"
-      ],
+      "genre": ["Crime", "Mystery", "Thriller"],
       "duration": "PT147M",
       "url": "https://www.imdb.com/title/tt5354160/",
       "awards": [],
@@ -465,10 +385,7 @@
       "year": 1976,
       "rating": 8.9,
       "votes": 26177,
-      "genre": [
-        "Comedy",
-        "History"
-      ],
+      "genre": ["Comedy", "History"],
       "duration": "PT90M",
       "url": "https://www.imdb.com/title/tt0253828/",
       "awards": [],
@@ -480,11 +397,7 @@
       "year": 2016,
       "rating": 8.9,
       "votes": 23714,
-      "genre": [
-        "Biography",
-        "Crime",
-        "Documentary"
-      ],
+      "genre": ["Biography", "Crime", "Documentary"],
       "duration": "PT467M",
       "url": "https://www.imdb.com/title/tt5275892/",
       "awards": [],
@@ -496,16 +409,10 @@
       "year": 1976,
       "rating": 8.9,
       "votes": 11782,
-      "genre": [
-        "Biography",
-        "Drama",
-        "History"
-      ],
+      "genre": ["Biography", "Drama", "History"],
       "duration": "PT207M",
       "url": "https://www.imdb.com/title/tt0075143/",
-      "awards": [
-        "Nominated to Oscar"
-      ],
+      "awards": ["Nominated to Oscar"],
       "rank": 28,
       "source_url": "http://top250.info/movie/?0074896"
     },
@@ -515,10 +422,7 @@
       "year": 2021,
       "rating": 8.9,
       "votes": 10676,
-      "genre": [
-        "Documentary",
-        "History"
-      ],
+      "genre": ["Documentary", "History"],
       "duration": "PT56M",
       "url": "https://www.imdb.com/title/tt16747572/",
       "awards": [],
@@ -530,10 +434,7 @@
       "year": 1989,
       "rating": 8.9,
       "votes": 9652,
-      "genre": [
-        "Action",
-        "Drama"
-      ],
+      "genre": ["Action", "Drama"],
       "duration": "PT124M",
       "url": "https://www.imdb.com/title/tt0237376/",
       "awards": [],
@@ -545,9 +446,7 @@
       "year": 2016,
       "rating": 8.9,
       "votes": 6103,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT100M",
       "url": "https://www.imdb.com/title/tt5510934/",
       "awards": [],
@@ -559,10 +458,7 @@
       "year": 2024,
       "rating": 8.9,
       "votes": 5911,
-      "genre": [
-        "Biography",
-        "Sport"
-      ],
+      "genre": ["Biography", "Sport"],
       "duration": "PT166M",
       "url": "https://www.imdb.com/title/tt31853193/",
       "awards": [],
@@ -574,9 +470,7 @@
       "year": 2018,
       "rating": 8.9,
       "votes": 5088,
-      "genre": [
-        "Documentary"
-      ],
+      "genre": ["Documentary"],
       "duration": "PT120M",
       "url": "https://www.imdb.com/title/tt5773402/",
       "awards": [],
@@ -588,11 +482,7 @@
       "year": 1995,
       "rating": 8.9,
       "votes": 4568,
-      "genre": [
-        "Action",
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Action", "Crime", "Drama"],
       "duration": "PT150M",
       "url": "https://www.imdb.com/title/tt3189256/",
       "awards": [],
@@ -604,9 +494,7 @@
       "year": 1988,
       "rating": 8.9,
       "votes": 3716,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT84M",
       "url": "https://www.imdb.com/title/tt0170783/",
       "awards": [],
@@ -618,9 +506,7 @@
       "year": 1987,
       "rating": 8.9,
       "votes": 3621,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT119M",
       "url": "https://www.imdb.com/title/tt0237820/",
       "awards": [],
@@ -632,9 +518,7 @@
       "year": 1987,
       "rating": 8.9,
       "votes": 3534,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT147M",
       "url": "https://www.imdb.com/title/tt0249336/",
       "awards": [],
@@ -646,11 +530,7 @@
       "year": 2025,
       "rating": 8.9,
       "votes": 3465,
-      "genre": [
-        "Adventure",
-        "Biography",
-        "Drama"
-      ],
+      "genre": ["Adventure", "Biography", "Drama"],
       "duration": "PT145M",
       "url": "https://www.imdb.com/title/tt5335774/",
       "awards": [],
@@ -662,11 +542,7 @@
       "year": 2022,
       "rating": 8.9,
       "votes": 3091,
-      "genre": [
-        "Action",
-        "Drama",
-        "History"
-      ],
+      "genre": ["Action", "Drama", "History"],
       "duration": "PT158M",
       "url": "https://www.imdb.com/title/tt14090476/",
       "awards": [],
@@ -678,11 +554,7 @@
       "year": 2022,
       "rating": 8.9,
       "votes": 3083,
-      "genre": [
-        "Adventure",
-        "Documentary",
-        "Family"
-      ],
+      "genre": ["Adventure", "Documentary", "Family"],
       "duration": "PT99M",
       "url": "https://www.imdb.com/title/tt21288778/",
       "awards": [],
@@ -706,10 +578,7 @@
       "year": 2025,
       "rating": 8.9,
       "votes": 2837,
-      "genre": [
-        "Action",
-        "Drama"
-      ],
+      "genre": ["Action", "Drama"],
       "duration": "PT122M",
       "url": "https://www.imdb.com/title/tt26694732/",
       "awards": [],
@@ -721,11 +590,7 @@
       "year": 1996,
       "rating": 8.9,
       "votes": 2764,
-      "genre": [
-        "Adventure",
-        "Drama",
-        "Family"
-      ],
+      "genre": ["Adventure", "Drama", "Family"],
       "duration": "PT154M",
       "url": "https://www.imdb.com/title/tt1935109/",
       "awards": [],
@@ -737,11 +602,7 @@
       "year": 2010,
       "rating": 8.8,
       "votes": 2781832,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Sci-Fi"
-      ],
+      "genre": ["Action", "Adventure", "Sci-Fi"],
       "duration": "PT148M",
       "url": "https://www.imdb.com/title/tt1375666/",
       "awards": [
@@ -760,17 +621,10 @@
       "year": 1999,
       "rating": 8.8,
       "votes": 2567968,
-      "genre": [
-        "Crime",
-        "Drama",
-        "Thriller"
-      ],
+      "genre": ["Crime", "Drama", "Thriller"],
       "duration": "PT139M",
       "url": "https://www.imdb.com/title/tt0137523/",
-      "awards": [
-        "Nominated to Oscar",
-        "From '1001 Movies You Must See Before You Die' List"
-      ],
+      "awards": ["Nominated to Oscar", "From '1001 Movies You Must See Before You Die' List"],
       "rank": 45,
       "source_url": "http://top250.info/movie/?0137523"
     },
@@ -780,10 +634,7 @@
       "year": 1994,
       "rating": 8.8,
       "votes": 2467284,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT142M",
       "url": "https://www.imdb.com/title/tt0109830/",
       "awards": [
@@ -803,10 +654,7 @@
       "year": 1994,
       "rating": 8.8,
       "votes": 2409493,
-      "genre": [
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Crime", "Drama"],
       "duration": "PT154M",
       "url": "https://www.imdb.com/title/tt0110912/",
       "awards": [
@@ -827,11 +675,7 @@
       "year": 2002,
       "rating": 8.8,
       "votes": 1934939,
-      "genre": [
-        "Adventure",
-        "Drama",
-        "Fantasy"
-      ],
+      "genre": ["Adventure", "Drama", "Fantasy"],
       "duration": "PT179M",
       "url": "https://www.imdb.com/title/tt0167261/",
       "awards": [
@@ -850,11 +694,7 @@
       "year": 1966,
       "rating": 8.8,
       "votes": 883442,
-      "genre": [
-        "Adventure",
-        "Drama",
-        "Western"
-      ],
+      "genre": ["Adventure", "Drama", "Western"],
       "duration": "PT178M",
       "url": "https://www.imdb.com/title/tt0060196/",
       "awards": [],
@@ -866,11 +706,7 @@
       "year": 2006,
       "rating": 8.8,
       "votes": 25222,
-      "genre": [
-        "Action",
-        "Crime",
-        "Thriller"
-      ],
+      "genre": ["Action", "Crime", "Thriller"],
       "duration": "PT275M",
       "url": "https://www.imdb.com/title/tt6019206/",
       "awards": [],
@@ -882,10 +718,7 @@
       "year": 1976,
       "rating": 8.8,
       "votes": 22390,
-      "genre": [
-        "Comedy",
-        "History"
-      ],
+      "genre": ["Comedy", "History"],
       "duration": "PT80M",
       "url": "https://www.imdb.com/title/tt0253779/",
       "awards": [],
@@ -897,10 +730,7 @@
       "year": 1982,
       "rating": 8.8,
       "votes": 18054,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT92M",
       "url": "https://www.imdb.com/title/tt0084302/",
       "awards": [],
@@ -912,11 +742,7 @@
       "year": 2011,
       "rating": 8.8,
       "votes": 10748,
-      "genre": [
-        "Drama",
-        "Musical",
-        "Romance"
-      ],
+      "genre": ["Drama", "Musical", "Romance"],
       "duration": "PT137M",
       "url": "https://www.imdb.com/title/tt2077886/",
       "awards": [],
@@ -928,9 +754,7 @@
       "year": 2018,
       "rating": 8.8,
       "votes": 10690,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT152M",
       "url": "https://www.imdb.com/title/tt7391996/",
       "awards": [],
@@ -942,11 +766,7 @@
       "year": 2025,
       "rating": 8.8,
       "votes": 10260,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Family"
-      ],
+      "genre": ["Comedy", "Drama", "Family"],
       "duration": "PT53M",
       "url": "https://www.imdb.com/title/tt38063392/",
       "awards": [],
@@ -958,11 +778,7 @@
       "year": 2009,
       "rating": 8.8,
       "votes": 9859,
-      "genre": [
-        "Crime",
-        "Drama",
-        "Musical"
-      ],
+      "genre": ["Crime", "Drama", "Musical"],
       "duration": "PT136M",
       "url": "https://www.imdb.com/title/tt1621830/",
       "awards": [],
@@ -974,11 +790,7 @@
       "year": 1961,
       "rating": 8.8,
       "votes": 8527,
-      "genre": [
-        "Drama",
-        "History",
-        "War"
-      ],
+      "genre": ["Drama", "History", "War"],
       "duration": "PT190M",
       "url": "https://www.imdb.com/title/tt0055233/",
       "awards": [],
@@ -990,10 +802,7 @@
       "year": 2016,
       "rating": 8.8,
       "votes": 7973,
-      "genre": [
-        "Drama",
-        "Family"
-      ],
+      "genre": ["Drama", "Family"],
       "duration": "PT166M",
       "url": "https://www.imdb.com/title/tt5311546/",
       "awards": [],
@@ -1005,10 +814,7 @@
       "year": 2010,
       "rating": 8.8,
       "votes": 6774,
-      "genre": [
-        "Drama",
-        "Musical"
-      ],
+      "genre": ["Drama", "Musical"],
       "duration": "PT178M",
       "url": "https://www.imdb.com/title/tt1754109/",
       "awards": [],
@@ -1020,9 +826,7 @@
       "year": 1987,
       "rating": 8.8,
       "votes": 6584,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT158M",
       "url": "https://www.imdb.com/title/tt0282778/",
       "awards": [],
@@ -1034,10 +838,7 @@
       "year": 2001,
       "rating": 8.8,
       "votes": 6485,
-      "genre": [
-        "Comedy",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Romance"],
       "duration": "PT184M",
       "url": "https://www.imdb.com/title/tt0311594/",
       "awards": [],
@@ -1049,11 +850,7 @@
       "year": 1983,
       "rating": 8.8,
       "votes": 5859,
-      "genre": [
-        "Drama",
-        "Music",
-        "Musical"
-      ],
+      "genre": ["Drama", "Music", "Musical"],
       "duration": "PT160M",
       "url": "https://www.imdb.com/title/tt0086231/",
       "awards": [],
@@ -1065,9 +862,7 @@
       "year": 1987,
       "rating": 8.8,
       "votes": 4553,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT142M",
       "url": "https://www.imdb.com/title/tt0095657/",
       "awards": [],
@@ -1079,10 +874,7 @@
       "year": 1999,
       "rating": 8.8,
       "votes": 4199,
-      "genre": [
-        "Drama",
-        "Thriller"
-      ],
+      "genre": ["Drama", "Thriller"],
       "duration": "PT138M",
       "url": "https://www.imdb.com/title/tt2330098/",
       "awards": [],
@@ -1094,9 +886,7 @@
       "year": 2025,
       "rating": 8.8,
       "votes": 3916,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT120M",
       "url": "https://www.imdb.com/title/tt38077500/",
       "awards": [],
@@ -1108,11 +898,7 @@
       "year": 1980,
       "rating": 8.8,
       "votes": 3390,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Family"
-      ],
+      "genre": ["Comedy", "Drama", "Family"],
       "duration": "PT118M",
       "url": "https://www.imdb.com/title/tt0080856/",
       "awards": [],
@@ -1124,9 +910,7 @@
       "year": 2024,
       "rating": 8.8,
       "votes": 3137,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT125M",
       "url": "https://www.imdb.com/title/tt35157624/",
       "awards": [],
@@ -1138,10 +922,7 @@
       "year": 2024,
       "rating": 8.8,
       "votes": 3077,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT140M",
       "url": "https://www.imdb.com/title/tt32106143/",
       "awards": [],
@@ -1153,10 +934,7 @@
       "year": 2000,
       "rating": 8.8,
       "votes": 2983,
-      "genre": [
-        "Biography",
-        "History"
-      ],
+      "genre": ["Biography", "History"],
       "duration": "PT197M",
       "url": "https://www.imdb.com/title/tt0270321/",
       "awards": [],
@@ -1168,11 +946,7 @@
       "year": 2024,
       "rating": 8.8,
       "votes": 2951,
-      "genre": [
-        "Biography",
-        "Drama",
-        "History"
-      ],
+      "genre": ["Biography", "Drama", "History"],
       "duration": "PT141M",
       "url": "https://www.imdb.com/title/tt19396786/",
       "awards": [],
@@ -1184,11 +958,7 @@
       "year": 1980,
       "rating": 8.8,
       "votes": 2713,
-      "genre": [
-        "Drama",
-        "Music",
-        "Romance"
-      ],
+      "genre": ["Drama", "Music", "Romance"],
       "duration": "PT143M",
       "url": "https://www.imdb.com/title/tt0079889/",
       "awards": [],
@@ -1200,10 +970,7 @@
       "year": 1963,
       "rating": 8.8,
       "votes": 2712,
-      "genre": [
-        "Comedy",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Romance"],
       "duration": "PT96M",
       "url": "https://www.imdb.com/title/tt0197042/",
       "awards": [],
@@ -1215,9 +982,7 @@
       "year": 2024,
       "rating": 8.8,
       "votes": 2632,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT140M",
       "url": "https://www.imdb.com/title/tt31100572/",
       "awards": [],
@@ -1229,18 +994,10 @@
       "year": 2014,
       "rating": 8.7,
       "votes": 2472243,
-      "genre": [
-        "Adventure",
-        "Drama",
-        "Sci-Fi"
-      ],
+      "genre": ["Adventure", "Drama", "Sci-Fi"],
       "duration": "PT169M",
       "url": "https://www.imdb.com/title/tt0816692/",
-      "awards": [
-        "Won Oscar",
-        "Nominated to Oscar",
-        "$100m+"
-      ],
+      "awards": ["Won Oscar", "Nominated to Oscar", "$100m+"],
       "rank": 74,
       "source_url": "http://top250.info/movie/?0816692"
     },
@@ -1250,10 +1007,7 @@
       "year": 1999,
       "rating": 8.7,
       "votes": 2224053,
-      "genre": [
-        "Action",
-        "Sci-Fi"
-      ],
+      "genre": ["Action", "Sci-Fi"],
       "duration": "PT136M",
       "url": "https://www.imdb.com/title/tt0133093/",
       "awards": [
@@ -1272,11 +1026,7 @@
       "year": 1980,
       "rating": 8.7,
       "votes": 1490128,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Fantasy"
-      ],
+      "genre": ["Action", "Adventure", "Fantasy"],
       "duration": "PT124M",
       "url": "https://www.imdb.com/title/tt0080684/",
       "awards": [
@@ -1296,11 +1046,7 @@
       "year": 1990,
       "rating": 8.7,
       "votes": 1375325,
-      "genre": [
-        "Biography",
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Biography", "Crime", "Drama"],
       "duration": "PT145M",
       "url": "https://www.imdb.com/title/tt0099685/",
       "awards": [
@@ -1318,10 +1064,7 @@
       "year": 2023,
       "rating": 8.7,
       "votes": 166978,
-      "genre": [
-        "Biography",
-        "Drama"
-      ],
+      "genre": ["Biography", "Drama"],
       "duration": "PT147M",
       "url": "https://www.imdb.com/title/tt23849204/",
       "awards": [],
@@ -1333,11 +1076,7 @@
       "year": 2022,
       "rating": 8.7,
       "votes": 46851,
-      "genre": [
-        "Adventure",
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Adventure", "Comedy", "Drama"],
       "duration": "PT164M",
       "url": "https://www.imdb.com/title/tt7466810/",
       "awards": [],
@@ -1349,10 +1088,7 @@
       "year": 1984,
       "rating": 8.7,
       "votes": 23803,
-      "genre": [
-        "Documentary",
-        "Music"
-      ],
+      "genre": ["Documentary", "Music"],
       "duration": "PT88M",
       "url": "https://www.imdb.com/title/tt0088178/",
       "awards": [],
@@ -1364,9 +1100,7 @@
       "year": 1976,
       "rating": 8.7,
       "votes": 22222,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT94M",
       "url": "https://www.imdb.com/title/tt0252490/",
       "awards": [],
@@ -1378,10 +1112,7 @@
       "year": 1977,
       "rating": 8.7,
       "votes": 19878,
-      "genre": [
-        "Comedy",
-        "History"
-      ],
+      "genre": ["Comedy", "History"],
       "duration": "PT90M",
       "url": "https://www.imdb.com/title/tt0253614/",
       "awards": [],
@@ -1393,10 +1124,7 @@
       "year": 2021,
       "rating": 8.7,
       "votes": 19403,
-      "genre": [
-        "Drama",
-        "Family"
-      ],
+      "genre": ["Drama", "Family"],
       "duration": "PT158M",
       "url": "https://www.imdb.com/title/tt10534500/",
       "awards": [],
@@ -1408,10 +1136,7 @@
       "year": 2018,
       "rating": 8.7,
       "votes": 18735,
-      "genre": [
-        "Drama",
-        "Family"
-      ],
+      "genre": ["Drama", "Family"],
       "duration": "PT147M",
       "url": "https://www.imdb.com/title/tt7738784/",
       "awards": [],
@@ -1423,11 +1148,7 @@
       "year": 2020,
       "rating": 8.7,
       "votes": 18388,
-      "genre": [
-        "Action",
-        "Animation",
-        "Fantasy"
-      ],
+      "genre": ["Action", "Animation", "Fantasy"],
       "duration": "PT138M",
       "url": "https://www.imdb.com/title/tt14888874/",
       "awards": [],
@@ -1439,11 +1160,7 @@
       "year": 1980,
       "rating": 8.7,
       "votes": 17788,
-      "genre": [
-        "Adventure",
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Adventure", "Comedy", "Drama"],
       "duration": "PT86M",
       "url": "https://www.imdb.com/title/tt0076276/",
       "awards": [],
@@ -1455,11 +1172,7 @@
       "year": 2024,
       "rating": 8.7,
       "votes": 16309,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Animation"
-      ],
+      "genre": ["Action", "Adventure", "Animation"],
       "duration": "PT121M",
       "url": "https://www.imdb.com/title/tt33428606/",
       "awards": [],
@@ -1471,11 +1184,7 @@
       "year": 1993,
       "rating": 8.7,
       "votes": 14173,
-      "genre": [
-        "Comedy",
-        "Horror",
-        "Mystery"
-      ],
+      "genre": ["Comedy", "Horror", "Mystery"],
       "duration": "PT169M",
       "url": "https://www.imdb.com/title/tt0214915/",
       "awards": [],
@@ -1487,10 +1196,7 @@
       "year": 1984,
       "rating": 8.7,
       "votes": 13339,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT95M",
       "url": "https://www.imdb.com/title/tt0086935/",
       "awards": [],
@@ -1502,10 +1208,7 @@
       "year": 1978,
       "rating": 8.7,
       "votes": 12866,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT95M",
       "url": "https://www.imdb.com/title/tt0765833/",
       "awards": [],
@@ -1517,11 +1220,7 @@
       "year": 1985,
       "rating": 8.7,
       "votes": 11472,
-      "genre": [
-        "Documentary",
-        "History",
-        "War"
-      ],
+      "genre": ["Documentary", "History", "War"],
       "duration": "PT566M",
       "url": "https://www.imdb.com/title/tt0090015/",
       "awards": [],
@@ -1533,9 +1232,7 @@
       "year": 2021,
       "rating": 8.7,
       "votes": 10016,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT122M",
       "url": "https://www.imdb.com/title/tt10300570/",
       "awards": [],
@@ -1547,11 +1244,7 @@
       "year": 1992,
       "rating": 8.7,
       "votes": 8897,
-      "genre": [
-        "Action",
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Action", "Drama", "Romance"],
       "duration": "PT145M",
       "url": "https://www.imdb.com/title/tt0105575/",
       "awards": [],
@@ -1563,11 +1256,7 @@
       "year": 1993,
       "rating": 8.7,
       "votes": 7133,
-      "genre": [
-        "Action",
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Action", "Crime", "Drama"],
       "duration": "PT157M",
       "url": "https://www.imdb.com/title/tt0291855/",
       "awards": [],
@@ -1579,11 +1268,7 @@
       "year": 1988,
       "rating": 8.7,
       "votes": 6779,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Musical"
-      ],
+      "genre": ["Comedy", "Drama", "Musical"],
       "duration": "PT159M",
       "url": "https://www.imdb.com/title/tt0214585/",
       "awards": [],
@@ -1595,10 +1280,7 @@
       "year": 1989,
       "rating": 8.7,
       "votes": 6700,
-      "genre": [
-        "Drama",
-        "History"
-      ],
+      "genre": ["Drama", "History"],
       "duration": "PT168M",
       "url": "https://www.imdb.com/title/tt0230597/",
       "awards": [],
@@ -1610,9 +1292,7 @@
       "year": 2025,
       "rating": 8.7,
       "votes": 6095,
-      "genre": [
-        "Documentary"
-      ],
+      "genre": ["Documentary"],
       "duration": "PT92M",
       "url": "https://www.imdb.com/title/tt36934451/",
       "awards": [],
@@ -1624,11 +1304,7 @@
       "year": 2022,
       "rating": 8.7,
       "votes": 5582,
-      "genre": [
-        "Biography",
-        "Drama",
-        "Family"
-      ],
+      "genre": ["Biography", "Drama", "Family"],
       "duration": "PT138M",
       "url": "https://www.imdb.com/title/tt15964372/",
       "awards": [],
@@ -1640,9 +1316,7 @@
       "year": 1991,
       "rating": 8.7,
       "votes": 5335,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT155M",
       "url": "https://www.imdb.com/title/tt0255306/",
       "awards": [],
@@ -1654,11 +1328,7 @@
       "year": 1969,
       "rating": 8.7,
       "votes": 5203,
-      "genre": [
-        "Adventure",
-        "Comedy",
-        "Family"
-      ],
+      "genre": ["Adventure", "Comedy", "Family"],
       "duration": "PT132M",
       "url": "https://www.imdb.com/title/tt0063023/",
       "awards": [],
@@ -1670,9 +1340,7 @@
       "year": 2004,
       "rating": 8.7,
       "votes": 4384,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT141M",
       "url": "https://www.imdb.com/title/tt1601792/",
       "awards": [],
@@ -1684,9 +1352,7 @@
       "year": 2017,
       "rating": 8.7,
       "votes": 4090,
-      "genre": [
-        "Documentary"
-      ],
+      "genre": ["Documentary"],
       "duration": "PT50M",
       "url": "https://www.imdb.com/title/tt6679360/",
       "awards": [],
@@ -1698,9 +1364,7 @@
       "year": 2025,
       "rating": 8.7,
       "votes": 3889,
-      "genre": [
-        "History"
-      ],
+      "genre": ["History"],
       "duration": "PT140M",
       "url": "https://www.imdb.com/title/tt36722524/",
       "awards": [],
@@ -1712,9 +1376,7 @@
       "year": 2018,
       "rating": 8.7,
       "votes": 3332,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT147M",
       "url": "https://www.imdb.com/title/tt8602654/",
       "awards": [],
@@ -1726,10 +1388,7 @@
       "year": 1966,
       "rating": 8.7,
       "votes": 3206,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT104M",
       "url": "https://www.imdb.com/title/tt0366505/",
       "awards": [],
@@ -1753,11 +1412,7 @@
       "year": 2023,
       "rating": 8.7,
       "votes": 2946,
-      "genre": [
-        "Biography",
-        "Drama",
-        "History"
-      ],
+      "genre": ["Biography", "Drama", "History"],
       "duration": "PT132M",
       "url": "https://www.imdb.com/title/tt19394770/",
       "awards": [],
@@ -1769,10 +1424,7 @@
       "year": 2012,
       "rating": 8.7,
       "votes": 2867,
-      "genre": [
-        "Documentary",
-        "Music"
-      ],
+      "genre": ["Documentary", "Music"],
       "duration": "PT124M",
       "url": "https://www.imdb.com/title/tt2414166/",
       "awards": [],
@@ -1784,9 +1436,7 @@
       "year": 1998,
       "rating": 8.7,
       "votes": 2853,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT150M",
       "url": "https://www.imdb.com/title/tt3178292/",
       "awards": [],
@@ -1798,10 +1448,7 @@
       "year": 2015,
       "rating": 8.7,
       "votes": 2788,
-      "genre": [
-        "Drama",
-        "Musical"
-      ],
+      "genre": ["Drama", "Musical"],
       "duration": "PT162M",
       "url": "https://www.imdb.com/title/tt5190958/",
       "awards": [],
@@ -1813,11 +1460,7 @@
       "year": 2024,
       "rating": 8.7,
       "votes": 2687,
-      "genre": [
-        "Action",
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Action", "Drama", "Romance"],
       "duration": "PT131M",
       "url": "https://www.imdb.com/title/tt31986077/",
       "awards": [],
@@ -1829,11 +1472,7 @@
       "year": 1995,
       "rating": 8.6,
       "votes": 1993339,
-      "genre": [
-        "Crime",
-        "Drama",
-        "Mystery"
-      ],
+      "genre": ["Crime", "Drama", "Mystery"],
       "duration": "PT127M",
       "url": "https://www.imdb.com/title/tt0114369/",
       "awards": [
@@ -1851,11 +1490,7 @@
       "year": 1991,
       "rating": 8.6,
       "votes": 1700382,
-      "genre": [
-        "Crime",
-        "Drama",
-        "Horror"
-      ],
+      "genre": ["Crime", "Drama", "Horror"],
       "duration": "PT118M",
       "url": "https://www.imdb.com/title/tt0102926/",
       "awards": [
@@ -1876,10 +1511,7 @@
       "year": 1998,
       "rating": 8.6,
       "votes": 1621114,
-      "genre": [
-        "Drama",
-        "War"
-      ],
+      "genre": ["Drama", "War"],
       "duration": "PT169M",
       "url": "https://www.imdb.com/title/tt0120815/",
       "awards": [
@@ -1899,11 +1531,7 @@
       "year": 1977,
       "rating": 8.6,
       "votes": 1555280,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Fantasy"
-      ],
+      "genre": ["Action", "Adventure", "Fantasy"],
       "duration": "PT121M",
       "url": "https://www.imdb.com/title/tt0076759/",
       "awards": [],
@@ -1915,17 +1543,10 @@
       "year": 1999,
       "rating": 8.6,
       "votes": 1543259,
-      "genre": [
-        "Crime",
-        "Drama",
-        "Fantasy"
-      ],
+      "genre": ["Crime", "Drama", "Fantasy"],
       "duration": "PT189M",
       "url": "https://www.imdb.com/title/tt0120689/",
-      "awards": [
-        "Nominated to Oscar",
-        "$100m+"
-      ],
+      "awards": ["Nominated to Oscar", "$100m+"],
       "rank": 116,
       "source_url": "http://top250.info/movie/?0120689"
     },
@@ -1935,11 +1556,7 @@
       "year": 1991,
       "rating": 8.6,
       "votes": 1272257,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Sci-Fi"
-      ],
+      "genre": ["Action", "Adventure", "Sci-Fi"],
       "duration": "PT137M",
       "url": "https://www.imdb.com/title/tt0103064/",
       "awards": [
@@ -1959,9 +1576,7 @@
       "year": 1975,
       "rating": 8.6,
       "votes": 1148753,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT133M",
       "url": "https://www.imdb.com/title/tt0073486/",
       "awards": [
@@ -1981,11 +1596,7 @@
       "year": 2001,
       "rating": 8.6,
       "votes": 953640,
-      "genre": [
-        "Adventure",
-        "Animation",
-        "Family"
-      ],
+      "genre": ["Adventure", "Animation", "Family"],
       "duration": "PT124M",
       "url": "https://www.imdb.com/title/tt0245429/",
       "awards": [],
@@ -1997,10 +1608,7 @@
       "year": 2002,
       "rating": 8.6,
       "votes": 863334,
-      "genre": [
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Crime", "Drama"],
       "duration": "PT130M",
       "url": "https://www.imdb.com/title/tt0317248/",
       "awards": [],
@@ -2012,11 +1620,7 @@
       "year": 1997,
       "rating": 8.6,
       "votes": 804799,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Drama", "Romance"],
       "duration": "PT116M",
       "url": "https://www.imdb.com/title/tt0118799/",
       "awards": [],
@@ -2028,11 +1632,7 @@
       "year": 1946,
       "rating": 8.6,
       "votes": 550727,
-      "genre": [
-        "Drama",
-        "Family",
-        "Fantasy"
-      ],
+      "genre": ["Drama", "Family", "Fantasy"],
       "duration": "PT130M",
       "url": "https://www.imdb.com/title/tt0038650/",
       "awards": [
@@ -2049,10 +1649,7 @@
       "year": 1954,
       "rating": 8.6,
       "votes": 398762,
-      "genre": [
-        "Action",
-        "Drama"
-      ],
+      "genre": ["Action", "Drama"],
       "duration": "PT207M",
       "url": "https://www.imdb.com/title/tt0047478/",
       "awards": [],
@@ -2064,10 +1661,7 @@
       "year": 2021,
       "rating": 8.6,
       "votes": 232785,
-      "genre": [
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Crime", "Drama"],
       "duration": "PT164M",
       "url": "https://www.imdb.com/title/tt15097216/",
       "awards": [],
@@ -2080,9 +1674,7 @@
       "year": 2020,
       "rating": 8.6,
       "votes": 131162,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT153M",
       "url": "https://www.imdb.com/title/tt10189514/",
       "awards": [],
@@ -2095,10 +1687,7 @@
       "year": 1962,
       "rating": 8.6,
       "votes": 89082,
-      "genre": [
-        "Drama",
-        "Mystery"
-      ],
+      "genre": ["Drama", "Mystery"],
       "duration": "PT133M",
       "url": "https://www.imdb.com/title/tt0056058/",
       "awards": [],
@@ -2110,10 +1699,7 @@
       "year": 2022,
       "rating": 8.6,
       "votes": 61785,
-      "genre": [
-        "Biography",
-        "Drama"
-      ],
+      "genre": ["Biography", "Drama"],
       "duration": "PT157M",
       "url": "https://www.imdb.com/title/tt9263550/",
       "awards": [],
@@ -2125,10 +1711,7 @@
       "year": 2023,
       "rating": 8.6,
       "votes": 43057,
-      "genre": [
-        "Documentary",
-        "War"
-      ],
+      "genre": ["Documentary", "War"],
       "duration": "PT97M",
       "url": "https://www.imdb.com/title/tt24082438/",
       "awards": [],
@@ -2140,11 +1723,7 @@
       "year": 2003,
       "rating": 8.6,
       "votes": 28039,
-      "genre": [
-        "Adventure",
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Adventure", "Comedy", "Drama"],
       "duration": "PT160M",
       "url": "https://www.imdb.com/title/tt0367495/",
       "awards": [],
@@ -2156,10 +1735,7 @@
       "year": 1987,
       "rating": 8.6,
       "votes": 27608,
-      "genre": [
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Crime", "Drama"],
       "duration": "PT145M",
       "url": "https://www.imdb.com/title/tt0093603/",
       "awards": [],
@@ -2171,11 +1747,7 @@
       "year": 2000,
       "rating": 8.6,
       "votes": 21244,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Fantasy"
-      ],
+      "genre": ["Comedy", "Drama", "Fantasy"],
       "duration": "PT104M",
       "url": "https://www.imdb.com/title/tt0271383/",
       "awards": [],
@@ -2187,9 +1759,7 @@
       "year": 2005,
       "rating": 8.6,
       "votes": 20445,
-      "genre": [
-        "Documentary"
-      ],
+      "genre": ["Documentary"],
       "duration": "PT95M",
       "url": "https://www.imdb.com/title/tt0358456/",
       "awards": [],
@@ -2201,9 +1771,7 @@
       "year": 2018,
       "rating": 8.6,
       "votes": 20355,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT154M",
       "url": "https://www.imdb.com/title/tt8176054/",
       "awards": [],
@@ -2215,9 +1783,7 @@
       "year": 1977,
       "rating": 8.6,
       "votes": 20074,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT97M",
       "url": "https://www.imdb.com/title/tt0252489/",
       "awards": [],
@@ -2229,11 +1795,7 @@
       "year": 1996,
       "rating": 8.6,
       "votes": 18856,
-      "genre": [
-        "Drama",
-        "History",
-        "War"
-      ],
+      "genre": ["Drama", "History", "War"],
       "duration": "PT115M",
       "url": "https://www.imdb.com/title/tt0116860/",
       "awards": [],
@@ -2245,10 +1807,7 @@
       "year": 1978,
       "rating": 8.6,
       "votes": 18508,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT83M",
       "url": "https://www.imdb.com/title/tt0252597/",
       "awards": [],
@@ -2260,10 +1819,7 @@
       "year": 1985,
       "rating": 8.6,
       "votes": 17523,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT101M",
       "url": "https://www.imdb.com/title/tt0201368/",
       "awards": [],
@@ -2275,11 +1831,7 @@
       "year": 2021,
       "rating": 8.6,
       "votes": 13246,
-      "genre": [
-        "Biography",
-        "Drama",
-        "Music"
-      ],
+      "genre": ["Biography", "Drama", "Music"],
       "duration": "PT140M",
       "url": "https://www.imdb.com/title/tt8737152/",
       "awards": [],
@@ -2291,10 +1843,7 @@
       "year": 1972,
       "rating": 8.6,
       "votes": 11375,
-      "genre": [
-        "Documentary",
-        "Music"
-      ],
+      "genre": ["Documentary", "Music"],
       "duration": "PT85M",
       "url": "https://www.imdb.com/title/tt0069090/",
       "awards": [],
@@ -2306,9 +1855,7 @@
       "year": 1973,
       "rating": 8.6,
       "votes": 11129,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT86M",
       "url": "https://www.imdb.com/title/tt0267351/",
       "awards": [],
@@ -2320,9 +1867,7 @@
       "year": 2015,
       "rating": 8.6,
       "votes": 9163,
-      "genre": [
-        "Documentary"
-      ],
+      "genre": ["Documentary"],
       "duration": "PT190M",
       "url": "https://www.imdb.com/title/tt3327994/",
       "awards": [],
@@ -2334,10 +1879,7 @@
       "year": 1998,
       "rating": 8.6,
       "votes": 8969,
-      "genre": [
-        "Comedy",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Romance"],
       "duration": "PT95M",
       "url": "https://www.imdb.com/title/tt0187231/",
       "awards": [],
@@ -2349,10 +1891,7 @@
       "year": 1969,
       "rating": 8.6,
       "votes": 8422,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT105M",
       "url": "https://www.imdb.com/title/tt0065067/",
       "awards": [],
@@ -2364,10 +1903,7 @@
       "year": 2023,
       "rating": 8.6,
       "votes": 8124,
-      "genre": [
-        "Comedy",
-        "Thriller"
-      ],
+      "genre": ["Comedy", "Thriller"],
       "duration": "PT108M",
       "url": "https://www.imdb.com/title/tt19223248/",
       "awards": [],
@@ -2379,10 +1915,7 @@
       "year": 1995,
       "rating": 8.6,
       "votes": 7643,
-      "genre": [
-        "Action",
-        "Drama"
-      ],
+      "genre": ["Action", "Drama"],
       "duration": "PT150M",
       "url": "https://www.imdb.com/title/tt0292246/",
       "awards": [],
@@ -2394,11 +1927,7 @@
       "year": 1996,
       "rating": 8.6,
       "votes": 7561,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Musical"
-      ],
+      "genre": ["Comedy", "Drama", "Musical"],
       "duration": "PT150M",
       "url": "https://www.imdb.com/title/tt2325915/",
       "awards": [],
@@ -2410,10 +1939,7 @@
       "year": 1987,
       "rating": 8.6,
       "votes": 5452,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT151M",
       "url": "https://www.imdb.com/title/tt0249188/",
       "awards": [],
@@ -2425,10 +1951,7 @@
       "year": 1994,
       "rating": 8.6,
       "votes": 5062,
-      "genre": [
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Crime", "Drama"],
       "duration": "PT162M",
       "url": "https://www.imdb.com/title/tt0140348/",
       "awards": [],
@@ -2440,11 +1963,7 @@
       "year": 1991,
       "rating": 8.6,
       "votes": 4762,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Drama", "Romance"],
       "duration": "PT150M",
       "url": "https://www.imdb.com/title/tt0353496/",
       "awards": [],
@@ -2456,10 +1975,7 @@
       "year": 2024,
       "rating": 8.6,
       "votes": 4526,
-      "genre": [
-        "Drama",
-        "Thriller"
-      ],
+      "genre": ["Drama", "Thriller"],
       "duration": "PT90M",
       "url": "https://www.imdb.com/title/tt31474455/",
       "awards": [],
@@ -2471,11 +1987,7 @@
       "year": 1990,
       "rating": 8.6,
       "votes": 4479,
-      "genre": [
-        "Comedy",
-        "Crime",
-        "Mystery"
-      ],
+      "genre": ["Comedy", "Crime", "Mystery"],
       "duration": "PT133M",
       "url": "https://www.imdb.com/title/tt0278501/",
       "awards": [],
@@ -2487,10 +1999,7 @@
       "year": 1987,
       "rating": 8.6,
       "votes": 4407,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT125M",
       "url": "https://www.imdb.com/title/tt0251355/",
       "awards": [],
@@ -2502,9 +2011,7 @@
       "year": 2024,
       "rating": 8.6,
       "votes": 3994,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT132M",
       "url": "https://www.imdb.com/title/tt32728672/",
       "awards": [],
@@ -2516,10 +2023,7 @@
       "year": 2016,
       "rating": 8.6,
       "votes": 3897,
-      "genre": [
-        "Drama",
-        "Thriller"
-      ],
+      "genre": ["Drama", "Thriller"],
       "duration": "PT144M",
       "url": "https://www.imdb.com/title/tt4909506/",
       "awards": [],
@@ -2531,11 +2035,7 @@
       "year": 2021,
       "rating": 8.6,
       "votes": 3841,
-      "genre": [
-        "Action",
-        "Animation",
-        "Comedy"
-      ],
+      "genre": ["Action", "Animation", "Comedy"],
       "duration": "PT104M",
       "url": "https://www.imdb.com/title/tt10766468/",
       "awards": [],
@@ -2547,10 +2047,7 @@
       "year": 2023,
       "rating": 8.6,
       "votes": 3821,
-      "genre": [
-        "Documentary",
-        "Music"
-      ],
+      "genre": ["Documentary", "Music"],
       "duration": "PT169M",
       "url": "https://www.imdb.com/title/tt29354040/",
       "awards": [],
@@ -2562,9 +2059,7 @@
       "year": 2025,
       "rating": 8.6,
       "votes": 3729,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT135M",
       "url": "https://www.imdb.com/title/tt34984715/",
       "awards": [],
@@ -2576,10 +2071,7 @@
       "year": 1982,
       "rating": 8.6,
       "votes": 3614,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT143M",
       "url": "https://www.imdb.com/title/tt0187318/",
       "awards": [],
@@ -2591,10 +2083,7 @@
       "year": 1955,
       "rating": 8.6,
       "votes": 3427,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT127M",
       "url": "https://www.imdb.com/title/tt0122565/",
       "awards": [],
@@ -2606,11 +2095,7 @@
       "year": 2026,
       "rating": 8.6,
       "votes": 3386,
-      "genre": [
-        "Action",
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Action", "Crime", "Drama"],
       "duration": "PT129M",
       "url": "https://www.imdb.com/title/tt27673536/",
       "awards": [],
@@ -2622,10 +2107,7 @@
       "year": 1999,
       "rating": 8.6,
       "votes": 2822,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT150M",
       "url": "https://www.imdb.com/title/tt0375093/",
       "awards": [],
@@ -2637,11 +2119,7 @@
       "year": 2016,
       "rating": 8.6,
       "votes": 2741,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Drama", "Romance"],
       "duration": "PT140M",
       "url": "https://www.imdb.com/title/tt5691226/",
       "awards": [],
@@ -2653,9 +2131,7 @@
       "year": 2021,
       "rating": 8.6,
       "votes": 2630,
-      "genre": [
-        "Documentary"
-      ],
+      "genre": ["Documentary"],
       "duration": "PT113M",
       "url": "https://www.imdb.com/title/tt13875460/",
       "awards": [],
@@ -2667,9 +2143,7 @@
       "year": 2004,
       "rating": 8.6,
       "votes": 2536,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT110M",
       "url": "https://www.imdb.com/title/tt0480732/",
       "awards": [],
@@ -2681,10 +2155,7 @@
       "year": 1983,
       "rating": 8.6,
       "votes": 2518,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT97M",
       "url": "https://www.imdb.com/title/tt0087349/",
       "awards": [],
@@ -2696,10 +2167,7 @@
       "year": 2012,
       "rating": 8.5,
       "votes": 1859730,
-      "genre": [
-        "Drama",
-        "Western"
-      ],
+      "genre": ["Drama", "Western"],
       "duration": "PT165M",
       "url": "https://www.imdb.com/title/tt1853728/",
       "awards": [
@@ -2717,11 +2185,7 @@
       "year": 2000,
       "rating": 8.5,
       "votes": 1827171,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Drama"
-      ],
+      "genre": ["Action", "Adventure", "Drama"],
       "duration": "PT155M",
       "url": "https://www.imdb.com/title/tt0172495/",
       "awards": [
@@ -2740,17 +2204,10 @@
       "year": 2006,
       "rating": 8.5,
       "votes": 1569239,
-      "genre": [
-        "Drama",
-        "Mystery",
-        "Sci-Fi"
-      ],
+      "genre": ["Drama", "Mystery", "Sci-Fi"],
       "duration": "PT130M",
       "url": "https://www.imdb.com/title/tt0482571/",
-      "awards": [
-        "Nominated to Oscar",
-        "From '1001 Movies You Must See Before You Die' List"
-      ],
+      "awards": ["Nominated to Oscar", "From '1001 Movies You Must See Before You Die' List"],
       "rank": 168,
       "source_url": "http://top250.info/movie/?0482571"
     },
@@ -2760,11 +2217,7 @@
       "year": 2006,
       "rating": 8.5,
       "votes": 1538094,
-      "genre": [
-        "Crime",
-        "Drama",
-        "Thriller"
-      ],
+      "genre": ["Crime", "Drama", "Thriller"],
       "duration": "PT151M",
       "url": "https://www.imdb.com/title/tt0407887/",
       "awards": [
@@ -2782,11 +2235,7 @@
       "year": 1985,
       "rating": 8.5,
       "votes": 1434703,
-      "genre": [
-        "Adventure",
-        "Comedy",
-        "Sci-Fi"
-      ],
+      "genre": ["Adventure", "Comedy", "Sci-Fi"],
       "duration": "PT116M",
       "url": "https://www.imdb.com/title/tt0088763/",
       "awards": [
@@ -2806,11 +2255,7 @@
       "year": 1994,
       "rating": 8.5,
       "votes": 1339887,
-      "genre": [
-        "Action",
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Action", "Crime", "Drama"],
       "duration": "PT110M",
       "url": "https://www.imdb.com/title/tt0110413/",
       "awards": [],
@@ -2822,15 +2267,10 @@
       "year": 1998,
       "rating": 8.5,
       "votes": 1263267,
-      "genre": [
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Crime", "Drama"],
       "duration": "PT119M",
       "url": "https://www.imdb.com/title/tt0120586/",
-      "awards": [
-        "Nominated to Oscar"
-      ],
+      "awards": ["Nominated to Oscar"],
       "rank": 172,
       "source_url": "http://top250.info/movie/?0120586"
     },
@@ -2840,11 +2280,7 @@
       "year": 1994,
       "rating": 8.5,
       "votes": 1245540,
-      "genre": [
-        "Adventure",
-        "Animation",
-        "Drama"
-      ],
+      "genre": ["Adventure", "Animation", "Drama"],
       "duration": "PT88M",
       "url": "https://www.imdb.com/title/tt0110357/",
       "awards": [
@@ -2864,17 +2300,10 @@
       "year": 1995,
       "rating": 8.5,
       "votes": 1227302,
-      "genre": [
-        "Crime",
-        "Drama",
-        "Mystery"
-      ],
+      "genre": ["Crime", "Drama", "Mystery"],
       "duration": "PT106M",
       "url": "https://www.imdb.com/title/tt0114814/",
-      "awards": [
-        "Won Oscar",
-        "From '1001 Movies You Must See Before You Die' List"
-      ],
+      "awards": ["Won Oscar", "From '1001 Movies You Must See Before You Die' List"],
       "rank": 174,
       "source_url": "http://top250.info/movie/?0114814"
     },
@@ -2884,10 +2313,7 @@
       "year": 2019,
       "rating": 8.5,
       "votes": 1139737,
-      "genre": [
-        "Drama",
-        "Thriller"
-      ],
+      "genre": ["Drama", "Thriller"],
       "duration": "PT132M",
       "url": "https://www.imdb.com/title/tt6751668/",
       "awards": [],
@@ -2899,10 +2325,7 @@
       "year": 2014,
       "rating": 8.5,
       "votes": 1134398,
-      "genre": [
-        "Drama",
-        "Music"
-      ],
+      "genre": ["Drama", "Music"],
       "duration": "PT106M",
       "url": "https://www.imdb.com/title/tt2582802/",
       "awards": [
@@ -2919,10 +2342,7 @@
       "year": 1979,
       "rating": 8.5,
       "votes": 1053390,
-      "genre": [
-        "Horror",
-        "Sci-Fi"
-      ],
+      "genre": ["Horror", "Sci-Fi"],
       "duration": "PT117M",
       "url": "https://www.imdb.com/title/tt0078748/",
       "awards": [
@@ -2941,10 +2361,7 @@
       "year": 2011,
       "rating": 8.5,
       "votes": 1015225,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT112M",
       "url": "https://www.imdb.com/title/tt1675434/",
       "awards": [],
@@ -2956,11 +2373,7 @@
       "year": 2002,
       "rating": 8.5,
       "votes": 1001943,
-      "genre": [
-        "Biography",
-        "Drama",
-        "Music"
-      ],
+      "genre": ["Biography", "Drama", "Music"],
       "duration": "PT150M",
       "url": "https://www.imdb.com/title/tt0253474/",
       "awards": [
@@ -2978,11 +2391,7 @@
       "year": 1960,
       "rating": 8.5,
       "votes": 779038,
-      "genre": [
-        "Drama",
-        "Horror",
-        "Mystery"
-      ],
+      "genre": ["Drama", "Horror", "Mystery"],
       "duration": "PT109M",
       "url": "https://www.imdb.com/title/tt0054215/",
       "awards": [
@@ -3000,11 +2409,7 @@
       "year": 1942,
       "rating": 8.5,
       "votes": 650733,
-      "genre": [
-        "Drama",
-        "Romance",
-        "War"
-      ],
+      "genre": ["Drama", "Romance", "War"],
       "duration": "PT102M",
       "url": "https://www.imdb.com/title/tt0034583/",
       "awards": [
@@ -3023,9 +2428,7 @@
       "year": 2022,
       "rating": 8.5,
       "votes": 578519,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT170M",
       "url": "https://www.imdb.com/title/tt10811166/",
       "awards": [],
@@ -3037,11 +2440,7 @@
       "year": 1954,
       "rating": 8.5,
       "votes": 565016,
-      "genre": [
-        "Drama",
-        "Mystery",
-        "Thriller"
-      ],
+      "genre": ["Drama", "Mystery", "Thriller"],
       "duration": "PT112M",
       "url": "https://www.imdb.com/title/tt0047396/",
       "awards": [
@@ -3059,18 +2458,10 @@
       "year": 2023,
       "rating": 8.5,
       "votes": 506363,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Animation"
-      ],
+      "genre": ["Action", "Adventure", "Animation"],
       "duration": "PT140M",
       "url": "https://www.imdb.com/title/tt9362722/",
-      "awards": [
-        "Nominated to Oscar",
-        "BoxOffice Top 10",
-        "$100m+"
-      ],
+      "awards": ["Nominated to Oscar", "BoxOffice Top 10", "$100m+"],
       "rank": 184,
       "source_url": "http://top250.info/movie/?9362722"
     },
@@ -3080,10 +2471,7 @@
       "year": 1968,
       "rating": 8.5,
       "votes": 381374,
-      "genre": [
-        "Drama",
-        "Western"
-      ],
+      "genre": ["Drama", "Western"],
       "duration": "PT145M",
       "url": "https://www.imdb.com/title/tt0064116/",
       "awards": [],
@@ -3095,11 +2483,7 @@
       "year": 1988,
       "rating": 8.5,
       "votes": 376855,
-      "genre": [
-        "Animation",
-        "Drama",
-        "War"
-      ],
+      "genre": ["Animation", "Drama", "War"],
       "duration": "PT88M",
       "url": "https://www.imdb.com/title/tt0095327/",
       "awards": [],
@@ -3111,10 +2495,7 @@
       "year": 1988,
       "rating": 8.5,
       "votes": 314496,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT174M",
       "url": "https://www.imdb.com/title/tt0095765/",
       "awards": [],
@@ -3126,11 +2507,7 @@
       "year": 1936,
       "rating": 8.5,
       "votes": 283443,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Drama", "Romance"],
       "duration": "PT87M",
       "url": "https://www.imdb.com/title/tt0027977/",
       "awards": [
@@ -3148,11 +2525,7 @@
       "year": 1931,
       "rating": 8.5,
       "votes": 215053,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Drama", "Romance"],
       "duration": "PT87M",
       "url": "https://www.imdb.com/title/tt0021749/",
       "awards": [
@@ -3170,11 +2543,7 @@
       "year": 2022,
       "rating": 8.5,
       "votes": 82407,
-      "genre": [
-        "Action",
-        "Drama",
-        "Musical"
-      ],
+      "genre": ["Action", "Drama", "Musical"],
       "duration": "PT163M",
       "url": "https://www.imdb.com/title/tt20850406/",
       "awards": [],
@@ -3186,11 +2555,7 @@
       "year": 2024,
       "rating": 8.5,
       "votes": 45043,
-      "genre": [
-        "Action",
-        "Animation",
-        "Drama"
-      ],
+      "genre": ["Action", "Animation", "Drama"],
       "duration": "PT130M",
       "url": "https://www.imdb.com/title/tt34365591/",
       "awards": [],
@@ -3202,11 +2567,7 @@
       "year": 2008,
       "rating": 8.5,
       "votes": 44961,
-      "genre": [
-        "Biography",
-        "Crime",
-        "Documentary"
-      ],
+      "genre": ["Biography", "Crime", "Documentary"],
       "duration": "PT95M",
       "url": "https://www.imdb.com/title/tt1152758/",
       "awards": [],
@@ -3218,10 +2579,7 @@
       "year": 2018,
       "rating": 8.5,
       "votes": 44102,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT158M",
       "url": "https://www.imdb.com/title/tt7019842/",
       "awards": [],
@@ -3233,9 +2591,7 @@
       "year": 1992,
       "rating": 8.5,
       "votes": 42900,
-      "genre": [
-        "Documentary"
-      ],
+      "genre": ["Documentary"],
       "duration": "PT96M",
       "url": "https://www.imdb.com/title/tt0103767/",
       "awards": [],
@@ -3247,9 +2603,7 @@
       "year": 1975,
       "rating": 8.5,
       "votes": 29741,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT95M",
       "url": "https://www.imdb.com/title/tt0252488/",
       "awards": [],
@@ -3261,11 +2615,7 @@
       "year": 2021,
       "rating": 8.5,
       "votes": 28354,
-      "genre": [
-        "Action",
-        "Drama",
-        "Sport"
-      ],
+      "genre": ["Action", "Drama", "Sport"],
       "duration": "PT173M",
       "url": "https://www.imdb.com/title/tt11580854/",
       "awards": [],
@@ -3277,10 +2627,7 @@
       "year": 2019,
       "rating": 8.5,
       "votes": 27740,
-      "genre": [
-        "Drama",
-        "Sport"
-      ],
+      "genre": ["Drama", "Sport"],
       "duration": "PT157M",
       "url": "https://www.imdb.com/title/tt8948790/",
       "awards": [],
@@ -3292,10 +2639,7 @@
       "year": 2009,
       "rating": 8.5,
       "votes": 23464,
-      "genre": [
-        "Documentary",
-        "Family"
-      ],
+      "genre": ["Documentary", "Family"],
       "duration": "PT118M",
       "url": "https://www.imdb.com/title/tt1014762/",
       "awards": [],
@@ -3307,11 +2651,7 @@
       "year": 1960,
       "rating": 8.5,
       "votes": 23097,
-      "genre": [
-        "Crime",
-        "Drama",
-        "Thriller"
-      ],
+      "genre": ["Crime", "Drama", "Thriller"],
       "duration": "PT131M",
       "url": "https://www.imdb.com/title/tt0054407/",
       "awards": [],
@@ -3323,9 +2663,7 @@
       "year": 1977,
       "rating": 8.5,
       "votes": 22805,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT80M",
       "url": "https://www.imdb.com/title/tt0253997/",
       "awards": [],
@@ -3337,10 +2675,7 @@
       "year": 1979,
       "rating": 8.5,
       "votes": 21911,
-      "genre": [
-        "Comedy",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Romance"],
       "duration": "PT120M",
       "url": "https://www.imdb.com/title/tt0079221/",
       "awards": [],
@@ -3352,10 +2687,7 @@
       "year": 2024,
       "rating": 8.5,
       "votes": 21654,
-      "genre": [
-        "Drama",
-        "Family"
-      ],
+      "genre": ["Drama", "Family"],
       "duration": "PT177M",
       "url": "https://www.imdb.com/title/tt26758372/",
       "awards": [],
@@ -3367,11 +2699,7 @@
       "year": 2019,
       "rating": 8.5,
       "votes": 21185,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Drama", "Romance"],
       "duration": "PT135M",
       "url": "https://www.imdb.com/title/tt8413338/",
       "awards": [],
@@ -3383,10 +2711,7 @@
       "year": 1977,
       "rating": 8.5,
       "votes": 17996,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT90M",
       "url": "https://www.imdb.com/title/tt0263975/",
       "awards": [],
@@ -3398,11 +2723,7 @@
       "year": 1991,
       "rating": 8.5,
       "votes": 15797,
-      "genre": [
-        "Action",
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Action", "Crime", "Drama"],
       "duration": "PT157M",
       "url": "https://www.imdb.com/title/tt0101649/",
       "awards": [],
@@ -3414,10 +2735,7 @@
       "year": 2022,
       "rating": 8.5,
       "votes": 14219,
-      "genre": [
-        "Adventure",
-        "Drama"
-      ],
+      "genre": ["Adventure", "Drama"],
       "duration": "PT121M",
       "url": "https://www.imdb.com/title/tt17592606/",
       "awards": [],
@@ -3429,11 +2747,7 @@
       "year": 2019,
       "rating": 8.5,
       "votes": 13693,
-      "genre": [
-        "Biography",
-        "Documentary",
-        "War"
-      ],
+      "genre": ["Biography", "Documentary", "War"],
       "duration": "PT100M",
       "url": "https://www.imdb.com/title/tt9617456/",
       "awards": [],
@@ -3445,9 +2759,7 @@
       "year": 1980,
       "rating": 8.5,
       "votes": 11992,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT88M",
       "url": "https://www.imdb.com/title/tt0253991/",
       "awards": [],
@@ -3459,11 +2771,7 @@
       "year": 1959,
       "rating": 8.5,
       "votes": 10890,
-      "genre": [
-        "Drama",
-        "History",
-        "War"
-      ],
+      "genre": ["Drama", "History", "War"],
       "duration": "PT208M",
       "url": "https://www.imdb.com/title/tt0053114/",
       "awards": [],
@@ -3475,10 +2783,7 @@
       "year": 2021,
       "rating": 8.5,
       "votes": 8927,
-      "genre": [
-        "Biography",
-        "History"
-      ],
+      "genre": ["Biography", "History"],
       "duration": "PT100M",
       "url": "https://www.imdb.com/title/tt14923112/",
       "awards": [],
@@ -3490,11 +2795,7 @@
       "year": 1959,
       "rating": 8.5,
       "votes": 8730,
-      "genre": [
-        "Drama",
-        "History",
-        "War"
-      ],
+      "genre": ["Drama", "History", "War"],
       "duration": "PT181M",
       "url": "https://www.imdb.com/title/tt0053115/",
       "awards": [],
@@ -3506,9 +2807,7 @@
       "year": 1990,
       "rating": 8.5,
       "votes": 7368,
-      "genre": [
-        "Comedy"
-      ],
+      "genre": ["Comedy"],
       "duration": "PT162M",
       "url": "https://www.imdb.com/title/tt0140377/",
       "awards": [],
@@ -3520,10 +2819,7 @@
       "year": 1976,
       "rating": 8.5,
       "votes": 7069,
-      "genre": [
-        "Drama",
-        "War"
-      ],
+      "genre": ["Drama", "War"],
       "duration": "PT116M",
       "url": "https://www.imdb.com/title/tt0075467/",
       "awards": [],
@@ -3535,10 +2831,7 @@
       "year": 2022,
       "rating": 8.5,
       "votes": 6526,
-      "genre": [
-        "Documentary",
-        "Music"
-      ],
+      "genre": ["Documentary", "Music"],
       "duration": "PT130M",
       "url": "https://www.imdb.com/title/tt22010428/",
       "awards": [],
@@ -3550,11 +2843,7 @@
       "year": 2006,
       "rating": 8.5,
       "votes": 6505,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Crime"
-      ],
+      "genre": ["Action", "Adventure", "Crime"],
       "duration": "PT89M",
       "url": "https://www.imdb.com/title/tt1114271/",
       "awards": [],
@@ -3566,10 +2855,7 @@
       "year": 2014,
       "rating": 8.5,
       "votes": 5532,
-      "genre": [
-        "Documentary",
-        "Music"
-      ],
+      "genre": ["Documentary", "Music"],
       "duration": "PT132M",
       "url": "https://www.imdb.com/title/tt3970482/",
       "awards": [],
@@ -3581,9 +2867,7 @@
       "year": 1990,
       "rating": 8.5,
       "votes": 5429,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT108M",
       "url": "https://www.imdb.com/title/tt0102369/",
       "awards": [],
@@ -3595,11 +2879,7 @@
       "year": 2021,
       "rating": 8.5,
       "votes": 5337,
-      "genre": [
-        "Action",
-        "Animation",
-        "Fantasy"
-      ],
+      "genre": ["Action", "Animation", "Fantasy"],
       "duration": "PT103M",
       "url": "https://www.imdb.com/title/tt16492636/",
       "awards": [],
@@ -3611,11 +2891,7 @@
       "year": 1992,
       "rating": 8.5,
       "votes": 5316,
-      "genre": [
-        "Action",
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Action", "Comedy", "Drama"],
       "duration": "PT149M",
       "url": "https://www.imdb.com/title/tt0290937/",
       "awards": [],
@@ -3627,11 +2903,7 @@
       "year": 1995,
       "rating": 8.5,
       "votes": 5003,
-      "genre": [
-        "Action",
-        "Drama",
-        "Thriller"
-      ],
+      "genre": ["Action", "Drama", "Thriller"],
       "duration": "PT143M",
       "url": "https://www.imdb.com/title/tt0285665/",
       "awards": [],
@@ -3643,11 +2915,7 @@
       "year": 1996,
       "rating": 8.5,
       "votes": 4987,
-      "genre": [
-        "Action",
-        "Drama",
-        "History"
-      ],
+      "genre": ["Action", "Drama", "History"],
       "duration": "PT178M",
       "url": "https://www.imdb.com/title/tt0255289/",
       "awards": [],
@@ -3659,9 +2927,7 @@
       "year": 2025,
       "rating": 8.5,
       "votes": 4914,
-      "genre": [
-        "Documentary"
-      ],
+      "genre": ["Documentary"],
       "duration": "PT95M",
       "url": "https://www.imdb.com/title/tt33022710/",
       "awards": [],
@@ -3673,11 +2939,7 @@
       "year": 2011,
       "rating": 8.5,
       "votes": 4642,
-      "genre": [
-        "Drama",
-        "Horror",
-        "Sci-Fi"
-      ],
+      "genre": ["Drama", "Horror", "Sci-Fi"],
       "duration": "PT130M",
       "url": "https://www.imdb.com/title/tt1795369/",
       "awards": [],
@@ -3689,11 +2951,7 @@
       "year": 2021,
       "rating": 8.5,
       "votes": 4628,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Musical"
-      ],
+      "genre": ["Comedy", "Drama", "Musical"],
       "duration": "PT106M",
       "url": "https://www.imdb.com/title/tt7638556/",
       "awards": [],
@@ -3705,10 +2963,7 @@
       "year": 2018,
       "rating": 8.5,
       "votes": 4545,
-      "genre": [
-        "Documentary",
-        "Music"
-      ],
+      "genre": ["Documentary", "Music"],
       "duration": "PT84M",
       "url": "https://www.imdb.com/title/tt9151704/",
       "awards": [],
@@ -3720,10 +2975,7 @@
       "year": 1981,
       "rating": 8.5,
       "votes": 4057,
-      "genre": [
-        "Comedy",
-        "Musical"
-      ],
+      "genre": ["Comedy", "Musical"],
       "duration": "PT136M",
       "url": "https://www.imdb.com/title/tt0155265/",
       "awards": [],
@@ -3735,9 +2987,7 @@
       "year": 1999,
       "rating": 8.5,
       "votes": 4005,
-      "genre": [
-        "Drama"
-      ],
+      "genre": ["Drama"],
       "duration": "PT135M",
       "url": "https://www.imdb.com/title/tt0192377/",
       "awards": [],
@@ -3749,9 +2999,7 @@
       "year": 2015,
       "rating": 8.5,
       "votes": 3956,
-      "genre": [
-        "Romance"
-      ],
+      "genre": ["Romance"],
       "duration": "PT130M",
       "url": "https://www.imdb.com/title/tt4846952/",
       "awards": [],
@@ -3763,11 +3011,7 @@
       "year": 1989,
       "rating": 8.5,
       "votes": 3931,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Thriller"
-      ],
+      "genre": ["Comedy", "Drama", "Thriller"],
       "duration": "PT150M",
       "url": "https://www.imdb.com/title/tt0353935/",
       "awards": [],
@@ -3779,10 +3023,7 @@
       "year": 1997,
       "rating": 8.5,
       "votes": 3860,
-      "genre": [
-        "Drama",
-        "Fantasy"
-      ],
+      "genre": ["Drama", "Fantasy"],
       "duration": "PT136M",
       "url": "https://www.imdb.com/title/tt0133826/",
       "awards": [],
@@ -3794,10 +3035,7 @@
       "year": 2007,
       "rating": 8.5,
       "votes": 3815,
-      "genre": [
-        "Drama",
-        "Mystery"
-      ],
+      "genre": ["Drama", "Mystery"],
       "duration": "PT147M",
       "url": "https://www.imdb.com/title/tt1501298/",
       "awards": [],
@@ -3809,11 +3047,7 @@
       "year": 2015,
       "rating": 8.5,
       "votes": 3681,
-      "genre": [
-        "Biography",
-        "Documentary",
-        "Drama"
-      ],
+      "genre": ["Biography", "Documentary", "Drama"],
       "duration": "PT100M",
       "url": "https://www.imdb.com/title/tt2473476/",
       "awards": [],
@@ -3825,11 +3059,7 @@
       "year": 2024,
       "rating": 8.5,
       "votes": 3512,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Comedy", "Drama", "Romance"],
       "duration": "PT120M",
       "url": "https://www.imdb.com/title/tt14064760/",
       "awards": [],
@@ -3841,11 +3071,7 @@
       "year": 2022,
       "rating": 8.5,
       "votes": 3491,
-      "genre": [
-        "Animation",
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Animation", "Comedy", "Drama"],
       "duration": "PT96M",
       "url": "https://www.imdb.com/title/tt23770418/",
       "awards": [],
@@ -3857,10 +3083,7 @@
       "year": 1997,
       "rating": 8.5,
       "votes": 3478,
-      "genre": [
-        "Drama",
-        "Romance"
-      ],
+      "genre": ["Drama", "Romance"],
       "duration": "PT151M",
       "url": "https://www.imdb.com/title/tt6827298/",
       "awards": [],
@@ -3872,10 +3095,7 @@
       "year": 1991,
       "rating": 8.5,
       "votes": 3444,
-      "genre": [
-        "Drama",
-        "Musical"
-      ],
+      "genre": ["Drama", "Musical"],
       "duration": "PT147M",
       "url": "https://www.imdb.com/title/tt0237038/",
       "awards": [],
@@ -3887,10 +3107,7 @@
       "year": 2015,
       "rating": 8.5,
       "votes": 3107,
-      "genre": [
-        "Drama",
-        "Family"
-      ],
+      "genre": ["Drama", "Family"],
       "duration": "PT141M",
       "url": "https://www.imdb.com/title/tt4658770/",
       "awards": [],
@@ -3902,9 +3119,7 @@
       "year": 2024,
       "rating": 8.5,
       "votes": 3034,
-      "genre": [
-        "Documentary"
-      ],
+      "genre": ["Documentary"],
       "duration": "PT52M",
       "url": "https://www.imdb.com/title/tt32126803/",
       "awards": [],
@@ -3916,10 +3131,7 @@
       "year": 1985,
       "rating": 8.5,
       "votes": 2838,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT118M",
       "url": "https://www.imdb.com/title/tt2044774/",
       "awards": [],
@@ -3931,11 +3143,7 @@
       "year": 1970,
       "rating": 8.5,
       "votes": 2814,
-      "genre": [
-        "Comedy",
-        "Drama",
-        "Musical"
-      ],
+      "genre": ["Comedy", "Drama", "Musical"],
       "duration": "PT85M",
       "url": "https://www.imdb.com/title/tt0066461/",
       "awards": [],
@@ -3947,10 +3155,7 @@
       "year": 2022,
       "rating": 8.5,
       "votes": 2787,
-      "genre": [
-        "Documentary",
-        "Music"
-      ],
+      "genre": ["Documentary", "Music"],
       "duration": "PT102M",
       "url": "https://www.imdb.com/title/tt10709114/",
       "awards": [],
@@ -3962,9 +3167,7 @@
       "year": 1986,
       "rating": 8.5,
       "votes": 2787,
-      "genre": [
-        "Romance"
-      ],
+      "genre": ["Romance"],
       "duration": "PT137M",
       "url": "https://www.imdb.com/title/tt0249047/",
       "awards": [],
@@ -3976,10 +3179,7 @@
       "year": 2020,
       "rating": 8.5,
       "votes": 2734,
-      "genre": [
-        "Animation",
-        "Documentary"
-      ],
+      "genre": ["Animation", "Documentary"],
       "duration": "PT95M",
       "url": "https://www.imdb.com/title/tt12865416/",
       "awards": [],
@@ -3991,9 +3191,7 @@
       "year": 2024,
       "rating": 8.5,
       "votes": 2728,
-      "genre": [
-        "Thriller"
-      ],
+      "genre": ["Thriller"],
       "duration": "PT104M",
       "url": "https://www.imdb.com/title/tt27510137/",
       "awards": [],
@@ -4005,11 +3203,7 @@
       "year": 2022,
       "rating": 8.5,
       "votes": 2722,
-      "genre": [
-        "Biography",
-        "Documentary",
-        "News"
-      ],
+      "genre": ["Biography", "Documentary", "News"],
       "duration": "PT94M",
       "url": "https://www.imdb.com/title/tt21818816/",
       "awards": [],
@@ -4021,10 +3215,7 @@
       "year": 1989,
       "rating": 8.5,
       "votes": 2668,
-      "genre": [
-        "Comedy",
-        "Drama"
-      ],
+      "genre": ["Comedy", "Drama"],
       "duration": "PT154M",
       "url": "https://www.imdb.com/title/tt0237138/",
       "awards": [],
@@ -4036,17 +3227,10 @@
       "year": 2012,
       "rating": 8.4,
       "votes": 1973321,
-      "genre": [
-        "Action",
-        "Crime",
-        "Drama"
-      ],
+      "genre": ["Action", "Crime", "Drama"],
       "duration": "PT164M",
       "url": "https://www.imdb.com/title/tt1345836/",
-      "awards": [
-        "BoxOffice Top 10",
-        "$100m+"
-      ],
+      "awards": ["BoxOffice Top 10", "$100m+"],
       "rank": 247,
       "source_url": "http://top250.info/movie/?1345836"
     },
@@ -4056,11 +3240,7 @@
       "year": 2009,
       "rating": 8.4,
       "votes": 1756597,
-      "genre": [
-        "Adventure",
-        "Drama",
-        "War"
-      ],
+      "genre": ["Adventure", "Drama", "War"],
       "duration": "PT153M",
       "url": "https://www.imdb.com/title/tt0361748/",
       "awards": [
@@ -4078,18 +3258,10 @@
       "year": 2019,
       "rating": 8.4,
       "votes": 1422949,
-      "genre": [
-        "Action",
-        "Adventure",
-        "Sci-Fi"
-      ],
+      "genre": ["Action", "Adventure", "Sci-Fi"],
       "duration": "PT181M",
       "url": "https://www.imdb.com/title/tt4154796/",
-      "awards": [
-        "Nominated to Oscar",
-        "BoxOffice Top 10",
-        "$100m+"
-      ],
+      "awards": ["Nominated to Oscar", "BoxOffice Top 10", "$100m+"],
       "rank": 249,
       "source_url": "http://top250.info/movie/?4154796"
     },
@@ -4099,11 +3271,7 @@
       "year": 2000,
       "rating": 8.4,
       "votes": 1421837,
-      "genre": [
-        "Drama",
-        "Mystery",
-        "Thriller"
-      ],
+      "genre": ["Drama", "Mystery", "Thriller"],
       "duration": "PT113M",
       "url": "https://www.imdb.com/title/tt0209144/",
       "awards": [

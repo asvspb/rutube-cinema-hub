@@ -1,13 +1,11 @@
-import { MovieRatingData } from "../types";
+import { MovieRatingData } from '../types';
 
-export const searchMovieRatings = async (
-  query: string
-): Promise<MovieRatingData | null> => {
+export const searchMovieRatings = async (query: string): Promise<MovieRatingData | null> => {
   try {
-    const response = await fetch("/api/ai/kinorate/search", {
-      method: "POST",
+    const response = await fetch('/api/ai/kinorate/search', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ query }),
     });
@@ -17,21 +15,19 @@ export const searchMovieRatings = async (
     const data = (await response.json()) as MovieRatingData | null;
     return data;
   } catch (error) {
-    console.error("LLM Search Error:", error);
+    console.error('LLM Search Error:', error);
     return null;
   }
 };
 
-export const analyzeBatchWithAgent = async (
-  queries: string[]
-): Promise<MovieRatingData[]> => {
+export const analyzeBatchWithAgent = async (queries: string[]): Promise<MovieRatingData[]> => {
   if (queries.length === 0) return [];
 
   try {
-    const response = await fetch("/api/ai/kinorate/batch", {
-      method: "POST",
+    const response = await fetch('/api/ai/kinorate/batch', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ queries }),
     });
@@ -41,7 +37,7 @@ export const analyzeBatchWithAgent = async (
     const data = (await response.json()) as MovieRatingData[];
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error("LLM Batch Error:", error);
+    console.error('LLM Batch Error:', error);
     return [];
   }
 };

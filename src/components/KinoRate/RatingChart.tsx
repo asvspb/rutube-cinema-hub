@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { MovieRatingData } from '../../types';
@@ -13,14 +12,14 @@ export const RatingChart: React.FC<RatingChartProps> = ({ data }) => {
       name: 'Kinopoisk',
       rating: data.kpRating,
       color: '#f97316', // Orange-500
-      votes: data.kpVotes
+      votes: data.kpVotes,
     },
     {
       name: 'IMDb',
       rating: data.imdbRating,
       color: '#eab308', // Yellow-500
-      votes: 'N/A' // Usually we don't fetch imdb votes separately in the schema but we could
-    }
+      votes: 'N/A', // Usually we don't fetch imdb votes separately in the schema but we could
+    },
   ];
 
   return (
@@ -32,17 +31,22 @@ export const RatingChart: React.FC<RatingChartProps> = ({ data }) => {
           layout="vertical"
         >
           <XAxis type="number" domain={[0, 10]} hide />
-          <YAxis 
-            dataKey="name" 
-            type="category" 
-            tick={{ fill: '#9ca3af', fontSize: 12 }} 
+          <YAxis
+            dataKey="name"
+            type="category"
+            tick={{ fill: '#9ca3af', fontSize: 12 }}
             width={70}
             axisLine={false}
             tickLine={false}
           />
-          <Tooltip 
+          <Tooltip
             cursor={{ fill: '#ffffff', opacity: 0.1 }}
-            contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
+            contentStyle={{
+              backgroundColor: '#18181b',
+              borderColor: '#27272a',
+              borderRadius: '8px',
+              color: '#fff',
+            }}
             itemStyle={{ color: '#fff' }}
             formatter={(value: number) => [`${value} / 10`, 'Рейтинг']}
           />

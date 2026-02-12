@@ -8,7 +8,7 @@ logger.initGlobalHandlers();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
-  throw new Error("Could not find root element to mount to");
+  throw new Error('Could not find root element to mount to');
 }
 
 interface ErrorBoundaryProps {
@@ -23,7 +23,7 @@ interface ErrorBoundaryState {
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   public state: ErrorBoundaryState = {
     hasError: false,
-    error: null
+    error: null,
   };
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -31,7 +31,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    logger.error("Uncaught error in ErrorBoundary", { errorInfo }, error);
+    logger.error('Uncaught error in ErrorBoundary', { errorInfo }, error);
   }
 
   handleReset = () => {
@@ -42,28 +42,43 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ 
-          minHeight: '100vh', 
-          backgroundColor: '#000917', 
-          color: 'white', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          fontFamily: 'sans-serif',
-          padding: '20px',
-          textAlign: 'center'
-        }}>
-          <h1 style={{ fontSize: '24px', marginBottom: '16px', fontWeight: 'bold' }}>Что-то пошло не так</h1>
+        <div
+          style={{
+            minHeight: '100vh',
+            backgroundColor: '#000917',
+            color: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'sans-serif',
+            padding: '20px',
+            textAlign: 'center',
+          }}
+        >
+          <h1 style={{ fontSize: '24px', marginBottom: '16px', fontWeight: 'bold' }}>
+            Что-то пошло не так
+          </h1>
           <p style={{ color: '#a1a1aa', marginBottom: '24px', maxWidth: '400px' }}>
             Произошла ошибка при отрисовке приложения. Возможно, данные повреждены.
           </p>
-          <div style={{ backgroundColor: '#27272a', padding: '16px', borderRadius: '8px', marginBottom: '24px', textAlign: 'left', width: '100%', maxWidth: '600px', overflow: 'auto' }}>
+          <div
+            style={{
+              backgroundColor: '#27272a',
+              padding: '16px',
+              borderRadius: '8px',
+              marginBottom: '24px',
+              textAlign: 'left',
+              width: '100%',
+              maxWidth: '600px',
+              overflow: 'auto',
+            }}
+          >
             <code style={{ fontFamily: 'monospace', color: '#ef4444' }}>
               {this.state.error?.toString()}
             </code>
           </div>
-          <button 
+          <button
             onClick={this.handleReset}
             style={{
               backgroundColor: '#2563eb',
@@ -73,7 +88,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
               borderRadius: '6px',
               fontSize: '14px',
               cursor: 'pointer',
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             Сбросить настройки и перезагрузить
