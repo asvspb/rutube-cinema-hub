@@ -1,0 +1,28 @@
+Роль: ты — DevOps инженер.
+
+Цель этапа 6: привести Docker‑окружение к production‑готовности.
+
+Задачи:
+1) Multi‑stage Dockerfile (build → production).
+2) Кэширование node_modules в Docker (`COPY package*.json` → `npm ci`).
+3) Health checks в `docker-compose.yml`.
+4) Docker Compose profiles (dev / prod).
+5) Документация деплоя в `docs/DEPLOYMENT.md`.
+
+Шаги:
+- Проанализируй текущее `docker-compose.yml`.
+- Добавь production‑сценарии, не ломая dev‑сценарии.
+
+Ограничения:
+- Не меняй runtime‑поведение приложения.
+
+Ожидаемый результат:
+- Сборка и запуск через Docker воспроизводимы.
+- Health checks корректны.
+
+Формат отчёта:
+- Список добавленных конфигов.
+- Инструкции запуска dev/prod.
+
+Definition of Done:
+- Контейнеры успешно стартуют в обоих профилях.

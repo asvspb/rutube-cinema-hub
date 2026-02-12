@@ -1,0 +1,46 @@
+Роль: ты — backend инженер и архитектор Express‑сервиса.
+
+Цель этапа 2: декомпозировать `server/index.js` до < 100 строк и разнести логику по модулям.
+
+Требуемая структура:
+server/
+  index.js
+  config/
+    env.js
+    cors.js
+  middleware/
+    security.js
+    logging.js
+    validation.js
+  routes/
+    health.js
+    proxy.js
+    ai.js
+    logs.js
+  services/
+    llm.js
+    jsonParser.js
+
+Задачи:
+1) Перенести загрузку и валидацию env в `config/env.js`.
+2) Вынести CORS в `config/cors.js`.
+3) Вынести security middleware (Helmet, rate limiting) в `middleware/security.js`.
+4) Вынести логирование в `middleware/logging.js`.
+5) Вынести domain validation/IP blocking в `middleware/validation.js`.
+6) Разнести маршруты по файлам в `routes/`.
+7) Вынести LLM‑клиенты и JSON‑утилиты в `services/`.
+
+Ограничения:
+- Поведение эндпоинтов не должно измениться.
+- Никаких новых зависимостей без запроса.
+
+Ожидаемый результат:
+- `server/index.js` — точка входа, только wiring.
+- Понятная модульная структура.
+
+Формат отчёта:
+- Список новых файлов и их ответственность.
+- Любые изменения в маршрутах/настройках.
+
+Definition of Done:
+- Сервер стартует без ошибок, API работает как раньше.
