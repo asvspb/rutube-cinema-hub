@@ -38,6 +38,34 @@ for (const [key, value] of Object.entries(envFromFiles)) {
   }
 }
 
+// Environment variable validation
+const requiredEnvVars = ['PORT'];
+const optionalEnvVarsWithDefaults = {
+  'GEMINI_API_KEY': 'Required for Gemini AI provider (fallback to Mistral if not set)',
+  'MISTRAL_API_KEY': 'Required for Mistral AI provider (fallback to Gemini if not set)',
+  'ALLOWED_ORIGINS': 'Default: http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173,http://127.0.0.1:4173',
+  'PROXY_RATE_LIMIT_WINDOW_MS': 'Default: 900000 (15 minutes)',
+  'PROXY_RATE_LIMIT_MAX_REQUESTS': 'Default: 100',
+  'AI_RATE_LIMIT_WINDOW_MS': 'Default: 900000 (15 minutes)',
+  'AI_RATE_LIMIT_MAX_REQUESTS': 'Default: 50',
+  'LLM_PROVIDER': 'Default: auto (can be gemini, mistral, or auto)',
+  'LLM_TIMEOUT_SEC': 'Default: 30',
+  'LLM_MAX_TOKENS': 'Default: 512'
+};
+
+// Check for required environment variables
+const missingRequired = requiredEnvVars.filter(envVar => !process.env[envVar]);
+if (missingRequired.length > 0) {
+  console.warn('[ENV WARN] Missing required environment variables:', missingRequired);
+}
+
+// Check for optional environment variables and warn if missing
+Object.keys(optionalEnvVarsWithDefaults).forEach(envVar => {
+  if (!process.env[envVar]) {
+    console.warn(`[ENV WARN] Optional environment variable '${envVar}' not set. ${optionalEnvVarsWithDefaults[envVar]}`);
+  }
+});
+
 const app = express();
 const PORT = process.env.PORT || 9230; // Using a different port than the frontend
 
@@ -251,6 +279,11 @@ const aiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 // Logging endpoint
