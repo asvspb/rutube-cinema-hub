@@ -20,9 +20,9 @@ services:
     environment:
       PORT: "9230"
     volumes:
-      - ./:/app
+      - ./:/app:rw
       - /app/node_modules
     ports:
       - "9230:9230"
     command: >-
-      sh -c "npm install --no-audit --no-fund && npx --yes nodemon --watch server.js --watch services/ --watch .env --ext js,json server.js"
+      sh -c "npm install --no-audit --no-fund && npx --yes prisma generate && npx --yes nodemon --watch server.js --watch services/ --watch .env --ext js,json server.js"

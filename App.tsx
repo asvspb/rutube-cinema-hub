@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Tv, PlayCircle, Info, Loader2, PlusCircle, ArrowUpDown, ArrowUp, ArrowDown, Check, ChevronDown, User, Settings, LogOut, Heart, History as HistoryIcon, Search, X, Plus, Calculator, LayoutGrid, MoreVertical, Pencil, Trash2, Save, ChevronLeft, ListPlus, GripVertical, ChevronRight, LogIn, Sparkles } from 'lucide-react';
+import { Tv, PlayCircle, Loader2, PlusCircle, ArrowUpDown, ArrowUp, ArrowDown, Check, User, Settings, LogOut, History as HistoryIcon, Search, X, Plus, Calculator, LayoutGrid, MoreVertical, Pencil, Trash2, Save, ChevronLeft, ListPlus, GripVertical, ChevronRight, LogIn, Sparkles } from 'lucide-react';
 import { Reorder } from 'framer-motion';
 import { DEFAULT_CHANNELS, DEFAULT_PLAYLISTS_BY_CHANNEL, fetchVideos, sortVideos, DEFAULT_RATING_SETTINGS, calculateRating, calculateGravity, fetchChannelInfo, fetchChannelPlaylists } from './services/rutubeService';
 import { CategoryDef, RutubeVideo, ChannelDef, SortOption, RatingSettings, ChannelInfo, MovieRatingData } from './types';
@@ -15,7 +14,7 @@ import { ImportPlaylistsModal } from './components/ImportPlaylistsModal';
 import { ChannelHeader } from './components/ChannelHeader';
 import { HistoryModal } from './components/HistoryModal';
 import { KinoRateModal } from './components/KinoRate/KinoRateModal';
-import { findBestMovieMatch, TOP_250_MOVIES } from './services/top250Data';
+import { findBestMovieMatch } from './services/top250Data';
 
 const RECOMMENDED_CHANNELS = [
   { id: '32869212', label: 'Смотри кино', color: 'bg-gradient-to-br from-orange-500 to-red-600' },
@@ -148,6 +147,9 @@ interface CachedPlaylistData {
   nextUrl: string | null;
 }
 
+const ACCESS_TOKEN_KEY = 'rutube_cinema_v2_access_token';
+const AUTH_USER_KEY = 'rutube_cinema_v2_auth_user';
+
 const App: React.FC = () => {
   const [viewMode, setViewMode] = useState<'home' | 'channel'>('home');
 
@@ -185,8 +187,7 @@ const App: React.FC = () => {
        if (saved) return saved;
      } catch(e) {}
      
-     const firstId = channels[0]?.id || ''; 
-     return firstId;
+     return channels[0]?.id || '';
   });
 
   useEffect(() => {
@@ -334,6 +335,158 @@ const App: React.FC = () => {
     } catch(e) { return DEFAULT_RATING_SETTINGS; }
   });
   const [isFormulaModalOpen, setIsFormulaModalOpen] = useState(false);
+
+  const [authUserEmail, setAuthUserEmail] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(AUTH_USER_KEY);
+    } catch {
+      return null;
+    }
+  });
+
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const clearAuthState = () => {
+    try {
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(AUTH_USER_KEY);
+    } catch {}
+    setAuthUserEmail(null);
+    setIsLoggedIn(false);
+  };
+
+  const setAuthState = (token: string, email: string) => {
+    try {
+      localStorage.setItem(ACCESS_TOKEN_KEY, token);
+      localStorage.setItem(AUTH_USER_KEY, email);
+    } catch {}
+    setAuthUserEmail(email);
+    setIsLoggedIn(true);
+  };
+
+  const refreshAuthToken = async () => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (!token) return false;
+
+    try {
+      const resp = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!resp.ok) return false;
+
+      const data = await resp.json().catch(() => ({}));
+      if (data?.token && data?.user?.email) {
+        setAuthState(data.token, data.user.email);
+        return true;
+      }
+    } catch {}
+
+    return false;
+  };
+
+  const fetchAuthMe = async () => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (!token) return;
+
+    try {
+      const resp = await fetch('/api/auth/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!resp.ok) {
+        if (resp.status === 401) {
+          const refreshed = await refreshAuthToken();
+          if (refreshed) return;
+        }
+        clearAuthState();
+        return;
+      }
+
+      const data = await resp.json();
+      if (data?.user?.email) {
+        setAuthUserEmail(data.user.email);
+        setIsLoggedIn(true);
+      }
+    } catch {
+      clearAuthState();
+    }
+  };
+
+  useEffect(() => {
+    if (authUserEmail) {
+      setIsLoggedIn(true);
+    } else {
+      fetchAuthMe();
+    }
+  }, []);
+
+  const handleAuthSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setAuthError(null);
+    setAuthLoading(true);
+
+    try {
+      const resp = await fetch(`/api/auth/${authMode}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: authEmail,
+          password: authPassword,
+        }),
+      });
+
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        setAuthError(data?.error || 'Ошибка авторизации');
+        return;
+      }
+
+      if (data?.token && data?.user?.email) {
+        setAuthState(data.token, data.user.email);
+        setIsAuthModalOpen(false);
+        setAuthEmail('');
+        setAuthPassword('');
+      } else {
+        setAuthError('Неверный ответ сервера');
+      }
+    } catch (e) {
+      setAuthError('Ошибка сети');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (!token) {
+      clearAuthState();
+      return;
+    }
+
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch {}
+
+    clearAuthState();
+  };
 
   useEffect(() => {
     localStorage.setItem('rutube_cinema_v2_is_logged_in', String(isLoggedIn));
@@ -586,7 +739,7 @@ const App: React.FC = () => {
             }
 
             try {
-                const promises = channels.map(channel => {
+                const promises = channels.map((channel) => {
                     const tempCategory: CategoryDef = {
                         id: `home-temp-${channel.rutubeId}`,
                         label: 'All',
@@ -619,7 +772,7 @@ const App: React.FC = () => {
                 }
 
                 // Background: fetch full lists and merge
-                const fullPromises = channels.map(channel => {
+                const fullPromises = channels.map((channel) => {
                     const tempCategory: CategoryDef = {
                         id: `home-temp-full-${channel.rutubeId}`,
                         label: 'All',
@@ -683,7 +836,7 @@ const App: React.FC = () => {
       if (isMounted) setIsVideoLoading(true);
       
       try {
-        if (!activeCategory.rutubeId) throw new Error("Invalid category ID");
+        if (!activeCategory.rutubeId) return;
 
         const shouldFetchAll = isFetchAllMode || activeCategory.type === 'playlist';
 
@@ -1513,7 +1666,7 @@ const App: React.FC = () => {
                         {isLoggedIn ? (
                            <button 
                              onClick={() => {
-                               setIsLoggedIn(false);
+                               handleLogout();
                                setIsUserMenuOpen(false);
                              }}
                              className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-zinc-800 hover:text-red-300 flex items-center gap-3 transition-colors"
@@ -1524,7 +1677,8 @@ const App: React.FC = () => {
                         ) : (
                            <button 
                              onClick={() => {
-                               setIsLoggedIn(true);
+                               setAuthMode('login');
+                               setIsAuthModalOpen(true);
                                setIsUserMenuOpen(false);
                              }}
                              className="w-full text-left px-3 py-2 rounded-lg text-sm text-blue-400 hover:bg-zinc-800 hover:text-blue-300 flex items-center gap-3 transition-colors"
@@ -1894,6 +2048,90 @@ const App: React.FC = () => {
            onClose={() => setIsKinoRateOpen(false)}
            onSaveMetadata={handleSaveMetadata} // Pass save callback
         />
+      )}
+
+      {isAuthModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
+            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+              <h2 className="text-white font-semibold flex items-center gap-2">
+                <User className="w-5 h-5 text-blue-500" />
+                {authMode === 'login' ? 'Вход' : 'Регистрация'}
+              </h2>
+              <button
+                onClick={() => setIsAuthModalOpen(false)}
+                className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white"
+                disabled={authLoading}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAuthSubmit} className="p-6 flex flex-col gap-4">
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  placeholder="you@example.com"
+                  disabled={authLoading}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1.5">Пароль</label>
+                <input
+                  type="password"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  placeholder="Минимум 8 символов"
+                  disabled={authLoading}
+                  required
+                />
+              </div>
+
+              {authError && (
+                <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
+                  className="text-sm text-blue-400 hover:text-blue-300"
+                  disabled={authLoading}
+                >
+                  {authMode === 'login' ? 'Нужна регистрация?' : 'Уже есть аккаунт?'}
+                </button>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAuthModalOpen(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                  disabled={authLoading}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors disabled:opacity-50"
+                  disabled={authLoading}
+                >
+                  {authLoading ? 'Загрузка...' : authMode === 'login' ? 'Войти' : 'Создать аккаунт'}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="absolute inset-0 -z-10" onClick={!authLoading ? () => setIsAuthModalOpen(false) : undefined} />
+        </div>
       )}
 
     </div>

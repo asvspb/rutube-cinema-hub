@@ -4,7 +4,16 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
+import prismaPkg from '@prisma/client';
+import {
+  createAccessToken,
+  verifyAccessToken,
+  hashPassword,
+  verifyPassword,
+} from './services/authUtils.js';
+
+const { PrismaClient } = prismaPkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +40,8 @@ for (const [key, value] of Object.entries(envFromFiles)) {
 
 const app = express();
 const PORT = process.env.PORT || 9230; // Using a different port than the frontend
+
+const prisma = new PrismaClient();
 
 // Enable CORS for all routes
 app.use(cors());
@@ -85,6 +96,11 @@ const parseIntEnv = (value, fallback) => {
   const n = Number.parseInt(String(value ?? ''), 10);
   return Number.isFinite(n) ? n : fallback;
 };
+
+const JWT_SECRET = process.env.JWT_SECRET || '';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
+const JWT_ISSUER = process.env.JWT_ISSUER || 'rutube-cinema-hub';
+const SESSION_TTL_DAYS = parseIntEnv(process.env.SESSION_TTL_DAYS, 30);
 
 const LLM_TIMEOUT_SEC = parseIntEnv(process.env.LLM_TIMEOUT_SEC, 30);
 const LLM_MAX_TOKENS = parseIntEnv(process.env.LLM_MAX_TOKENS, 512);
@@ -240,290 +256,66 @@ const normalizeKinoRatePayload = (value) => {
   return normalizeMovieRatingData(value);
 };
 
-const withTimeout = async (promise, timeoutMs, label) => {
-  let timeoutId;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutId = setTimeout(
-      () => reject(new Error(label || `Timeout after ${timeoutMs}ms`)),
-      timeoutMs
-    );
+const ensureAuthConfigured = (res) => {
+  if (!JWT_SECRET) {
+    res.status(500).json({ error: 'Auth is not configured (JWT_SECRET missing)' });
+    return false;
+  }
+  return true;
+};
+
+const getBearerToken = (req) => {
+  const header = req.headers.authorization || '';
+  const [type, token] = header.split(' ');
+  if (type !== 'Bearer' || !token) return null;
+  return token;
+};
+
+const authenticateRequest = async (req) => {
+  const token = getBearerToken(req);
+  if (!token) return { error: 'missing' };
+
+  const payload = verifyAccessToken(token, {
+    secret: JWT_SECRET,
+    issuer: JWT_ISSUER,
   });
-  try {
-    return await Promise.race([promise, timeoutPromise]);
-  } finally {
-    clearTimeout(timeoutId);
-  }
-};
+  if (!payload?.sid || !payload?.sub) return { error: 'invalid' };
 
-const callMistralChat = async (messages) => {
-  if (!MISTRAL_ENABLED) {
-    throw new Error('Mistral provider disabled or missing MISTRAL_API_KEY');
+  const session = await prisma.session.findUnique({ where: { id: payload.sid } });
+  if (!session || session.revokedAt || session.expiresAt <= new Date()) {
+    return { error: 'expired' };
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), LLM_TIMEOUT_SEC * 1000);
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { id: true, email: true },
+  });
 
-  try {
-    const resp = await fetch(`${MISTRAL_API_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${MISTRAL_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: MISTRAL_MODEL_NAME,
-        messages,
-        max_tokens: LLM_MAX_TOKENS,
-        temperature: 0.2,
-      }),
-      signal: controller.signal,
-    });
-
-    const raw = await resp.text();
-    let json;
-    try {
-      json = JSON.parse(raw);
-    } catch {
-      json = null;
-    }
-
-    if (!resp.ok) {
-      throw new Error(`Mistral API error ${resp.status}: ${raw.slice(0, 2000)}`);
-    }
-
-    const content = json?.choices?.[0]?.message?.content;
-    return typeof content === 'string' ? content : null;
-  } finally {
-    clearTimeout(timeoutId);
-  }
+  if (!user) return { error: 'invalid' };
+  return { user, session };
 };
 
-const mistralSearchMovieRatings = async (query) => {
-  const content = await callMistralChat([
-    { role: 'system', content: KINORATE_SYSTEM_INSTRUCTION_BASE },
-    { role: 'user', content: createKinoRateSinglePrompt(query) },
-  ]);
-  if (!content) return null;
-
-  const parsed = parseJsonFromText(content, 'object');
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
-  return parsed;
-};
-
-const mistralAnalyzeBatch = async (queries) => {
-  const content = await callMistralChat([
-    { role: 'system', content: KINORATE_SYSTEM_INSTRUCTION_BASE },
-    { role: 'user', content: createKinoRateBatchPrompt(queries) },
-  ]);
-  if (!content) return [];
-
-  const parsed = parseJsonFromText(content, 'array');
-  return Array.isArray(parsed) ? parsed : [];
-};
-
-const movieRatingSchema = {
-  type: Type.OBJECT,
-  properties: {
-    title: { type: Type.STRING },
-    originalTitle: { type: Type.STRING },
-    year: { type: Type.STRING },
-    kpRating: { type: Type.NUMBER },
-    kpVotes: { type: Type.STRING },
-    imdbRating: { type: Type.NUMBER },
-    description: { type: Type.STRING },
-    awards: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description:
-        "List of major awards status, e.g., 'Oscar Won', 'Oscar Nominated', 'Best Picture'",
+const createSessionToken = async (userId) => {
+  const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
+  const session = await prisma.session.create({
+    data: {
+      userId,
+      expiresAt,
     },
-  },
-  required: [
-    'title',
-    'originalTitle',
-    'year',
-    'kpRating',
-    'kpVotes',
-    'imdbRating',
-    'description',
-  ],
+  });
+
+  const token = createAccessToken({
+    userId,
+    sessionId: session.id,
+    secret: JWT_SECRET,
+    issuer: JWT_ISSUER,
+    expiresIn: JWT_EXPIRES_IN,
+  });
+
+  return { token, session };
 };
 
-const batchSchema = {
-  type: Type.ARRAY,
-  items: movieRatingSchema,
-};
-
-const extractImdbUrl = (sources) => {
-  if (!Array.isArray(sources)) return undefined;
-  
-  for (const url of sources) {
-    if (typeof url === 'string' && url.includes('imdb.com/title/')) {
-      return url;
-    }
-  }
-  return undefined;
-};
-
-const geminiSearchMovieRatings = async (query) => {
-  if (!geminiClient) {
-    throw new Error('Gemini provider disabled or missing GEMINI_API_KEY');
-  }
-
-  const response = await withTimeout(
-    geminiClient.models.generateContent({
-      model: GEMINI_MODEL_NAME,
-      contents: `Find ratings and awards for the movie: "${query}"`,
-      config: {
-        systemInstruction: KINORATE_SYSTEM_INSTRUCTION_GEMINI,
-        tools: [{ googleSearch: {} }],
-        responseMimeType: 'application/json',
-        responseSchema: movieRatingSchema,
-        maxOutputTokens: LLM_MAX_TOKENS,
-      },
-    }),
-    LLM_TIMEOUT_SEC * 1000,
-    'Gemini request timeout'
-  );
-
-  const text = response.text;
-  if (!text) return null;
-
-  const data = JSON.parse(text);
-
-  const groundingChunks =
-    response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-  const sources = groundingChunks
-    ?.map((c) => c.web?.uri)
-    .filter((uri) => typeof uri === 'string');
-
-  const imdbUrl = extractImdbUrl(sources);
-  
-  return { ...data, sources, imdbUrl };
-};
-
-const geminiAnalyzeBatch = async (queries) => {
-  if (!geminiClient) {
-    throw new Error('Gemini provider disabled or missing GEMINI_API_KEY');
-  }
-
-  const joinedQueries = queries.map((q, i) => `${i + 1}. ${q}`).join('\n');
-  const response = await withTimeout(
-    geminiClient.models.generateContent({
-      model: GEMINI_MODEL_NAME,
-      contents: `Find ratings and Oscar status for the following movies:\n${joinedQueries}`,
-      config: {
-        systemInstruction:
-          KINORATE_SYSTEM_INSTRUCTION_GEMINI +
-          '\nReturn a JSON array of results in the same order.',
-        tools: [{ googleSearch: {} }],
-        responseMimeType: 'application/json',
-        responseSchema: batchSchema,
-        maxOutputTokens: LLM_MAX_TOKENS,
-      },
-    }),
-    LLM_TIMEOUT_SEC * 1000,
-    'Gemini request timeout'
-  );
-
-  const text = response.text;
-  if (!text) return [];
-
-  const data = JSON.parse(text);
-  return Array.isArray(data) ? data : [];
-};
-
-const selectProvider = () => {
-  if (LLM_PROVIDER === 'gemini') return 'gemini';
-  if (LLM_PROVIDER === 'mistral') return 'mistral';
-
-  // auto
-  if (GEMINI_ENABLED) return 'gemini';
-  if (MISTRAL_ENABLED) return 'mistral';
-  return null;
-};
-
-const kinoRateSearch = async (query) => {
-  const selected = selectProvider();
-  if (!selected) {
-    throw new Error(
-      'No LLM provider enabled. Configure GEMINI_API_KEY or MISTRAL_API_KEY.'
-    );
-  }
-
-  if (selected === 'gemini') {
-    try {
-      return { provider: 'gemini', data: await geminiSearchMovieRatings(query) };
-    } catch (e) {
-      if (LLM_PROVIDER === 'auto' && MISTRAL_ENABLED) {
-        console.warn(
-          '[LLM] Gemini failed, falling back to Mistral:',
-          e?.message || e
-        );
-        return { provider: 'mistral', data: await mistralSearchMovieRatings(query) };
-      }
-      throw e;
-    }
-  }
-
-  if (selected === 'mistral') {
-    try {
-      return { provider: 'mistral', data: await mistralSearchMovieRatings(query) };
-    } catch (e) {
-      if (LLM_PROVIDER === 'auto' && GEMINI_ENABLED) {
-        console.warn(
-          '[LLM] Mistral failed, falling back to Gemini:',
-          e?.message || e
-        );
-        return { provider: 'gemini', data: await geminiSearchMovieRatings(query) };
-      }
-      throw e;
-    }
-  }
-
-  throw new Error(`Unknown LLM provider: ${selected}`);
-};
-
-const kinoRateBatch = async (queries) => {
-  const selected = selectProvider();
-  if (!selected) {
-    throw new Error(
-      'No LLM provider enabled. Configure GEMINI_API_KEY or MISTRAL_API_KEY.'
-    );
-  }
-
-  if (selected === 'gemini') {
-    try {
-      return { provider: 'gemini', data: await geminiAnalyzeBatch(queries) };
-    } catch (e) {
-      if (LLM_PROVIDER === 'auto' && MISTRAL_ENABLED) {
-        console.warn(
-          '[LLM] Gemini failed, falling back to Mistral:',
-          e?.message || e
-        );
-        return { provider: 'mistral', data: await mistralAnalyzeBatch(queries) };
-      }
-      throw e;
-    }
-  }
-
-  if (selected === 'mistral') {
-    try {
-      return { provider: 'mistral', data: await mistralAnalyzeBatch(queries) };
-    } catch (e) {
-      if (LLM_PROVIDER === 'auto' && GEMINI_ENABLED) {
-        console.warn(
-          '[LLM] Mistral failed, falling back to Gemini:',
-          e?.message || e
-        );
-        return { provider: 'gemini', data: await geminiAnalyzeBatch(queries) };
-      }
-      throw e;
-    }
-  }
-
-  throw new Error(`Unknown LLM provider: ${selected}`);
-};
+const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
 // KinoRate AI endpoints
 app.post('/api/ai/kinorate/search', async (req, res) => {
@@ -561,6 +353,140 @@ app.post('/api/ai/kinorate/batch', async (req, res) => {
   } catch (e) {
     console.error('KinoRate AI batch error:', e);
     res.status(500).json({ error: 'KinoRate AI batch failed' });
+  }
+});
+
+app.post('/api/auth/register', async (req, res) => {
+  if (!ensureAuthConfigured(res)) return;
+
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  const password = String(req.body?.password || '');
+
+  if (!isValidEmail(email)) {
+    res.status(400).json({ error: 'Invalid email address' });
+    return;
+  }
+
+  if (password.length < 8) {
+    res.status(400).json({ error: 'Password must be at least 8 characters' });
+    return;
+  }
+
+  try {
+    const passwordHash = await hashPassword(password);
+    const user = await prisma.user.create({
+      data: { email, passwordHash },
+      select: { id: true, email: true },
+    });
+
+    const { token } = await createSessionToken(user.id);
+    res.status(201).json({ token, user });
+  } catch (e) {
+    if (e?.code === 'P2002') {
+      res.status(409).json({ error: 'Email already registered' });
+      return;
+    }
+    console.error('Register error:', e);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  if (!ensureAuthConfigured(res)) return;
+
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  const password = String(req.body?.password || '');
+
+  if (!isValidEmail(email) || !password) {
+    res.status(400).json({ error: 'Invalid email or password' });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
+    }
+
+    const ok = await verifyPassword(password, user.passwordHash);
+    if (!ok) {
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
+    }
+
+    const { token } = await createSessionToken(user.id);
+    res.status(200).json({ token, user: { id: user.id, email: user.email } });
+  } catch (e) {
+    console.error('Login error:', e);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+app.post('/api/auth/refresh', async (req, res) => {
+  if (!ensureAuthConfigured(res)) return;
+
+  try {
+    const auth = await authenticateRequest(req);
+    if (auth.error) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const token = createAccessToken({
+      userId: auth.user.id,
+      sessionId: auth.session.id,
+      secret: JWT_SECRET,
+      issuer: JWT_ISSUER,
+      expiresIn: JWT_EXPIRES_IN,
+    });
+
+    res.status(200).json({ token, user: auth.user });
+  } catch (e) {
+    console.error('Refresh error:', e);
+    res.status(500).json({ error: 'Refresh failed' });
+  }
+});
+
+app.post('/api/auth/logout', async (req, res) => {
+  if (!ensureAuthConfigured(res)) return;
+
+  try {
+    const auth = await authenticateRequest(req);
+    if (auth.error) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    await prisma.session.update({
+      where: { id: auth.session.id },
+      data: { revokedAt: new Date() },
+    });
+
+    res.status(200).json({ status: 'ok' });
+  } catch (e) {
+    console.error('Logout error:', e);
+    res.status(500).json({ error: 'Logout failed' });
+  }
+});
+
+app.get('/api/auth/me', async (req, res) => {
+  if (!ensureAuthConfigured(res)) return;
+
+  try {
+    const auth = await authenticateRequest(req);
+    if (auth.error) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    res.status(200).json({ user: auth.user });
+  } catch (e) {
+    console.error('Auth me error:', e);
+    res.status(500).json({ error: 'Failed to fetch user' });
   }
 });
 
@@ -609,7 +535,7 @@ app.get('/api/proxy', async (req, res) => {
 
     // Forward response headers (except those that might conflict)
     for (const [key, value] of response.headers.entries()) {
-      if (key.toLowerCase() !== 'access-control-allow-origin' && 
+      if (key.toLowerCase() !== 'access-control-allow-origin' &&
           key.toLowerCase() !== 'content-security-policy' &&
           key.toLowerCase() !== 'transfer-encoding' &&
           key.toLowerCase() !== 'content-encoding') {

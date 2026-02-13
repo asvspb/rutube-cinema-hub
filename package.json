@@ -9,13 +9,15 @@
     "preview": "vite preview",
     "server": "node server.js",
     "dev:all": "bash scripts/dev-all-in-one.sh",
+    "prisma:gen-schemas": "bash scripts/generate-prisma-schemas.sh",
     "test": "bash scripts/smoke-test.sh",
     "test:api": "node --test tests/*.test.js"
   },
   "dependencies": {
     "@google/genai": "^1.39.0",
-    "@prisma/client": "^7.3.0",
+    "@prisma/client": "^6.13.0",
     "axios": "^1.13.4",
+    "bcryptjs": "^2.4.3",
     "buffer": "^6.0.3",
     "cheerio": "^1.2.0",
     "clsx": "latest",
@@ -24,6 +26,7 @@
     "express": "^5.2.1",
     "framer-motion": "11.0.24",
     "http-proxy-middleware": "^3.0.5",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "0.344.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -35,7 +38,8 @@
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^5.0.0",
-    "prisma": "^7.3.0",
+    "nodemon": "^3.1.10",
+    "prisma": "^6.13.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

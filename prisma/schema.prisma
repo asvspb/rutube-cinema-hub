@@ -1,0 +1,32 @@
+// AUTO-GENERATED at 2026-02-13T07:52:56Z
+// Do not edit directly. Edit prisma/schema.base.prisma instead.
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sessions     Session[]
+}
+
+model Session {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  @@index([userId])
+  @@index([expiresAt])
+}

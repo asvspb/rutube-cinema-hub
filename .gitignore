@@ -42,3 +42,5 @@ coverage
 error_logs.json
 
 /generated/prisma
+
+*.db
