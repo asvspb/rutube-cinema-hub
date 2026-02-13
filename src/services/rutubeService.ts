@@ -156,7 +156,10 @@ const getProxies = () => {
 const isValidRutubeId = (id: string | undefined | null) => !!id && /^\d{6,}$/.test(id);
 
 // Helper: Tries proxies sequentially and returns the first successful text response
-const fetchTextWithRace = async (targetUrl: string): Promise<string> => {
+const fetchTextWithRace = async (
+  targetUrl: string,
+  options?: { signal?: AbortSignal }
+): Promise<string> => {
   const proxies = getProxies();
   if (proxies.length === 0) {
     throw new Error('No proxies available');
@@ -172,7 +175,12 @@ const fetchTextWithRace = async (targetUrl: string): Promise<string> => {
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const res = await fetch(url, { signal: controller.signal });
+      // Create a composite signal that combines both signals
+      const compositeSignal = options?.signal
+        ? createCompositeSignal(controller.signal, options.signal)
+        : controller.signal;
+
+      const res = await fetch(url, { signal: compositeSignal });
       clearTimeout(timeoutId);
 
       if (!res.ok) {
@@ -203,6 +211,26 @@ const fetchTextWithRace = async (targetUrl: string): Promise<string> => {
 
   logger.error('All proxies failed for URL', { targetUrl });
   throw lastError ?? new Error('All proxies failed');
+};
+
+// Helper function to create a composite signal that aborts when either signal aborts
+const createCompositeSignal = (signal1: AbortSignal, signal2: AbortSignal): AbortSignal => {
+  const controller = new AbortController();
+
+  const abortHandler = () => {
+    controller.abort();
+  };
+
+  signal1.addEventListener('abort', abortHandler);
+  signal2.addEventListener('abort', abortHandler);
+
+  // Clean up listeners when either signal aborts
+  controller.signal.addEventListener('abort', () => {
+    signal1.removeEventListener('abort', abortHandler);
+    signal2.removeEventListener('abort', abortHandler);
+  });
+
+  return controller.signal;
 };
 
 const parseProxyResponse = (text: string): any => {
@@ -244,7 +272,8 @@ const findIdInHtml = (html: string): string | null => {
 
 export const resolveRutubeId = async (
   id: string,
-  type: 'channel' | 'playlist'
+  type: 'channel' | 'playlist',
+  options?: { signal?: AbortSignal }
 ): Promise<string | null> => {
   if (type === 'playlist') return id;
   if (/^\d+$/.test(id)) return id;
@@ -252,7 +281,7 @@ export const resolveRutubeId = async (
   const timestamp = new Date().getTime();
   const apiUrl = `${BASE_API}/profile/user/${id}/?client=android&format=json&_=${timestamp}`;
   try {
-    const text = await fetchTextWithRace(apiUrl);
+    const text = await fetchTextWithRace(apiUrl, options);
     const data = parseProxyResponse(text);
     if (data && data.id) return String(data.id);
   } catch (e) {
@@ -264,7 +293,7 @@ export const resolveRutubeId = async (
 
     for (const url of strategies) {
       try {
-        const html = await fetchTextWithRace(url);
+        const html = await fetchTextWithRace(url, options);
         const idMatch =
           html.match(/"user":\s*\{[^}]*"id":\s*(\d+)/) ||
           html.match(/"author":\s*\{[^}]*"id":\s*(\d+)/) ||
@@ -408,7 +437,10 @@ const mapRutubeItem = (item: any, settings: RatingSettings) => {
   };
 };
 
-const fetchSinglePage = async (url: string): Promise<{ results: any[]; next: string | null }> => {
+const fetchSinglePage = async (
+  url: string,
+  options?: { signal?: AbortSignal }
+): Promise<{ results: any[]; next: string | null }> => {
   const timestamp = new Date().getTime();
   let fetchUrl = url;
   if (fetchUrl.startsWith('http:')) fetchUrl = fetchUrl.replace('http:', 'https:');
@@ -417,7 +449,7 @@ const fetchSinglePage = async (url: string): Promise<{ results: any[]; next: str
     : `${fetchUrl}${fetchUrl.includes('?') ? '&' : '?'}_=${timestamp}`;
 
   try {
-    const text = await fetchTextWithRace(urlWithCacheBust);
+    const text = await fetchTextWithRace(urlWithCacheBust, options);
     const data = parseProxyResponse(text);
 
     if (Array.isArray(data)) {
@@ -517,19 +549,22 @@ const extractVideosFromHtml = (html: string): any[] => {
   return Array.from(videos.values());
 };
 
-const scrapeVideosFromHtml = async (channelId: string): Promise<any[]> => {
+const scrapeVideosFromHtml = async (
+  channelId: string,
+  options?: { signal?: AbortSignal }
+): Promise<any[]> => {
   try {
-    let html = await fetchTextWithRace(`https://rutube.ru/channel/${channelId}/videos/`);
+    let html = await fetchTextWithRace(`https://rutube.ru/channel/${channelId}/videos/`, options);
     let videos = extractVideosFromHtml(html);
     if (videos.length > 0) return videos;
     if (!/^\d+$/.test(channelId)) {
-      html = await fetchTextWithRace(`https://rutube.ru/u/${channelId}/videos/`);
+      html = await fetchTextWithRace(`https://rutube.ru/u/${channelId}/videos/`, options);
       videos = extractVideosFromHtml(html);
       if (videos.length > 0) return videos;
     }
     if (videos.length > 0) return videos;
 
-    html = await fetchTextWithRace(`https://rutube.ru/channel/${channelId}/`);
+    html = await fetchTextWithRace(`https://rutube.ru/channel/${channelId}/`, options);
     videos = extractVideosFromHtml(html);
 
     return videos;
@@ -538,7 +573,11 @@ const scrapeVideosFromHtml = async (channelId: string): Promise<any[]> => {
   }
 };
 
-const scrapeVideosPaginated = async (channelId: string, maxPages: number): Promise<any[]> => {
+const scrapeVideosPaginated = async (
+  channelId: string,
+  maxPages: number,
+  options?: { signal?: AbortSignal }
+): Promise<any[]> => {
   const aggregated: any[] = [];
   const seenIds = new Set<string>();
 
@@ -546,7 +585,10 @@ const scrapeVideosPaginated = async (channelId: string, maxPages: number): Promi
     const suffix = page === 1 ? '' : `?page=${page}`;
     let html: string;
     try {
-      html = await fetchTextWithRace(`https://rutube.ru/channel/${channelId}/videos/${suffix}`);
+      html = await fetchTextWithRace(
+        `https://rutube.ru/channel/${channelId}/videos/${suffix}`,
+        options
+      );
     } catch {
       break;
     }
@@ -569,7 +611,10 @@ const scrapeVideosPaginated = async (channelId: string, maxPages: number): Promi
     for (let page = 1; page <= Math.max(2, maxPages); page++) {
       const suffix = page === 1 ? '' : `?page=${page}`;
       try {
-        const html = await fetchTextWithRace(`https://rutube.ru/u/${channelId}/videos/${suffix}`);
+        const html = await fetchTextWithRace(
+          `https://rutube.ru/u/${channelId}/videos/${suffix}`,
+          options
+        );
         const pageVideos = extractVideosFromHtml(html);
         if (!pageVideos.length) break;
         pageVideos.forEach(v => {
@@ -592,10 +637,11 @@ export const fetchVideos = async (
   category: CategoryDef,
   settings: RatingSettings = DEFAULT_RATING_SETTINGS,
   nextPageCursor?: string | null,
-  fetchAll: boolean = false
+  fetchAll: boolean = false,
+  options?: { signal?: AbortSignal }
 ): Promise<{ videos: RutubeVideo[]; nextUrl: string | null }> => {
   if (nextPageCursor) {
-    const { results, next } = await fetchSinglePage(nextPageCursor);
+    const { results, next } = await fetchSinglePage(nextPageCursor, options);
     const videos = results
       .map(item => mapRutubeItem(item, settings))
       .filter((item): item is RutubeVideo => item !== null);
@@ -616,7 +662,7 @@ export const fetchVideos = async (
       channelId = resolved;
     }
     const apiUrl = `${BASE_API}/video/person/${channelId}/?client=android&format=json`;
-    const apiRes = await fetchSinglePage(apiUrl);
+    const apiRes = await fetchSinglePage(apiUrl, options);
     const apiVideos = apiRes.results
       .map(item => mapRutubeItem(item, settings))
       .filter((item): item is RutubeVideo => item !== null);
@@ -643,7 +689,7 @@ export const fetchVideos = async (
 
       while (cursor && page < maxAdditionalPages && !seenCursors.has(cursor)) {
         seenCursors.add(cursor);
-        const { results: nextRes, next: nextNext } = await fetchSinglePage(cursor);
+        const { results: nextRes, next: nextNext } = await fetchSinglePage(cursor, options);
         allVideos = [
           ...allVideos,
           ...nextRes
@@ -662,7 +708,7 @@ export const fetchVideos = async (
     }
 
     const maxPages = fetchAll ? 8 : 3;
-    const scraped = await scrapeVideosPaginated(channelId, maxPages);
+    const scraped = await scrapeVideosPaginated(channelId, maxPages, options);
     const videos = scraped
       .map(item => mapRutubeItem(item, settings))
       .filter((item): item is RutubeVideo => item !== null);
@@ -682,7 +728,7 @@ export const fetchVideos = async (
   ];
 
   for (const url of initialUrls) {
-    const res = await fetchSinglePage(url);
+    const res = await fetchSinglePage(url, options);
     if (res.results.length > 0) {
       results = res.results;
       next = res.next;
@@ -716,7 +762,7 @@ export const fetchVideos = async (
 
   while (cursor && page < maxAdditionalPages && !seenCursors.has(cursor)) {
     seenCursors.add(cursor);
-    const { results: nextRes, next: nextNext } = await fetchSinglePage(cursor);
+    const { results: nextRes, next: nextNext } = await fetchSinglePage(cursor, options);
     allVideos = [...allVideos, ...mapAndFilter(nextRes)];
     if (category.itemCount && allVideos.length >= category.itemCount) {
       cursor = null;
@@ -748,7 +794,10 @@ const findPlaylistsInRedux = (state: any): any[] => {
   return [];
 };
 
-export const fetchChannelPlaylists = async (rutubeId: string): Promise<CategoryDef[]> => {
+export const fetchChannelPlaylists = async (
+  rutubeId: string,
+  options?: { signal?: AbortSignal }
+): Promise<CategoryDef[]> => {
   const uniquePlaylists = new Map<string, CategoryDef>();
 
   const addPlaylists = (list: any[]) => {
@@ -779,7 +828,7 @@ export const fetchChannelPlaylists = async (rutubeId: string): Promise<CategoryD
       const MAX_PLAYLIST_PAGES = 10;
 
       while (currentUrl && pages < MAX_PLAYLIST_PAGES) {
-        const { results, next } = await fetchSinglePage(currentUrl);
+        const { results, next } = await fetchSinglePage(currentUrl, options);
         if (results && results.length > 0) {
           addPlaylists(results);
           currentUrl = next;
@@ -799,7 +848,7 @@ export const fetchChannelPlaylists = async (rutubeId: string): Promise<CategoryD
 
   for (const pageUrl of urlsToCheck) {
     try {
-      const html = await fetchTextWithRace(pageUrl);
+      const html = await fetchTextWithRace(pageUrl, options);
 
       const reduxMatch = html.match(/window\.reduxState\s*=\s*(\{.+?\});/);
       if (reduxMatch && reduxMatch[1]) {
@@ -905,13 +954,16 @@ const cleanChannelTitle = (rawTitle: string): string => {
   return title.trim();
 };
 
-export const fetchChannelInfo = async (rutubeId: string): Promise<ChannelInfo | null> => {
+export const fetchChannelInfo = async (
+  rutubeId: string,
+  options?: { signal?: AbortSignal }
+): Promise<ChannelInfo | null> => {
   if (!rutubeId) return null;
 
   const channelUrl = `https://rutube.ru/channel/${rutubeId}/`;
 
   try {
-    const html = await fetchTextWithRace(channelUrl);
+    const html = await fetchTextWithRace(channelUrl, options);
 
     const result: Partial<ChannelInfo> & { rawSubs?: number; rawVideos?: number } = {};
 

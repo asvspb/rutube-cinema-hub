@@ -88,6 +88,11 @@ export interface MovieRatingData {
   aiAttempts?: number; // Track number of AI search attempts
 }
 
+export interface CachedPlaylistData {
+  data: RutubeVideo[];
+  nextUrl: string | null;
+}
+
 export interface BatchItem {
   id: string;
   query: string;
