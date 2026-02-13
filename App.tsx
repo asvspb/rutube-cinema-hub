@@ -217,10 +217,18 @@ const App: React.FC = () => {
     } catch { return []; }
   });
 
-  const [videoStatuses, setVideoStatuses] = useState<Record<string, 'watched' | 'liked' | 'watch_later'>>(() => {
+  const [videoWatchedStatuses, setVideoWatchedStatuses] = useState<Record<string, 'watched' | 'watch_later'>>(() => {
     try {
-      const keys = getStorageKeys(isLoggedIn); 
-      const saved = localStorage.getItem(keys.statuses);
+      const keys = getStorageKeys(isLoggedIn);
+      const saved = localStorage.getItem(`${keys.statuses}_watched`);
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+
+  const [videoLikedStatuses, setVideoLikedStatuses] = useState<Record<string, 'liked' | 'disliked'>>(() => {
+    try {
+      const keys = getStorageKeys(isLoggedIn);
+      const saved = localStorage.getItem(`${keys.statuses}_liked`);
       return saved ? JSON.parse(saved) : {};
     } catch { return {}; }
   });
@@ -329,19 +337,50 @@ const App: React.FC = () => {
 
   useEffect(() => {
     localStorage.setItem('rutube_cinema_v2_is_logged_in', String(isLoggedIn));
-    
+
     const keys = getStorageKeys(isLoggedIn);
-    
+
     try {
       const savedHist = localStorage.getItem(keys.history);
       setWatchHistory(savedHist ? JSON.parse(savedHist) : []);
     } catch { setWatchHistory([]); }
 
+    // Handle migration from old status structure to new separate structures
     try {
       const savedStatus = localStorage.getItem(keys.statuses);
-      setVideoStatuses(savedStatus ? JSON.parse(savedStatus) : {});
-    } catch { setVideoStatuses({}); }
-    
+      if (savedStatus) {
+        const oldStatuses = JSON.parse(savedStatus);
+        
+        // Separate the old statuses into watched and liked
+        const newWatchedStatuses: Record<string, 'watched' | 'watch_later'> = {};
+        const newLikedStatuses: Record<string, 'liked' | 'disliked'> = {};
+
+        Object.entries(oldStatuses).forEach(([videoId, status]) => {
+          if (status === 'watched' || status === 'watch_later') {
+            newWatchedStatuses[videoId] = status;
+          } else if (status === 'liked') {
+            newLikedStatuses[videoId] = 'liked';
+          }
+        });
+
+        setVideoWatchedStatuses(newWatchedStatuses);
+        setVideoLikedStatuses(newLikedStatuses);
+
+        // Clear the old statuses to avoid duplication in the future
+        localStorage.removeItem(keys.statuses);
+      } else {
+        // Load the new separate statuses
+        const savedWatched = localStorage.getItem(`${keys.statuses}_watched`);
+        const savedLiked = localStorage.getItem(`${keys.statuses}_liked`);
+
+        setVideoWatchedStatuses(savedWatched ? JSON.parse(savedWatched) : {});
+        setVideoLikedStatuses(savedLiked ? JSON.parse(savedLiked) : {});
+      }
+    } catch { 
+      setVideoWatchedStatuses({}); 
+      setVideoLikedStatuses({}); 
+    }
+
   }, [isLoggedIn]);
 
   useEffect(() => {
@@ -351,8 +390,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const keys = getStorageKeys(isLoggedIn);
-    localStorage.setItem(keys.statuses, JSON.stringify(videoStatuses));
-  }, [videoStatuses, isLoggedIn]);
+    localStorage.setItem(`${keys.statuses}_watched`, JSON.stringify(videoWatchedStatuses));
+  }, [videoWatchedStatuses, isLoggedIn]);
+
+  useEffect(() => {
+    const keys = getStorageKeys(isLoggedIn);
+    localStorage.setItem(`${keys.statuses}_liked`, JSON.stringify(videoLikedStatuses));
+  }, [videoLikedStatuses, isLoggedIn]);
 
 
   useEffect(() => {
@@ -763,8 +807,8 @@ const App: React.FC = () => {
       result = result.filter(video => video.title && video.title.toLowerCase().includes(q));
     }
 
-    return sortVideos(result, sortOption, sortDirection, videoStatuses);
-  }, [videos, sortOption, sortDirection, searchQuery, videoStatuses]);
+    return sortVideos(result, sortOption, sortDirection, videoWatchedStatuses, videoLikedStatuses);
+  }, [videos, sortOption, sortDirection, searchQuery, videoWatchedStatuses, videoLikedStatuses]);
 
   const totalPages = Math.ceil(sortedVideos.length / ITEMS_PER_PAGE);
   const displayedVideos = useMemo(() => {
@@ -1014,14 +1058,12 @@ const App: React.FC = () => {
     }
   };
 
-  const handleToggleVideoStatus = (videoId: string) => {
-    setVideoStatuses(prev => {
+  const handleToggleVideoWatchedStatus = (videoId: string) => {
+    setVideoWatchedStatuses(prev => {
       const current = prev[videoId];
-      let next: 'watched' | 'liked' | 'watch_later' | undefined;
-      
+      let next: 'watched' | 'watch_later' | undefined;
+
       if (!current) {
-        next = 'liked';
-      } else if (current === 'liked') {
         next = 'watched';
       } else if (current === 'watched') {
         next = 'watch_later';
@@ -1037,10 +1079,31 @@ const App: React.FC = () => {
     });
   };
 
+  const handleToggleVideoLikedStatus = (videoId: string) => {
+    setVideoLikedStatuses(prev => {
+      const current = prev[videoId];
+      let next: 'liked' | 'disliked' | undefined;
+
+      if (!current) {
+        next = 'liked';
+      } else if (current === 'liked') {
+        next = 'disliked';
+      } else {
+        next = undefined;
+      }
+
+      if (next === undefined) {
+        const { [videoId]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [videoId]: next };
+    });
+  };
+
   const handleVideoClick = (video: RutubeVideo) => {
     setSelectedVideo(video);
-    
-    setVideoStatuses(prev => {
+
+    setVideoWatchedStatuses(prev => {
       const current = prev[video.id];
       if (!current || current === 'watch_later') {
         return { ...prev, [video.id]: 'watched' };
@@ -1056,17 +1119,17 @@ const App: React.FC = () => {
   };
 
   const handleClearHistory = () => {
-    setVideoStatuses(prev => {
+    setVideoWatchedStatuses(prev => {
       const next = { ...prev };
       let hasChanges = false;
-      
+
       watchHistory.forEach(video => {
          if (next[video.id] === 'watched') {
              delete next[video.id];
              hasChanges = true;
          }
       });
-      
+
       return hasChanges ? next : prev;
     });
 
@@ -1646,21 +1709,16 @@ const App: React.FC = () => {
                </div>
             ) : (
                <>
-                 <Pagination 
-                   currentPage={currentPage}
-                   totalPages={totalPages}
-                   onPageChange={handlePageChange}
-                   className="mb-6"
-                 />
-
                  <div className={getGridClass()}>
                    {displayedVideos.map((video) => (
                       <VideoCard
                         key={video.id}
                         video={video}
                         onClick={handleVideoClick}
-                        status={videoStatuses[video.id]}
-                        onStatusToggle={() => handleToggleVideoStatus(video.id)}
+                        watchedStatus={videoWatchedStatuses[video.id]}
+                        likedStatus={videoLikedStatuses[video.id]}
+                        onWatchedToggle={() => handleToggleVideoWatchedStatus(video.id)}
+                        onLikedToggle={() => handleToggleVideoLikedStatus(video.id)}
                         ratingSettings={ratingSettings}
                         onAnalyze={handleAnalyzeVideo}
                         isLoadingMetadata={loadingMetadataFor.has(video.title)}
@@ -1668,8 +1726,8 @@ const App: React.FC = () => {
                       />
                    ))}
                  </div>
-                 
-                 <Pagination 
+
+                 <Pagination
                    currentPage={currentPage}
                    totalPages={totalPages}
                    onPageChange={handlePageChange}

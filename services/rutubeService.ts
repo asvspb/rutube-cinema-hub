@@ -307,10 +307,11 @@ const getYear = (video: RutubeVideo): number => {
 };
 
 export const sortVideos = (
-  videos: RutubeVideo[], 
-  option: SortOption, 
+  videos: RutubeVideo[],
+  option: SortOption,
   direction: 'asc' | 'desc' = 'desc',
-  videoStatuses: Record<string, 'watched' | 'liked' | 'watch_later'> = {}
+  videoWatchedStatuses: Record<string, 'watched' | 'watch_later'> = {},
+  videoLikedStatuses: Record<string, 'liked' | 'disliked'> = {}
 ): RutubeVideo[] => {
   if (option === 'default') return direction === 'asc' ? [...videos] : [...videos].reverse();
   const sorted = [...videos];
@@ -324,22 +325,22 @@ export const sortVideos = (
     case 'year': return sorted.sort((a, b) => (getYear(a) - getYear(b)) * dir);
     case 'watched':
       return sorted.sort((a, b) => {
-          const statusA = videoStatuses[a.id] === 'watched' ? 1 : 0;
-          const statusB = videoStatuses[b.id] === 'watched' ? 1 : 0;
+          const statusA = videoWatchedStatuses[a.id] === 'watched' ? 1 : 0;
+          const statusB = videoWatchedStatuses[b.id] === 'watched' ? 1 : 0;
           if (statusA !== statusB) return (statusA - statusB) * dir;
           return (new Date(b.created_ts).getTime() - new Date(a.created_ts).getTime());
       });
     case 'liked':
       return sorted.sort((a, b) => {
-          const statusA = videoStatuses[a.id] === 'liked' ? 1 : 0;
-          const statusB = videoStatuses[b.id] === 'liked' ? 1 : 0;
+          const statusA = videoLikedStatuses[a.id] === 'liked' ? 1 : 0;
+          const statusB = videoLikedStatuses[b.id] === 'liked' ? 1 : 0;
           if (statusA !== statusB) return (statusA - statusB) * dir;
           return (new Date(b.created_ts).getTime() - new Date(a.created_ts).getTime());
       });
     case 'watch_later':
       return sorted.sort((a, b) => {
-          const statusA = videoStatuses[a.id] === 'watch_later' ? 1 : 0;
-          const statusB = videoStatuses[b.id] === 'watch_later' ? 1 : 0;
+          const statusA = videoWatchedStatuses[a.id] === 'watch_later' ? 1 : 0;
+          const statusB = videoWatchedStatuses[b.id] === 'watch_later' ? 1 : 0;
           if (statusA !== statusB) return (statusA - statusB) * dir;
           return (new Date(b.created_ts).getTime() - new Date(a.created_ts).getTime());
       });

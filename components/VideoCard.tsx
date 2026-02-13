@@ -1,21 +1,23 @@
 
 import React, { useMemo } from 'react';
-import { Play, Star, Flame, Check, Heart, Clock, Trophy, TrendingUp, Sparkles, Loader2, Crown } from 'lucide-react';
+import { Play, Star, Flame, Check, Heart, Clock, Trophy, TrendingUp, Sparkles, Loader2, Crown, ThumbsDown } from 'lucide-react';
 import { RutubeVideo, RatingSettings, MovieRatingData } from '../types';
 import { formatDuration, formatViews, formatRelativeTime } from '../services/rutubeService';
 
 interface VideoCardProps {
   video: RutubeVideo;
   onClick: (video: RutubeVideo) => void;
-  status?: 'watched' | 'liked' | 'watch_later';
-  onStatusToggle?: () => void;
+  watchedStatus?: 'watched' | 'watch_later';
+  likedStatus?: 'liked' | 'disliked';
+  onWatchedToggle?: () => void;
+  onLikedToggle?: () => void;
   ratingSettings?: RatingSettings;
   onAnalyze?: (title: string) => Promise<void>;
   externalMetadata?: Record<string, MovieRatingData>; // Global cache
   isLoadingMetadata?: boolean;
 }
 
-export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, onStatusToggle, ratingSettings, onAnalyze, externalMetadata, isLoadingMetadata }) => {
+export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, watchedStatus, likedStatus, onWatchedToggle, onLikedToggle, ratingSettings, onAnalyze, externalMetadata, isLoadingMetadata }) => {
   
   // Resolve external data from the global cache using the video title
   const externalData = useMemo(() => {
@@ -26,9 +28,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
   // Determine if video is "Hot" based on Gravity
   const isHot = (video.gravity || 0) > 2.0;
 
-  const handleStatusClick = (e: React.MouseEvent) => {
+  const handleWatchedClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onStatusToggle) onStatusToggle();
+    if (onWatchedToggle) onWatchedToggle();
+  };
+
+  const handleLikedClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onLikedToggle) onLikedToggle();
   };
 
   const handleCheckExternal = (e: React.MouseEvent) => {
@@ -38,27 +45,43 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
     }
   };
 
-  // Status Icon Logic
-  let StatusIcon = Heart;
-  let statusColorClass = "text-zinc-400 group-hover/btn:text-white";
-  let containerVisibleClass = "opacity-0 group-hover:opacity-100"; 
-  let buttonBgClass = "bg-black/60 hover:bg-zinc-800/80";
+  // Watched Status Icon Logic
+  let WatchedIcon = Clock;
+  let watchedColorClass = "text-zinc-400 group-hover/btn:text-white";
+  let watchedContainerVisibleClass = "opacity-0 group-hover:opacity-100";
+  let watchedButtonBgClass = "bg-black/60 hover:bg-zinc-800/80";
 
-  if (status === 'liked') {
-    StatusIcon = Heart;
-    statusColorClass = "text-red-500 fill-red-500";
-    containerVisibleClass = "opacity-100"; 
-    buttonBgClass = "bg-red-500/10 hover:bg-red-500/20";
-  } else if (status === 'watched') {
-    StatusIcon = Check;
-    statusColorClass = "text-green-500";
-    containerVisibleClass = "opacity-100";
-    buttonBgClass = "bg-green-500/10 hover:bg-green-500/20";
-  } else if (status === 'watch_later') {
-    StatusIcon = Clock;
-    statusColorClass = "text-blue-400";
-    containerVisibleClass = "opacity-100";
-    buttonBgClass = "bg-blue-500/10 hover:bg-blue-500/20";
+  // AI button should only be visible on hover
+  const aiContainerVisibleClass = "opacity-0 group-hover:opacity-100";
+
+  if (watchedStatus === 'watched') {
+    WatchedIcon = Check;
+    watchedColorClass = "text-green-500";
+    watchedContainerVisibleClass = "opacity-100";
+    watchedButtonBgClass = "bg-green-500/10 hover:bg-green-500/20";
+  } else if (watchedStatus === 'watch_later') {
+    WatchedIcon = Clock;
+    watchedColorClass = "text-blue-400";
+    watchedContainerVisibleClass = "opacity-100";
+    watchedButtonBgClass = "bg-blue-500/10 hover:bg-blue-500/20";
+  }
+
+  // Liked Status Icon Logic
+  let LikedIcon = Heart;
+  let likedColorClass = "text-zinc-400 group-hover/btn:text-white";
+  let likedContainerVisibleClass = "opacity-0 group-hover:opacity-100";
+  let likedButtonBgClass = "bg-black/60 hover:bg-zinc-800/80";
+
+  if (likedStatus === 'liked') {
+    LikedIcon = Heart;
+    likedColorClass = "text-red-500 fill-red-500";
+    likedContainerVisibleClass = "opacity-100";
+    likedButtonBgClass = "bg-red-500/10 hover:bg-red-500/20";
+  } else if (likedStatus === 'disliked') {
+    LikedIcon = ThumbsDown;
+    likedColorClass = "text-gray-400";
+    likedContainerVisibleClass = "opacity-100";
+    likedButtonBgClass = "bg-gray-500/10 hover:bg-gray-500/20";
   }
 
   const getAgeText = () => {
@@ -73,19 +96,30 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
     } catch(e) { return '-'; }
   };
   
-  const getStatusTooltipText = () => {
-    if (status === 'liked') return 'Понравилось';
-    if (status === 'watched') return 'Просмотрено';
-    if (status === 'watch_later') return 'Посмотреть позже';
+  const getWatchedTooltipText = () => {
+    if (watchedStatus === 'watched') return 'Просмотрено';
+    if (watchedStatus === 'watch_later') return 'Посмотреть позже';
+    return 'Просмотрено';
+  };
+
+  const getNextWatchedStatusText = () => {
+    if (!watchedStatus) return 'Следующий: Просмотрено';
+    if (watchedStatus === 'watched') return 'Следующий: Посмотреть позже';
+    if (watchedStatus === 'watch_later') return 'Следующий: Убрать отметку';
+    return 'Следующий: Просмотрено';
+  };
+
+  const getLikedTooltipText = () => {
+    if (likedStatus === 'liked') return 'Нравится';
+    if (likedStatus === 'disliked') return 'Не нравится';
     return 'Нравится';
   };
 
-  const getNextStatusText = () => {
-    if (!status) return 'Следующий: Понравилось';
-    if (status === 'liked') return 'Следующий: Просмотрено';
-    if (status === 'watched') return 'Следующий: Посмотреть позже';
-    if (status === 'watch_later') return 'Следующий: Убрать отметку';
-    return '';
+  const getNextLikedStatusText = () => {
+    if (!likedStatus) return 'Следующий: Нравится';
+    if (likedStatus === 'liked') return 'Следующий: Не нравится';
+    if (likedStatus === 'disliked') return 'Следующий: Убрать оценку';
+    return 'Следующий: Нравится';
   };
 
   const isExperimental = ratingSettings?.useExperimentalStrategy;
@@ -132,46 +166,65 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
         {/* Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-300" />
 
-        {/* Rating Badge (Top Left) */}
+        {/* Rating and Like/Dislike Container (Top Left) */}
         <div className="absolute top-2 left-2 z-20 flex flex-col items-start gap-1">
-            {/* Internal Rating */}
-            <div className="relative group/rating">
-              <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-bold shadow-sm cursor-help transition-colors duration-300 ${getRatingColor(displayRating)}`}>
-                  {isBoosted ? <TrendingUp className="w-3 h-3" /> : <Star className="w-3 h-3 fill-current" />}
-                  <span>{displayRating.toFixed(1)}</span>
+            {/* Internal Rating and Like/Dislike Button in one row */}
+            <div className="flex items-center gap-1">
+              {/* Internal Rating */}
+              <div className="relative group/rating">
+                <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-bold shadow-sm cursor-help transition-colors duration-300 ${getRatingColor(displayRating)}`}>
+                    {isBoosted ? <TrendingUp className="w-3 h-3" /> : <Star className="w-3 h-3 fill-current" />}
+                    <span>{displayRating.toFixed(1)}</span>
+                </div>
+
+                {/* Rating Tooltip */}
+                <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/rating:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/rating:translate-y-0 text-left z-30">
+                    <div className="text-xs font-bold text-white mb-1 flex items-center gap-1">
+                      {isBoosted ? <TrendingUp className="w-3 h-3 text-purple-400" /> : <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
+                      Рейтинг {displayRating.toFixed(1)}
+                    </div>
+
+                    {isBoosted ? (
+                      <div className="text-[10px] text-purple-300 mb-2 leading-tight">
+                          Рейтинг повышен до уровня {imdbRating > kpRating ? 'IMDb' : 'KP'} ({bestExternalRating}), так как внутренний рейтинг ({rawRating.toFixed(1)}) ниже.
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
+                          {isExperimental
+                          ? 'Пороговый рейтинг. Зависит от общего количества просмотров.'
+                          : 'Динамический рейтинг. Зависит от скорости набора просмотров.'}
+                      </div>
+                    )}
+
+                    <div className="bg-zinc-800/50 rounded p-1.5 space-y-1">
+                      <div className="flex justify-between text-[10px]">
+                          <span className="text-zinc-500">Просмотры:</span>
+                          <span className="text-zinc-300 font-mono">{formatViews(video.views)}</span>
+                      </div>
+                      {!isExperimental && (
+                          <div className="flex justify-between text-[10px]">
+                              <span className="text-zinc-500">Возраст:</span>
+                              <span className="text-zinc-300 font-mono">{getAgeText()}</span>
+                          </div>
+                      )}
+                    </div>
+                </div>
               </div>
 
-              {/* Rating Tooltip */}
-              <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/rating:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/rating:translate-y-0 text-left z-30">
-                  <div className="text-xs font-bold text-white mb-1 flex items-center gap-1">
-                    {isBoosted ? <TrendingUp className="w-3 h-3 text-purple-400" /> : <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
-                    Рейтинг {displayRating.toFixed(1)}
-                  </div>
-                  
-                  {isBoosted ? (
-                    <div className="text-[10px] text-purple-300 mb-2 leading-tight">
-                        Рейтинг повышен до уровня {imdbRating > kpRating ? 'IMDb' : 'KP'} ({bestExternalRating}), так как внутренний рейтинг ({rawRating.toFixed(1)}) ниже.
-                    </div>
-                  ) : (
-                    <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
-                        {isExperimental 
-                        ? 'Пороговый рейтинг. Зависит от общего количества просмотров.' 
-                        : 'Динамический рейтинг. Зависит от скорости набора просмотров.'}
-                    </div>
-                  )}
-                  
-                  <div className="bg-zinc-800/50 rounded p-1.5 space-y-1">
-                    <div className="flex justify-between text-[10px]">
-                        <span className="text-zinc-500">Просмотры:</span>
-                        <span className="text-zinc-300 font-mono">{formatViews(video.views)}</span>
-                    </div>
-                    {!isExperimental && (
-                        <div className="flex justify-between text-[10px]">
-                            <span className="text-zinc-500">Возраст:</span>
-                            <span className="text-zinc-300 font-mono">{getAgeText()}</span>
-                        </div>
-                    )}
-                  </div>
+              {/* Like/Dislike Button with Tooltip */}
+              <div className={`flex flex-col items-start group/liked ${likedContainerVisibleClass} transition-opacity duration-200`}>
+                <div className="absolute top-full mt-2 left-0 px-2.5 py-1.5 w-56 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover/liked:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                  <div className="font-bold">{getLikedTooltipText()}</div>
+                  <div className="text-[10px] text-zinc-400 font-normal mt-0.5">{getNextLikedStatusText()}</div>
+                  <div className="absolute bottom-full left-4 -translate-x-1/2 -mb-1 border-4 border-transparent border-b-zinc-700" />
+                </div>
+
+                <button
+                  onClick={handleLikedClick}
+                  className={`p-1.5 rounded-full ${likedButtonBgClass} backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20`}
+                >
+                  <LikedIcon className={`w-4 h-4 ${likedColorClass}`} />
+                </button>
               </div>
             </div>
 
@@ -180,100 +233,108 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
               {externalData && (
                 <div className="animate-in fade-in zoom-in duration-300 flex flex-col gap-1 items-start">
                     {externalData.imdbRating > 0 && (
-                      externalData.imdbUrl ? (
-                        <a 
-                          href={externalData.imdbUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit hover:bg-[#e6b800] transition-colors group/imdb relative"
-                          title={externalData.dataSource === 'local' ? 'Перейти на IMDB (из Top 250/1000)' : 'Перейти на IMDB'}
-                        >
-                          {externalData.dataSource === 'local' && (
-                            <>
-                              <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
-                              <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 bg-zinc-900/95 border border-zinc-700 rounded text-[10px] text-white whitespace-nowrap opacity-0 group-hover/imdb:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
-                                {externalData.originalTitle && <div className="font-bold">{externalData.originalTitle}</div>}
-                                {externalData.year && <div className="text-zinc-400">Год: {externalData.year}</div>}
-                                {externalData.awards && externalData.awards.length > 0 && (
-                                  <div className="text-yellow-400 mt-0.5">{externalData.awards.join(', ')}</div>
-                                )}
-                                <div className="text-zinc-500 mt-0.5">Из Top 250/1000</div>
+                      <div className="relative group/imdb-tooltip">
+                        {externalData.imdbUrl ? (
+                          <a
+                            href={externalData.imdbUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit hover:bg-[#e6b800] transition-colors group/imdb relative"
+                          >
+                            {externalData.dataSource === 'local' && (
+                              <>
+                                <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
+                              </>
+                            )}
+                            {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
+                          </a>
+                        ) : (
+                          <div className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit group/imdb relative">
+                            {externalData.dataSource === 'local' && (
+                              <>
+                                <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
+                              </>
+                            )}
+                            {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
+                          </div>
+                        )}
+
+                        {/* IMDB Tooltip */}
+                        <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/imdb-tooltip:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/imdb-tooltip:translate-y-0 text-left z-30">
+                            <div className="text-xs font-bold text-[#f5c518] mb-1 flex items-center gap-1">
+                              <span className="inline-block w-3 h-3 rounded-sm bg-[#f5c518] text-black text-[8px] flex items-center justify-center font-bold">IM</span>
+                              IMDB
+                            </div>
+                            <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
+                              {externalData.dataSource === 'local' ? 'Рейтинг из коллекции' : 'IMDb Rating'}
+                            </div>
+                            <div className="bg-zinc-800/50 rounded p-1.5">
+                              <div className="flex justify-between text-[10px]">
+                                  <span className="text-zinc-500">Рейтинг IMDB:</span>
+                                  <span className="text-[#f5c518] font-mono font-bold">{externalData.imdbRating}</span>
                               </div>
-                            </>
-                          )}
-                          {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
-                        </a>
-                      ) : (
-                        <div className="px-1.5 py-0.5 rounded-md bg-[#f5c518] text-black text-[10px] font-bold shadow-sm flex items-center gap-1 justify-center w-fit group/imdb relative" title={externalData.dataSource === 'local' ? 'Рейтинг из коллекции Top 250/1000' : 'IMDb Rating'}>
-                          {externalData.dataSource === 'local' && (
-                            <>
-                              <Crown className="w-3 h-3 text-blue-900 fill-blue-900" />
-                              <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2 py-1 bg-zinc-900/95 border border-zinc-700 rounded text-[10px] text-white whitespace-nowrap opacity-0 group-hover/imdb:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
-                                {externalData.originalTitle && <div className="font-bold">{externalData.originalTitle}</div>}
-                                {externalData.year && <div className="text-zinc-400">Год: {externalData.year}</div>}
-                                {externalData.awards && externalData.awards.length > 0 && (
-                                  <div className="text-yellow-400 mt-0.5">{externalData.awards.join(', ')}</div>
-                                )}
-                                <div className="text-zinc-500 mt-0.5">Из Top 250/1000</div>
-                              </div>
-                            </>
-                          )}
-                          {externalData.dataSource === 'local' ? 'Top IMDB' : 'IMDB'} {externalData.imdbRating}
+                            </div>
                         </div>
-                      )
-                    )}
-                    {externalData.kpRating > 0 && (
-                      <div className="px-1.5 py-0.5 rounded-md bg-[#f60] text-white text-[10px] font-bold shadow-sm flex items-center justify-center w-fit" title="Kinopoisk Rating">
-                        KP {externalData.kpRating}
+                      </div>
+                     )}
+                     {externalData.kpRating > 0 && (
+                      <div className="relative group/kp-tooltip">
+                        <div className="px-1.5 py-0.5 rounded-md bg-[#f60] text-white text-[10px] font-bold shadow-sm flex items-center justify-center w-fit">
+                          KP {externalData.kpRating}
+                        </div>
+
+                        {/* KP Tooltip */}
+                        <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/kp-tooltip:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/kp-tooltip:translate-y-0 text-left z-30">
+                            <div className="text-xs font-bold text-[#f60] mb-1 flex items-center gap-1">
+                              <span className="inline-block w-3 h-3 rounded-sm bg-[#f60] text-white text-[8px] flex items-center justify-center font-bold">KP</span>
+                              КиноПоиск
+                            </div>
+                            <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
+                              Рейтинг КиноПоиск
+                            </div>
+                            <div className="bg-zinc-800/50 rounded p-1.5">
+                              <div className="flex justify-between text-[10px]">
+                                  <span className="text-zinc-500">Рейтинг KP:</span>
+                                  <span className="text-[#f60] font-mono font-bold">{externalData.kpRating}</span>
+                              </div>
+                            </div>
+                        </div>
                       </div>
                     )}
                     {(wonOscar || nominatedOscar) && (
-                      <div 
-                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm flex items-center justify-center w-fit gap-1 cursor-help relative group/oscar
-                          ${wonOscar 
-                            ? 'bg-gradient-to-r from-yellow-600 to-yellow-400 text-black border border-yellow-300' 
-                            : 'bg-zinc-700 text-zinc-300 border border-zinc-600'}
-                        `}
-                        title={wonOscar ? "Победитель Оскар (Academy Award Winner)" : "Номинант на Оскар"}
-                      >
-                        <Trophy className={`w-3 h-3 ${wonOscar ? 'fill-black text-black' : 'fill-current'}`} />
-                        {wonOscar ? 'Oscar' : 'Nom'}
+                      <div className="relative group/oscar-tooltip">
+                        <div
+                          className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm flex items-center justify-center w-fit gap-1 cursor-help relative
+                            ${wonOscar
+                              ? 'bg-gradient-to-r from-yellow-600 to-yellow-400 text-black border border-yellow-300'
+                              : 'bg-zinc-700 text-zinc-300 border border-zinc-600'}
+                          `}
+                        >
+                          <Trophy className={`w-3 h-3 ${wonOscar ? 'fill-black text-black' : 'fill-current'}`} />
+                          {wonOscar ? 'Oscar' : 'Nom'}
+                        </div>
+
+                        {/* Oscar Tooltip */}
+                        <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-lg p-3 shadow-2xl opacity-0 group-hover/oscar-tooltip:opacity-100 pointer-events-none transition-all duration-200 translate-y-2 group-hover/oscar-tooltip:translate-y-0 text-left z-30">
+                            <div className="text-xs font-bold text-yellow-400 mb-1 flex items-center gap-1">
+                              <Trophy className={`w-3 h-3 ${wonOscar ? 'fill-yellow-400 text-yellow-400' : 'fill-current'}`} />
+                              {wonOscar ? 'Oscar Победитель' : 'Oscar Номинант'}
+                            </div>
+                            <div className="text-[10px] text-zinc-400 mb-2 leading-tight">
+                              {wonOscar ? "Победитель Оскар (Academy Award Winner)" : "Номинант на Оскар"}
+                            </div>
+                            <div className="bg-zinc-800/50 rounded p-1.5">
+                              <div className="text-[10px] text-zinc-500">
+                                {wonOscar ? 'Награда за выдающиеся достижения в кинематографе' : 'Номинация на премию Оскар'}
+                              </div>
+                            </div>
+                        </div>
                       </div>
                     )}
                 </div>
               )}
-              
-               {(!externalData || (externalData.imdbRating === 0 && externalData.kpRating === 0)) && (
-                 <button 
-                   onClick={handleCheckExternal}
-                   disabled={isLoadingMetadata}
-                   className={`
-                      px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm flex items-center justify-center w-fit transition-all duration-200 mt-1
-                      ${isLoadingMetadata 
-                        ? 'bg-blue-600/30 text-blue-300 cursor-wait opacity-100' 
-                        : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white opacity-0 group-hover:opacity-100'
-                      }
-                   `}
-                   title={
-                     isLoadingMetadata 
-                       ? "Загрузка данных..." 
-                       : (!externalData || externalData.aiAttempts === 0)
-                         ? "Запросить в локальной базе"
-                         : "Запросить через поисковик"
-                   }
-                 >
-                   {isLoadingMetadata ? (
-                     <>
-                       <Loader2 className="w-3 h-3 mr-1 animate-spin" /> AI
-                     </>
-                   ) : (
-                     <>
-                       <Sparkles className="w-3 h-3 mr-1" /> AI
-                     </>
-                   )}
-                 </button>
-               )}
+
             </div>
         </div>
 
@@ -307,20 +368,56 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video, onClick, status, on
           {formatDuration(video.duration)}
         </div>
 
-        {/* Status Toggle Button with Tooltip (Bottom Left) */}
-        <div className={`absolute bottom-2 left-2 z-30 flex flex-col items-start group/status ${containerVisibleClass} transition-opacity duration-200`}>
-           <div className="absolute bottom-full mb-2 px-2.5 py-1.5 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover/status:opacity-100 transition-opacity duration-200 pointer-events-none">
-              <div className="font-bold">{getStatusTooltipText()}</div>
-              <div className="text-[10px] text-zinc-400 font-normal mt-0.5">{getNextStatusText()}</div>
+        {/* Status Toggle Buttons with Tooltips (Bottom Left) - Watched/Later and AI Analysis */}
+        <div className="absolute bottom-2 left-2 z-10 flex flex-row items-end gap-1 group/status-container">
+          {/* Watched/Later Button with Tooltip */}
+          <div className={`flex flex-col items-start group/watched ${watchedContainerVisibleClass} transition-opacity duration-200`}>
+            <div className="absolute bottom-full mb-2 px-2.5 py-1.5 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md whitespace-nowrap opacity-0 group-hover/watched:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+              <div className="font-bold">{getWatchedTooltipText()}</div>
+              <div className="text-[10px] text-zinc-400 font-normal mt-0.5">{getNextWatchedStatusText()}</div>
               <div className="absolute top-full left-4 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-700" />
-           </div>
+            </div>
 
-           <button
-             onClick={handleStatusClick}
-             className={`p-1.5 rounded-full ${buttonBgClass} backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20`}
-           >
-             <StatusIcon className={`w-4 h-4 ${statusColorClass}`} />
-           </button>
+            <button
+              onClick={handleWatchedClick}
+              className={`p-1.5 rounded-full ${watchedButtonBgClass} backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20`}
+            >
+              <WatchedIcon className={`w-4 h-4 ${watchedColorClass}`} />
+            </button>
+          </div>
+
+          {/* AI Analysis Button with Tooltip */}
+          {(!externalData || (externalData.imdbRating === 0 && externalData.kpRating === 0)) && (
+            <div className={`flex flex-col items-start group/ai-btn ${aiContainerVisibleClass} transition-opacity duration-200`}>
+              <div className="absolute bottom-full mb-2 left-0 px-2.5 py-1.5 w-56 bg-zinc-900/95 border border-zinc-700 rounded-lg text-xs font-medium text-white shadow-xl backdrop-blur-md break-words opacity-0 group-hover/ai-btn:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                <div className="font-bold text-blue-400 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-blue-400" />
+                  AI Анализ
+                </div>
+                <div className="text-[10px] text-zinc-400 font-normal mt-0.5">
+                  {isLoadingMetadata
+                    ? "Загрузка данных..."
+                    : (!externalData || externalData.aiAttempts === 0)
+                      ? "Поиск в локальной базе данных и через поисковик"
+                      : "Запросить через поисковик"}
+                </div>
+                <div className="absolute top-full left-4 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-700" />
+              </div>
+
+              <button
+                onClick={handleCheckExternal}
+                disabled={isLoadingMetadata}
+                className={`
+                  p-1.5 rounded-full ${isLoadingMetadata
+                    ? 'bg-blue-600/30 text-blue-300 cursor-wait'
+                    : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white'
+                  } backdrop-blur-sm transition-all duration-200 group/btn shadow-sm ring-1 ring-transparent hover:ring-white/20
+                `}
+              >
+                <Sparkles className={`w-4 h-4 ${isLoadingMetadata ? 'text-blue-300' : 'text-blue-400 group-hover/btn:text-white'}`} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Hover Play Icon */}
