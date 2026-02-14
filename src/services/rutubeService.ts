@@ -142,8 +142,8 @@ export const parseRutubeUrl = (
 type ProxyStatus = 'unknown' | 'up' | 'down';
 let localProxyStatus: ProxyStatus = 'unknown';
 
-const REQUEST_THROTTLE_MS = 250;
-const PROXY_RETRY_DELAY_MS = 400;
+const REQUEST_THROTTLE_MS = 800;
+const PROXY_RETRY_DELAY_MS = 1500;
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 let throttleChain = Promise.resolve();

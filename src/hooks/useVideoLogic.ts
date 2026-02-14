@@ -54,20 +54,25 @@ export const useVideoLogic = ({
       setNextPageUrl(null);
 
       try {
-        const promises = channels.map(channel => {
+        const results: PromiseSettledResult<Awaited<ReturnType<typeof fetchVideos>>>[] = [];
+
+        for (const channel of channels) {
+          if (abortController.signal.aborted) break;
           const tempCategory: CategoryDef = {
             id: `home-temp-${channel.rutubeId}`,
             label: 'All',
             rutubeId: channel.rutubeId,
             type: 'channel',
           };
-          // Fetch more videos for home feed to ensure we have enough content
-          return fetchVideos(tempCategory, ratingSettings, null, false, {
-            signal: abortController.signal,
-          });
-        });
-
-        const results = await Promise.allSettled(promises);
+          try {
+            const value = await fetchVideos(tempCategory, ratingSettings, null, false, {
+              signal: abortController.signal,
+            });
+            results.push({ status: 'fulfilled', value });
+          } catch (reason) {
+            results.push({ status: 'rejected', reason });
+          }
+        }
 
         let initialVideos: RutubeVideo[] = [];
         if (!abortController.signal.aborted) {
@@ -94,20 +99,25 @@ export const useVideoLogic = ({
           setIsVideoLoading(false);
         }
 
-        // Background: fetch full lists and merge
-        const fullPromises = channels.map(channel => {
+        // Background: fetch full lists and merge (sequential to avoid rate limits)
+        const fullResults: PromiseSettledResult<Awaited<ReturnType<typeof fetchVideos>>>[] = [];
+        for (const channel of channels) {
+          if (abortController.signal.aborted) break;
           const tempCategory: CategoryDef = {
             id: `home-temp-full-${channel.rutubeId}`,
             label: 'All',
             rutubeId: channel.rutubeId,
             type: 'channel',
           };
-          return fetchVideos(tempCategory, ratingSettings, null, true, {
-            signal: abortController.signal,
-          });
-        });
-
-        const fullResults = await Promise.allSettled(fullPromises);
+          try {
+            const value = await fetchVideos(tempCategory, ratingSettings, null, true, {
+              signal: abortController.signal,
+            });
+            fullResults.push({ status: 'fulfilled', value });
+          } catch (reason) {
+            fullResults.push({ status: 'rejected', reason });
+          }
+        }
         if (!abortController.signal.aborted) {
           const mergedById = new Map<string, RutubeVideo>();
           initialVideos.forEach(v => mergedById.set(v.id, v));
