@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ChannelDef } from '../types';
 
 interface UseChannelMenuProps {
@@ -12,6 +12,8 @@ interface UseChannelMenuProps {
   setRefreshKey: (key: number) => void;
   setVideoCache: (cache: Record<string, any>) => void; // Using Record<string, any> for now
   activeCategory: any; // Using any for now
+  handleRenameChannel: (channelId: string, newName: string) => void;
+  handleRemoveChannel: (channelId: string) => void;
 }
 
 interface UseChannelMenuResult {
@@ -31,6 +33,8 @@ interface UseChannelMenuResult {
   handleRenameChannelSave: () => void;
   handleRemoveChannel: (channelId: string) => void;
   handleRefresh: (fetchAll?: boolean) => void;
+  channelInputRef: React.RefObject<HTMLInputElement>;
+  channelMenuRef: React.RefObject<HTMLDivElement>;
 }
 
 export const useChannelMenu = ({
@@ -44,6 +48,8 @@ export const useChannelMenu = ({
   setRefreshKey,
   setVideoCache,
   activeCategory,
+  handleRenameChannel,
+  handleRemoveChannel,
 }: UseChannelMenuProps): UseChannelMenuResult => {
   const [activeChannelMenuId, setActiveChannelMenuId] = useState<string | null>(null);
   const [channelMenuPosition, setChannelMenuPosition] = useState<{
@@ -52,6 +58,8 @@ export const useChannelMenu = ({
   } | null>(null);
   const [isEditingChannel, setIsEditingChannel] = useState(false);
   const [channelEditName, setChannelEditName] = useState('');
+  const channelMenuRef = useRef<HTMLDivElement>(null);
+  const channelInputRef = useRef<HTMLInputElement>(null);
 
   const activeMenuChannel = activeChannelMenuId
     ? channels.find(c => c.id === activeChannelMenuId)
@@ -86,13 +94,13 @@ export const useChannelMenu = ({
 
   const handleRenameChannelSave = () => {
     if (activeChannelMenuId && channelEditName.trim()) {
-      // This would need to call the channels hook function
+      handleRenameChannel(activeChannelMenuId, channelEditName.trim());
       closeChannelMenu();
     }
   };
 
-  const handleRemoveChannel = (channelId: string) => {
-    // This would need to call the channels hook function
+  const handleRemoveChannelClick = (channelId: string) => {
+    handleRemoveChannel(channelId);
     closeChannelMenu();
   };
 
@@ -128,7 +136,9 @@ export const useChannelMenu = ({
     handleChannelMenuTrigger,
     closeChannelMenu,
     handleRenameChannelSave,
-    handleRemoveChannel,
+    handleRemoveChannel: handleRemoveChannelClick,
     handleRefresh,
+    channelInputRef,
+    channelMenuRef,
   };
 };

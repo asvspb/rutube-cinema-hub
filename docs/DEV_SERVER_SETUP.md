@@ -79,6 +79,8 @@ LLM_MAX_TOKENS=512
 
 - `npm run dev`
 
+> Если запускаете через `docker-compose up`, фронтенд автоматически дождётся готовности backend (эндпоинт `/api/health`).
+
 Ожидаемый адрес:
 
 - `http://localhost:9229`

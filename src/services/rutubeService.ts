@@ -142,6 +142,23 @@ export const parseRutubeUrl = (
 type ProxyStatus = 'unknown' | 'up' | 'down';
 let localProxyStatus: ProxyStatus = 'unknown';
 
+const REQUEST_THROTTLE_MS = 250;
+const PROXY_RETRY_DELAY_MS = 400;
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+let throttleChain = Promise.resolve();
+const scheduleRequestSlot = async () => {
+  const current = throttleChain;
+  let release!: () => void;
+  throttleChain = new Promise<void>(resolve => {
+    release = resolve;
+  });
+
+  await current;
+  await wait(REQUEST_THROTTLE_MS);
+  release();
+};
+
 const getProxies = () => {
   const proxies: Array<(target: string) => string> = [];
   if (localProxyStatus !== 'down') {
@@ -175,6 +192,8 @@ const fetchTextWithRace = async (
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
+      await scheduleRequestSlot();
+
       // Create a composite signal that combines both signals
       const compositeSignal = options?.signal
         ? createCompositeSignal(controller.signal, options.signal)
@@ -184,6 +203,9 @@ const fetchTextWithRace = async (
       clearTimeout(timeoutId);
 
       if (!res.ok) {
+        if (res.status === 429) {
+          await wait(PROXY_RETRY_DELAY_MS);
+        }
         lastError = new Error(`Status ${res.status}`);
         continue;
       }
@@ -205,6 +227,9 @@ const fetchTextWithRace = async (
     } catch (e) {
       clearTimeout(timeoutId);
       if (isLocal) localProxyStatus = 'down';
+      if (e instanceof Error && e.name === 'AbortError') {
+        await wait(PROXY_RETRY_DELAY_MS);
+      }
       lastError = e instanceof Error ? e : new Error('Proxy fetch failed');
     }
   }

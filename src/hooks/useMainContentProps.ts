@@ -14,7 +14,7 @@ interface UseMainContentProps {
   channels: ChannelDef[];
   viewMode: 'home' | 'channel';
   activeChannelId: string | null;
-  handleAddChannel: () => void;
+  handleAddChannel: (name: string, rutubeId: string) => void;
   setIsAddChannelModalOpen: (open: boolean) => void;
   activeChannel: ChannelDef | undefined;
   handleGoHome: () => void;

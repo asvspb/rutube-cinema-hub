@@ -11,7 +11,7 @@ services:
     ports:
       - '9229:9229'
     command: >-
-      sh -c "npm install --no-audit --no-fund && npm run dev"
+      sh -c "npm install --no-audit --no-fund && npx --yes wait-on@7.2.0 http://backend:9230/api/health && npm run dev"
     depends_on:
       - backend
 

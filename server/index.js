@@ -896,6 +896,10 @@ app.get('/api/proxy', proxyLimiter, async (req, res) => {
   }
 });
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // Error handler
 app.use((err, req, res, next) => {
   writeLog({
