@@ -1,47 +1,231 @@
-Роль: ты — senior frontend инженер и рефакторинг‑агент.
+Stage 1 (Revised) — Detailed Refactor Guide
 
-Контекст:
-- Этап 1 выполнен частично: хуки и компоненты вынесены, `isMounted` удалён, но `App.tsx` всё ещё ~629 строк.
-- Требование этапа: `App.tsx` < 500 строк и полное удаление `isMounted` паттерна.
+Purpose
+- Convert App.tsx into a pure composition layer that wires hooks and components only.
+- Remove business logic from App.tsx.
+- Use existing hooks; do not invent new architecture.
+- Align with TODO.md Phase 1–4 checklist (this guide is the narrative companion to that task list).
 
-Недостатки текущей реализации (нужно устранить):
-1) `App.tsx` превышает 500 строк (сейчас ~629) — цель этапа не достигнута.
-2) Крупные блоки логики остаются в `App.tsx`: пагинация/фильтрация/сортировка и обработчики UI.
-3) Группировка пропсов в `Navigation`/`MainContent` не доведена до конца — избыточные пропсы раздувают `App.tsx`.
-4) Нет подтверждения, что тесты прошли после рефакторинга (нужно `lint`, `tsc`, `test`, `build`).
+Important Context (Read First)
+- docs/ARCHITECTURE.md
+- docs/STATE_MANAGEMENT.md
+- docs/PROXY_SECURITY.md
+- src/services/rutubeService.ts (proxy + data loading)
+- server/index.js (proxy security + /api/proxy)
+- docs/devai/stage_1.txt (original scope)
 
-Цель этапа 1 (уточнённая):
-- Сократить `App.tsx` до < 500 строк, полностью убрать `isMounted`, сохранив поведение и UI.
+Observed Gaps (Current State)
+- App.tsx still contains state, effects, handlers, and computed values.
+- useAppComposition duplicates App.tsx logic, but App.tsx does not use it.
+- useChannelMenu contains placeholder logic for rename/remove.
+- filteredVideos/sortedVideos are duplicated in useAppComposition.
 
-Обязательные исправления:
-1) Полностью заменить `isMounted` на `AbortController` во всех async‑эффектах в `App.tsx` (включая загрузку home‑ленты и загрузку канала). 
-   - Используй `AbortController` на уровне эффекта и передавай `signal` в асинхронные операции там, где возможно.
-   - После `abort` предотвращай setState: проверяй `signal.aborted`.
-2) Вынести **крупные блоки логики и состояния** из `App.tsx`:
-   - `handleAnalyzeVideo`, `handleSaveMetadata`, `metadataCache` и связанный state — в отдельный хук (например `useMetadata`).
-   - Логику пагинации, `ITEMS_PER_PAGE`, `currentPage`, `displayedVideos`, `handlePageChange` — в `usePagination`.
-   - Логику меню каналов (menu position, refs, handlers) — в `useChannelMenu` или `useUIState` (если уже есть).
-   - Логику загрузки видео (home + channel) — в отдельный хук (`useVideoLogic`), чтобы эффект и функции загрузки ушли из `App.tsx`.
-3) Сократить `App.tsx` за счёт группировки props в объекты, а также передачи группированных проп‑объектов в `Navigation`/`MainContent`.
-   - Допустимо создать промежуточные объекты `navigationProps`, `mainContentProps`.
-4) Проверить, что `CachedPlaylistData` в `types.ts` (уже вынесено) и не дублируется.
+Target End State
+- App.tsx is a composition-only file.
+- useAppComposition is the single place for state, effects, and computed values.
+- useChannelMenu performs real rename/remove via useChannels handlers.
+- No duplicate computed blocks.
 
-Ограничения:
-- Не менять UI/UX и бизнес‑логику.
-- Не добавлять новые зависимости.
-- Хуки должны иметь чёткие интерфейсы и быть переиспользуемыми.
+-----------------------------
+A) Migration Map (App.tsx → Hooks)
+-----------------------------
+1) State (move to useAppComposition)
+- channels, activeChannelId, viewMode, activeCategory
+- videos, videoCache, nextPageUrl
+- isVideoLoading, isLoadingMore, isFetchAllMode, refreshKey
+- isLoggedIn, videoWatchedStatuses, videoLikedStatuses
+- watchHistory
+- metadataCache, loadingMetadataFor
+- gridColumns, sortOption, sortDirection
+- searchQuery, isSearchOpen
+- selectedVideo
+- all modal flags and payloads
+- channel menu state: activeChannelMenuId, channelMenuPosition, isEditingChannel, channelEditName
+- channelInfo, isChannelLoading, channelAvailablePlaylists
+- ratingSettings, currentPage
 
-Ожидаемый результат:
-- `App.tsx` < 500 строк.
-- `isMounted` полностью удалён.
-- Логика декомпозирована на хуки с чёткими ответственностями.
-- Поведение приложения не изменено.
+2) Effects (move to useAppComposition)
+- StorageService.set* effects
+- activeChannelId correction when channels change
+- activeCategory updates when playlists change
+- search reset when category changes
+- search input focus effect
+- click-outside/scroll close logic for menus
 
-Проверки:
-- `npm run lint`
-- `npx tsc --noEmit`
-- `npm run test`
-- `npm run build`
+Criteria for done (useAppComposition vs App.tsx)
+- useAppComposition owns: all state, effects, computed values, handlers, derived props.
+- App.tsx owns: only composition wiring (hook call + prop plumbing + render).
+- App.tsx must not import useState/useEffect/useMemo/useCallback/useRef except for composition helpers (if any).
+- App.tsx should stay ≤ 300 lines and contain no conditional business logic.
 
-Definition of Done:
-- Условия ТЗ выполнены, тесты зелёные, ошибок в браузере/сервере нет, данные загружаются, приложение работоспособно.
+3) Computed values (move to useAppComposition)
+- filteredVideos, sortedVideos, displayedVideos, totalPages
+- any helper computed for grid layout
+
+4) Handlers (move to useAppComposition or existing hooks)
+- handleAddPlaylist, handleRenamePlaylist, handleRemovePlaylist, handleReorderPlaylists
+- handleVideoClick, handleVideoClickForHistory
+- keep handleRefresh from useVideoLogic
+
+-----------------------------
+B) Exact Fixes Required
+-----------------------------
+1) App.tsx should only do:
+- const app = useAppComposition();
+- const modals = useModalRendering(app.modalProps);
+- render Navigation/MainContent/Modals
+- no direct useState/useEffect/useMemo
+
+2) useChannelMenu.ts
+- Accept handleRenameChannel + handleRemoveChannel from useChannels
+- Implement handleRenameChannelSave and handleRemoveChannel using those handlers
+
+3) useAppComposition.ts
+- Remove duplicate blocks of filteredVideos/sortedVideos
+- Own all state/effects/computed logic
+- Provide navigationProps + mainContentProps + modalProps
+
+-----------------------------
+C) Diff-Style Plan (Step-by-Step)
+-----------------------------
+Step A — Replace App.tsx logic with composition-only
+Entry: App.tsx contains state/effects/handlers
+Exit: App.tsx only wires hooks + components, ≤ 300 lines
+
+Step B — Fix useChannelMenu behavior
+Entry: useChannelMenu has placeholder rename/remove
+Exit: rename/remove invoke useChannels handlers
+
+Step C — Move playlist handlers
+Entry: App.tsx contains add/remove/rename/reorder playlist logic
+Exit: moved into useAppComposition or useChannels
+
+Step D — Remove duplicate computed blocks
+Entry: useAppComposition has duplicate filtered/sorted
+Exit: single computed block remains
+
+Step E — Verify proxy security untouched
+Entry: no changes to proxy files
+Exit: server/index.js + rutubeService.ts unchanged
+
+-----------------------------
+D) Quality Gates (Must Pass)
+-----------------------------
+- App.tsx has no business logic.
+- No duplicated computed blocks in useAppComposition.
+- useChannelMenu no longer contains placeholder logic.
+- Proxy scheme unchanged (local /api/proxy + public fallback).
+- No regression in hook responsibilities.
+
+-----------------------------
+E) Start Prompt (Fresh AI)
+-----------------------------
+Role: You are a senior frontend refactoring agent. Your mission is to finish Stage 1 by making App.tsx a pure composition layer and centralizing logic in useAppComposition, without breaking proxy/security or behavior.
+
+Files expected to change
+- src/App.tsx
+- src/hooks/useAppComposition.ts
+- src/hooks/useChannelMenu.ts
+
+Before any changes, open and study:
+1) docs/devai/stage_1_revised.txt (this document)
+2) src/App.tsx (current monolith)
+3) src/hooks/useAppComposition.ts
+4) src/hooks/useChannels.ts
+5) src/hooks/useChannelMenu.ts
+6) src/hooks/useVideoLogic.ts
+7) src/services/rutubeService.ts (proxy chain)
+8) server/index.js (proxy security)
+9) docs/PROXY_SECURITY.md
+10) docs/ARCHITECTURE.md
+
+Then:
+- Build a precise migration map (state/effects/handlers) from App.tsx to useAppComposition.
+- Remove business logic from App.tsx.
+- Fix useChannelMenu by wiring rename/remove handlers.
+- Remove duplicate computed blocks in useAppComposition.
+- Keep proxy behavior intact.
+
+Only after completing these steps, run minimal verification:
+- App.tsx line count ≤ 300.
+- useAppComposition has no duplicated computed blocks.
+- useChannelMenu no placeholders.
+
+Output a short summary of what was moved (2–3 bullets) and verify the quality gates.
+
+-----------------------------
+F) Minimal Test Checklist
+-----------------------------
+Suggested commands
+- npm run build (TypeScript + Vite build validation)
+- npm run lint (optional, if CI enforces lint)
+
+UI sanity
+- App loads with no console errors.
+- Channel switch works (home ↔ channel).
+- Playlist add/remove/rename/reorder works.
+- Modals open/close correctly.
+
+Proxy sanity
+- /api/proxy returns data for a known Rutube URL.
+- Local proxy fallback remains (local first, public second).
+- Proxy security unchanged (allowed domains only).
+
+-----------------------------
+G) Wiring Fix Plan (Current Code)
+-----------------------------
+API mismatches to fix:
+- useSearch: call with no args; use returned state setters.
+- useSortingAndGrid: pass { ratingSettings, setRatingSettings } only.
+- useVideoStatuses: pass isLoggedIn boolean only.
+- useHistory: call with no args; use returned state setters.
+- useMetadata: call with no args.
+- useVideoCache: call with no args.
+- usePagination: pass { sortedVideos } only.
+
+Mandatory code fixes
+1) useChannelMenu recursion fix:
+   - rename local handler to handleRemoveChannelClick (or similar)
+   - call injected handleRemoveChannel then closeChannelMenu
+
+2) Align useAppComposition calls with hook APIs
+   - Replace parameterized calls with correct signatures (see above list).
+   - Stop passing state into hooks that already own their state.
+
+3) Modal rendering props
+   - Remove stub values in App.tsx. Build modal props from useAppComposition output only.
+
+Verification checklist
+- TypeScript compile passes (no hook signature errors).
+- Channel menu remove works without recursion error.
+- Modals receive real data (not empty arrays/objects).
+
+-----------------------------
+H) Start Prompt (Wiring Fix)
+-----------------------------
+Role: You are a senior frontend refactoring agent. Your mission is to fix hook wiring mismatches and remove stubbed modal props without changing architecture.
+
+Before any changes, open and study:
+1) docs/devai/stage_1_revised.txt (this document)
+2) src/App.tsx
+3) src/hooks/useAppComposition.ts
+4) src/hooks/useChannelMenu.ts
+5) src/hooks/useSearch.ts
+6) src/hooks/useSortingAndGrid.ts
+7) src/hooks/useVideoStatuses.ts
+8) src/hooks/useHistory.ts
+9) src/hooks/useMetadata.ts
+10) src/hooks/useVideoCache.ts
+11) src/hooks/usePagination.ts
+
+Then:
+- Align each hook call to its true signature (see section G).
+- Fix useChannelMenu recursion bug.
+- Remove modal stubs in App.tsx; pass real props from useAppComposition.
+- Do not touch proxy logic (server/index.js, rutubeService.ts).
+
+Stop conditions:
+- TypeScript build passes.
+- App renders without runtime errors.
+- Channel menu remove works.
+- Modals receive real data.

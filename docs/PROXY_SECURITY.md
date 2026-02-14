@@ -6,6 +6,12 @@ This document describes the security measures implemented for the `/api/proxy` a
 
 ## Changes to Application Logic
 
+### 0. Proxy Request Flow (Client + Server)
+
+- Client uses local `/api/proxy` first and falls back to public proxy (`https://api.codetabs.com`) if local proxy fails.
+- Server enforces allowlist + private IP checks for `/api/proxy`.
+- Public proxy fallback is client-side only and does not change server security rules.
+
 ### 1. Enhanced Security Middleware
 
 - Added Helmet.js for security headers
