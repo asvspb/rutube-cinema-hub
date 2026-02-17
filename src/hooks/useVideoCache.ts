@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { RutubeVideo, CachedPlaylistData } from '../types';
 
 interface UseVideoCacheResult {
@@ -12,6 +12,8 @@ interface UseVideoCacheResult {
 
 export const useVideoCache = (): UseVideoCacheResult => {
   const [videoCache, setVideoCache] = useState<Record<string, CachedPlaylistData>>({});
+  const cacheRef = useRef(videoCache);
+  cacheRef.current = videoCache;
 
   const addToCache = useCallback((categoryId: string, data: CachedPlaylistData) => {
     setVideoCache(prev => ({
@@ -28,12 +30,9 @@ export const useVideoCache = (): UseVideoCacheResult => {
     });
   }, []);
 
-  const getFromCache = useCallback(
-    (categoryId: string) => {
-      return videoCache[categoryId];
-    },
-    [videoCache]
-  );
+  const getFromCache = useCallback((categoryId: string) => {
+    return cacheRef.current[categoryId];
+  }, []);
 
   const clearCache = useCallback(() => {
     setVideoCache({});

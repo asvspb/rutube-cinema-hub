@@ -161,12 +161,12 @@ const scheduleRequestSlot = async () => {
 
 const getProxies = () => {
   const proxies: Array<(target: string) => string> = [];
+  // Always try local proxy first if not explicitly down
   if (localProxyStatus !== 'down') {
     proxies.push((target: string) => `/api/proxy?url=${encodeURIComponent(target)}`);
   }
-  proxies.push(
-    (target: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`
-  );
+  // Fallback: add direct HTTPS request as last resort
+  proxies.push((target: string) => target);
   return proxies;
 };
 
@@ -187,7 +187,8 @@ const fetchTextWithRace = async (
   for (const proxyGen of proxies) {
     const url = proxyGen(targetUrl);
     const isLocal = !/^https?:\/\//.test(url);
-    const timeoutMs = isLocal ? 8000 : 12000;
+    // Reduced timeouts: 15s for local proxy, 10s for direct requests
+    const timeoutMs = isLocal ? 15000 : 10000;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -226,9 +227,19 @@ const fetchTextWithRace = async (
       );
     } catch (e) {
       clearTimeout(timeoutId);
-      if (isLocal) localProxyStatus = 'down';
       if (e instanceof Error && e.name === 'AbortError') {
+        // Mark local proxy as down on timeout
+        if (isLocal) {
+          localProxyStatus = 'down';
+          logger.warn('Local proxy timeout, marking as down', { targetUrl });
+        }
         await wait(PROXY_RETRY_DELAY_MS);
+      } else {
+        // Mark local proxy as down on connection errors
+        if (isLocal && e instanceof Error) {
+          localProxyStatus = 'down';
+          logger.warn('Local proxy error, marking as down', { targetUrl, error: e.message });
+        }
       }
       lastError = e instanceof Error ? e : new Error('Proxy fetch failed');
     }

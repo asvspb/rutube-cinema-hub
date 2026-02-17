@@ -240,7 +240,13 @@ export const useAppComposition = (): UseAppCompositionResult => {
       if (userMenuRef.current && !userMenuRef.current.contains(target)) {
         setIsUserMenuOpen(false);
       }
-      if (channelMenuRef?.current && !channelMenuRef.current.contains(target)) {
+      // Safe check: channelMenuRef might be undefined in some render cycles
+      if (
+        channelMenuRef &&
+        'current' in channelMenuRef &&
+        channelMenuRef.current &&
+        !channelMenuRef.current.contains(target)
+      ) {
         closeChannelMenu();
       }
     };

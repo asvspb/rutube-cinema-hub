@@ -1,5 +1,108 @@
 import { Router } from 'express';
+import https from 'https';
+import http from 'http';
+import { URL } from 'url';
+import dns from 'dns';
+import { promisify } from 'util';
 import { validateAndResolveURL } from '../middleware/validation.js';
+
+const REQUEST_TIMEOUT_MS = parseInt(process.env.PROXY_REQUEST_TIMEOUT_MS) || 30000; // Reduced to 30s
+const CONNECT_TIMEOUT_MS = 5000;
+const DEBUG = process.env.PROXY_DEBUG === 'true'; // Enable via environment variable
+
+const dnsLookup = promisify(dns.lookup);
+
+// Helper to make HTTPS requests with IPv4 support and retry logic
+const makeRequest = async (urlString, options, maxRetries = 2) => {
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const parsedUrl = new URL(urlString);
+      const isHttps = parsedUrl.protocol === 'https:';
+
+      if (DEBUG) {
+        console.log('[PROXY] Attempt', attempt, 'requesting:', urlString);
+      }
+
+      // Resolve hostname to IPv4 with timeout
+      const ipv4Address = await Promise.race([
+        dnsLookup(parsedUrl.hostname, { family: 4 }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('DNS timeout')), CONNECT_TIMEOUT_MS)
+        ),
+      ]);
+
+      if (DEBUG) {
+        console.log('[PROXY] Resolved:', parsedUrl.hostname, '->', ipv4Address.address);
+      }
+
+      const result = await Promise.race([
+        new Promise((resolve, reject) => {
+          const reqOptions = {
+            hostname: ipv4Address.address,
+            port: parsedUrl.port || (isHttps ? 443 : 80),
+            path: parsedUrl.pathname + parsedUrl.search,
+            method: options.method || 'GET',
+            headers: {
+              ...options.headers,
+              Host: parsedUrl.hostname,
+            },
+            timeout: REQUEST_TIMEOUT_MS,
+            rejectUnauthorized: true,
+          };
+
+          const lib = isHttps ? https : http;
+          const req = lib.request(reqOptions, res => {
+            if (DEBUG) {
+              console.log('[PROXY] Response status:', res.statusCode);
+            }
+
+            const chunks = [];
+            res.on('data', chunk => chunks.push(chunk));
+            res.on('end', () => {
+              resolve({
+                status: res.statusCode,
+                headers: res.headers,
+                body: Buffer.concat(chunks),
+              });
+            });
+          });
+
+          req.on('error', reject);
+          req.on('timeout', () => {
+            req.destroy();
+            reject(new Error('Request timeout'));
+          });
+
+          if (options.body) {
+            req.write(options.body);
+          }
+          req.end();
+        }),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Connection timeout')),
+            CONNECT_TIMEOUT_MS + REQUEST_TIMEOUT_MS
+          )
+        ),
+      ]);
+
+      return result;
+    } catch (e) {
+      lastError = e;
+      if (DEBUG) {
+        console.log('[PROXY] Attempt', attempt, 'failed:', e.message);
+      }
+      // Wait before retry
+      if (attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, 1000 * attempt));
+      }
+    }
+  }
+
+  throw lastError;
+};
 
 const forwardProxyRequest = async (urlString, init, allowedDomains, maxRedirects) => {
   let currentUrl = urlString;
@@ -8,13 +111,10 @@ const forwardProxyRequest = async (urlString, init, allowedDomains, maxRedirects
   for (let redirectCount = 0; redirectCount <= maxRedirects; redirectCount += 1) {
     await validateAndResolveURL(currentUrl, allowedDomains);
 
-    response = await fetch(currentUrl, {
-      ...init,
-      redirect: 'manual',
-    });
+    response = await makeRequest(currentUrl, init);
 
     if (response.status >= 300 && response.status < 400) {
-      const location = response.headers.get('location');
+      const location = response.headers.location;
       if (!location) {
         return response;
       }
@@ -66,7 +166,7 @@ export const proxyRouter = ({ proxyLimiter, allowedDomains, maxRedirects }) => {
 
       res.status(response.status);
 
-      for (const [key, value] of response.headers.entries()) {
+      Object.entries(response.headers).forEach(([key, value]) => {
         if (
           key.toLowerCase() !== 'access-control-allow-origin' &&
           key.toLowerCase() !== 'content-security-policy' &&
@@ -75,10 +175,9 @@ export const proxyRouter = ({ proxyLimiter, allowedDomains, maxRedirects }) => {
         ) {
           res.setHeader(key, value);
         }
-      }
+      });
 
-      const buffer = await response.arrayBuffer();
-      res.send(Buffer.from(buffer));
+      res.send(response.body);
     } catch (e) {
       console.error('Proxy request error:', e);
       if (
