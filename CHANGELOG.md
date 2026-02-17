@@ -4,6 +4,42 @@
 
 ## [Не выпущено]
 
+### Этап 5: Тестирование и CI/CD - 2026-02-17
+
+**Новые тесты (5 файлов, 1083 строки):**
+
+- `tests/frontend/useVideoLogic.test.ts` - 17 тестов для критического хука загрузки видео
+- `tests/frontend/storageServiceAsync.test.ts` - 18 тестов для async операций StorageService
+- `tests/backend/jsonParser.test.js` - 46 тестов парсинга JSON от LLM
+- `tests/backend/ai-router.test.js` - 10 тестов валидации AI API
+- `tests/e2e/homepage.spec.ts` - 8 E2E сценариев (Playwright)
+
+**CI/CD Pipeline:**
+
+- 5 jobs: lint-typecheck → test-frontend → test-backend → build → smoke-test
+- Артефакты: frontend-coverage (7 дней), dist (7 дней)
+- Node.js 20.x, npm ci для воспроизводимости
+- Параллельное выполнение frontend и backend тестов
+
+**Метрики:**
+
+- Всего тестов: 522 (401 frontend + 121 backend)
+- Прохождение: 100%
+- Покрытие: 49.23% lines, 57.87% functions
+- Время выполнения: ~40s локально
+
+**Конфигурация:**
+
+- `playwright.config.ts` - готов к использованию (требует установки)
+- `vitest.config.ts` - обновлены пороги покрытия
+- `.github/workflows/ci.yml` - production-ready pipeline
+
+**Документация:**
+
+- `docs/TESTING_REPORT_STAGE5.md` - детальный отчёт по тестированию
+
+---
+
 ### Этап 4: Производительность и UX - 2026-02-17
 
 #### Добавлено

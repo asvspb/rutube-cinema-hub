@@ -6,35 +6,181 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  NODE_VERSION: '20.x'
+
 jobs:
-  lint-typecheck-build:
+  lint-typecheck:
+    name: Lint & TypeCheck
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [20.x]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linting
+      - name: Run ESLint
         run: npm run lint
 
-      - name: Run type checking
+      - name: Run TypeScript type check
         run: npx tsc --noEmit
 
-      - name: Run tests
-        run: npm run test
+  test-frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    needs: lint-typecheck
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend tests with coverage
+        run: npm run test:frontend:coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: coverage/
+          retention-days: 7
+
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    needs: lint-typecheck
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run backend tests
+        run: npm run test:api
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [test-frontend, test-backend]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build project
         run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  smoke-test:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Start server
+        run: |
+          npm run server &
+          sleep 5
+        env:
+          PORT: 9230
+
+      - name: Run smoke tests
+        run: |
+          # Health check
+          curl -f http://localhost:9230/api/health || exit 1
+          
+          # Check build files exist
+          test -f dist/index.html || exit 1
+          
+          echo "Smoke tests passed!"
+
+  # E2E tests (optional - requires Playwright installation)
+  # Uncomment when @playwright/test is installed
+  # e2e:
+  #   name: E2E Tests
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  # 
+  #     - name: Setup Node.js ${{ env.NODE_VERSION }}
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: 'npm'
+  # 
+  #     - name: Install dependencies
+  #       run: npm ci
+  # 
+  #     - name: Install Playwright browsers
+  #       run: npx playwright install --with-deps chromium
+  # 
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist
+  #         path: dist/
+  # 
+  #     - name: Run E2E tests
+  #       run: npx playwright test
+  # 
+  #     - name: Upload Playwright report
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: playwright-report
+  #         path: playwright-report/
+  #         retention-days: 7

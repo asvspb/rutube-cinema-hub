@@ -161,6 +161,49 @@ src/types/
 - `noFallthroughCasesInSwitch: true` - защита от ошибок в switch
 - Компиляция без ошибок и предупреждений
 
+## CI/CD и тестирование (обновлено 2026-02-17)
+
+### GitHub Actions Pipeline
+
+**5-ступенчатый pipeline:**
+
+```
+lint-typecheck → [test-frontend ‖ test-backend] → build → smoke-test
+```
+
+**Jobs:**
+
+1. **lint-typecheck** - ESLint + TypeScript проверка
+2. **test-frontend** - 401 Vitest тест с coverage артефактом
+3. **test-backend** - 121 Node.js test runner тест
+4. **build** - Vite production build с dist артефактом
+5. **smoke-test** - Health check + проверка файлов сборки
+
+### Тестовое покрытие
+
+| Категория         | Тесты   | Покрытие                       |
+| ----------------- | ------- | ------------------------------ |
+| Frontend (Vitest) | 401     | 49.23% lines, 57.87% functions |
+| Backend (Node.js) | 121     | N/A                            |
+| **Total**         | **522** | **~50%**                       |
+
+**Тестовые файлы:**
+
+- 22 frontend файла (hooks, components, services)
+- 8 backend файла (routes, middleware, services)
+- 1 E2E файл (Playwright config готов)
+
+### Команды тестирования
+
+```bash
+npm test                      # Все тесты
+npm run test:frontend         # Frontend
+npm run test:frontend:coverage # С покрытием
+npm run test:api              # Backend
+```
+
+---
+
 ## Ключевые архитектурные решения
 
 ### 1. Мульти-стратегия извлечения данных из Rutube

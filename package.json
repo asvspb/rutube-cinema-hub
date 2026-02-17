@@ -16,7 +16,7 @@
     "docker:ps": "docker-compose ps",
     "test": "npm run test:api && npm run test:frontend",
     "test:proxy": "bash scripts/test-proxy.sh",
-    "test:api": "node --test tests/*.test.js",
+    "test:api": "node --test tests/*.test.js tests/backend/*.test.js",
     "test:frontend": "vitest run",
     "test:frontend:watch": "vitest",
     "test:frontend:coverage": "vitest run --coverage",
@@ -54,6 +54,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@playwright/test": "^1.58.2",
     "@stylistic/eslint-plugin": "^2.13.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
