@@ -465,13 +465,25 @@ server/
 - Playwright config готов (требует `npm install -D @playwright/test`)
 - Документация: docs/TESTING_REPORT_STAGE5.md
 
-### Этап 6: Docker и деплой (1 день)
+### Этап 6: Docker и деплой ✅ ЗАВЕРШЁН (2026-02-17)
 
-- [ ] Multi-stage Dockerfile (build → production)
-- [ ] Кэширование node_modules в Docker (COPY package\*.json → npm ci → COPY .)
-- [ ] Health checks в docker-compose.yml
-- [ ] Docker Compose profiles (dev / prod)
-- [ ] Документация по деплою в `docs/DEPLOYMENT.md`
+- [x] Multi-stage Dockerfile (build → production)
+- [x] Кэширование node_modules в Docker (COPY package\*.json → npm ci → COPY .)
+- [x] Health checks в docker-compose.yml
+- [x] Docker Compose profiles (dev / prod)
+- [x] Документация по деплою в `docs/DEPLOYMENT.md`
+
+**Результаты:**
+
+- 4-stage Dockerfile: deps → builder → production → development
+- Production образ: 330MB (Alpine + non-root user)
+- Health checks на всех уровнях (Dockerfile + docker-compose)
+- Dev profile: hot-reload с volume mounts + nodemon
+- Prod profile: оптимизированный образ + restart policies
+- Полная документация DEPLOYMENT.md (338 строк)
+- Layer caching: package\*.json → npm ci → COPY source
+- Security: appuser:appgroup (UID/GID 1001), ca-certificates
+- Проверено: контейнеры стартуют, health checks работают
 
 ### Этап 7: UX и доступность (ongoing)
 

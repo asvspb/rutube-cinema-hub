@@ -1,29 +1,53 @@
+# ===========================================
+# Docker Compose Configuration
+# Profiles: dev (default), prod
+# Usage:
+#   Dev:  docker-compose up
+#   Prod: docker-compose --profile prod up
+# ===========================================
+
 services:
-  frontend:
+  # ===========================================
+  # DEVELOPMENT PROFILE
+  # ===========================================
+  frontend-dev:
+    profiles:
+      - dev
     image: node:20-alpine
     working_dir: /app
     environment:
-      VITE_PROXY_TARGET: http://backend:9230
+      VITE_PROXY_TARGET: http://backend-dev:9230
       HUSKY: '0'
+      NODE_ENV: development
     volumes:
       - ./:/app
       - frontend_node_modules:/app/node_modules
     ports:
       - '9229:9229'
     command: >-
-      sh -c "npm install --no-audit --no-fund && npx --yes wait-on@7.2.0 http://backend:9230/api/health && npm run dev"
+      sh -c "npm install --no-audit --no-fund && npx --yes wait-on@7.2.0 http://backend-dev:9230/api/health && npm run dev"
     depends_on:
-      - backend
+      backend-dev:
+        condition: service_healthy
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9229']
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
 
-  backend:
+  backend-dev:
+    profiles:
+      - dev
     image: node:20-alpine
     working_dir: /app
     environment:
       PORT: '9230'
       HUSKY: '0'
+      NODE_ENV: development
       NODE_OPTIONS: '--max-old-space-size=512'
       PROXY_CONNECT_TIMEOUT_MS: '30000'
       PROXY_REQUEST_TIMEOUT_MS: '60000'
@@ -35,7 +59,46 @@ services:
     ports:
       - '9230:9230'
     command: >-
-      sh -c "apk add --no-cache ca-certificates && update-ca-certificates && npm install --no-audit --no-fund && npx --yes nodemon --watch server/index.js --watch server/ --watch .env --ignore logs --ignore server/logs --ext js,json server/index.js"
+      sh -c "apk add --no-cache ca-certificates curl && update-ca-certificates && npm install --no-audit --no-fund && npx --yes nodemon --watch server/index.js --watch server/ --watch .env --ignore logs --ignore server/logs --ext js,json server/index.js"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9230/api/health']
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+
+  # ===========================================
+  # PRODUCTION PROFILE
+  # ===========================================
+  app-prod:
+    profiles:
+      - prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        VITE_PROXY_TARGET: http://localhost:9230
+    environment:
+      NODE_ENV: production
+      PORT: '9230'
+      NODE_OPTIONS: '--max-old-space-size=512'
+      PROXY_CONNECT_TIMEOUT_MS: '30000'
+      PROXY_REQUEST_TIMEOUT_MS: '60000'
+      PROXY_RATE_LIMIT_MAX_REQUESTS: '1000'
+      PROXY_RATE_LIMIT_WINDOW_MS: '60000'
+    ports:
+      - '9230:9230'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9230/api/health']
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+    restart: unless-stopped
     dns:
       - 8.8.8.8
       - 1.1.1.1

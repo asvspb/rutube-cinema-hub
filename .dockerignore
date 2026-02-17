@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Build output
+dist
+build
+
+# Development files
+.git
+.gitignore
+.husky
+.idea
+.vscode
+*.md
+!README.md
+
+# Test files
+tests
+coverage
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+playwright.config.ts
+vitest.config.ts
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (prevent recursive context)
+docker-compose*.yml
+.docker
+
+# Scripts (shell scripts not needed in production)
+scripts/*.sh
+scripts/*.js
+scripts/README*.md
+# Keep JSON data files for build
+!scripts/*.json
