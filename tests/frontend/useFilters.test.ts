@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 
 const sortVideos = vi.fn((videos: any[], sortOption: string, direction: string) => {
@@ -43,6 +43,11 @@ describe('useFilters', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('initial state', () => {
@@ -61,32 +66,50 @@ describe('useFilters', () => {
       expect(result.current.filteredVideos).toHaveLength(3);
     });
 
-    it('should filter videos by search query', () => {
+    it('should filter videos by search query after debounce', () => {
       const { result } = renderHook(() => useFilters(defaultProps));
 
       act(() => {
         result.current.setSearchQuery('Alpha');
       });
 
+      // Before debounce completes, should still show all videos
+      expect(result.current.filteredVideos).toHaveLength(3);
+
+      // Advance timers to complete debounce (300ms)
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
       expect(result.current.filteredVideos).toHaveLength(1);
       expect(result.current.filteredVideos[0].title).toBe('Alpha Video');
     });
 
-    it('should be case-insensitive', () => {
+    it('should be case-insensitive after debounce', () => {
       const { result } = renderHook(() => useFilters(defaultProps));
 
       act(() => {
         result.current.setSearchQuery('alpha');
       });
 
+      // Advance timers to complete debounce
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
       expect(result.current.filteredVideos).toHaveLength(1);
     });
 
-    it('should return empty array for no matches', () => {
+    it('should return empty array for no matches after debounce', () => {
       const { result } = renderHook(() => useFilters(defaultProps));
 
       act(() => {
         result.current.setSearchQuery('nonexistent');
+      });
+
+      // Advance timers to complete debounce
+      act(() => {
+        vi.advanceTimersByTime(300);
       });
 
       expect(result.current.filteredVideos).toHaveLength(0);

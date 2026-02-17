@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   Play,
   Star,
@@ -165,10 +165,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({
   };
 
   // External Badges Logic
-  const checkAwards = (awards: string[] | undefined, term: string) => {
+  const checkAwards = useCallback((awards: string[] | undefined, term: string) => {
     if (!awards) return false;
     return awards.some(a => a.toLowerCase().includes(term.toLowerCase()));
-  };
+  }, []);
 
   const wonOscar =
     checkAwards(externalData?.awards, 'Oscar Won') ||
@@ -190,6 +190,12 @@ export const VideoCard: React.FC<VideoCardProps> = ({
           alt={video.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
+          decoding="async"
+          onError={e => {
+            const target = e.target as HTMLImageElement;
+            target.src =
+              'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiA5IiBmaWxsPSIjMzMzIj48cmVjdCB3aWR0aD0iMTYiIGhlaWdodD0iOSIvPjwvc3ZnPg==';
+          }}
         />
 
         {/* Overlay Gradient */}
@@ -521,3 +527,53 @@ export const VideoCard: React.FC<VideoCardProps> = ({
     </div>
   );
 };
+
+// Custom comparison function for React.memo
+const arePropsEqual = (prevProps: VideoCardProps, nextProps: VideoCardProps): boolean => {
+  // Compare primitive props
+  if (
+    prevProps.watchedStatus !== nextProps.watchedStatus ||
+    prevProps.likedStatus !== nextProps.likedStatus ||
+    prevProps.isLoadingMetadata !== nextProps.isLoadingMetadata
+  ) {
+    return false;
+  }
+
+  // Compare video object by id and key fields
+  if (
+    prevProps.video.id !== nextProps.video.id ||
+    prevProps.video.rating !== nextProps.video.rating ||
+    prevProps.video.gravity !== nextProps.video.gravity ||
+    prevProps.video.title !== nextProps.video.title
+  ) {
+    return false;
+  }
+
+  // Compare externalMetadata for this specific video
+  const prevExternalData = prevProps.externalMetadata?.[prevProps.video.title];
+  const nextExternalData = nextProps.externalMetadata?.[nextProps.video.title];
+
+  if (prevExternalData !== nextExternalData) {
+    // Deep compare external data if both exist
+    if (prevExternalData && nextExternalData) {
+      return (
+        prevExternalData.imdbRating === nextExternalData.imdbRating &&
+        prevExternalData.kpRating === nextExternalData.kpRating &&
+        prevExternalData.dataSource === nextExternalData.dataSource
+      );
+    }
+    return false;
+  }
+
+  // Compare rating settings
+  if (
+    prevProps.ratingSettings?.useExperimentalStrategy !==
+    nextProps.ratingSettings?.useExperimentalStrategy
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
+export default React.memo(VideoCard, arePropsEqual);

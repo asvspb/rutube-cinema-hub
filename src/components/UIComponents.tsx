@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, memo } from 'react';
 import {
   Tv,
   PlayCircle,
@@ -32,8 +32,15 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Reorder } from 'framer-motion';
-import { CategoryDef, RutubeVideo, ChannelDef, SortOption } from '../types';
-import { VideoCard } from '../components/VideoCard';
+import {
+  CategoryDef,
+  RutubeVideo,
+  ChannelDef,
+  SortOption,
+  RatingSettings,
+  MovieRatingData,
+} from '../types';
+import VideoCard from '../components/VideoCard';
 import { CategoryFilter } from '../components/CategoryFilter';
 import { ChannelHeader } from '../components/ChannelHeader';
 import { Pagination } from '../components/Pagination';
@@ -138,39 +145,41 @@ interface VideoGridProps {
   getGridClass: () => string;
 }
 
-export const VideoGrid: React.FC<VideoGridProps> = ({
-  displayedVideos,
-  handleVideoClick,
-  videoWatchedStatuses,
-  videoLikedStatuses,
-  toggleVideoWatchedStatus,
-  toggleVideoLikedStatus,
-  ratingSettings,
-  handleAnalyzeVideo,
-  loadingMetadataFor,
-  metadataCache,
-  getGridClass,
-}) => {
-  return (
-    <div className={getGridClass()}>
-      {displayedVideos.map(video => (
-        <VideoCard
-          key={video.id}
-          video={video}
-          onClick={handleVideoClick}
-          watchedStatus={videoWatchedStatuses[video.id]}
-          likedStatus={videoLikedStatuses[video.id]}
-          onWatchedToggle={() => toggleVideoWatchedStatus(video.id)}
-          onLikedToggle={() => toggleVideoLikedStatus(video.id)}
-          ratingSettings={ratingSettings}
-          onAnalyze={handleAnalyzeVideo}
-          isLoadingMetadata={loadingMetadataFor.has(video.title)}
-          externalMetadata={metadataCache}
-        />
-      ))}
-    </div>
-  );
-};
+export const VideoGrid: React.FC<VideoGridProps> = memo(
+  ({
+    displayedVideos,
+    handleVideoClick,
+    videoWatchedStatuses,
+    videoLikedStatuses,
+    toggleVideoWatchedStatus,
+    toggleVideoLikedStatus,
+    ratingSettings,
+    handleAnalyzeVideo,
+    loadingMetadataFor,
+    metadataCache,
+    getGridClass,
+  }) => {
+    return (
+      <div className={getGridClass()}>
+        {displayedVideos.map(video => (
+          <VideoCard
+            key={video.id}
+            video={video}
+            onClick={handleVideoClick}
+            watchedStatus={videoWatchedStatuses[video.id]}
+            likedStatus={videoLikedStatuses[video.id]}
+            onWatchedToggle={() => toggleVideoWatchedStatus(video.id)}
+            onLikedToggle={() => toggleVideoLikedStatus(video.id)}
+            ratingSettings={ratingSettings}
+            onAnalyze={handleAnalyzeVideo}
+            isLoadingMetadata={loadingMetadataFor.has(video.title)}
+            externalMetadata={metadataCache}
+          />
+        ))}
+      </div>
+    );
+  }
+);
 
 interface EmptyStateProps {
   viewMode: 'home' | 'channel';

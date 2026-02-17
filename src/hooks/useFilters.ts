@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { RutubeVideo, SortOption } from '../types';
 import { sortVideos } from '../services/rutubeService';
+import { useDebouncedValue } from '../utils/debounce';
 
 interface UseFiltersProps {
   videos: RutubeVideo[];
@@ -21,6 +22,9 @@ interface UseFiltersResult {
   clearSearch: () => void;
 }
 
+// Search debounce delay in ms
+const SEARCH_DEBOUNCE_MS = 300;
+
 export const useFilters = ({
   videos,
   videoWatchedStatuses,
@@ -30,17 +34,21 @@ export const useFilters = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Debounce search query for filtering
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, SEARCH_DEBOUNCE_MS);
+
   const filteredVideos = useMemo(() => {
     if (!videos) return [];
     let result = [...videos];
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    // Use debounced search query for actual filtering
+    if (debouncedSearchQuery.trim()) {
+      const q = debouncedSearchQuery.toLowerCase();
       result = result.filter(video => video.title && video.title.toLowerCase().includes(q));
     }
 
     return result;
-  }, [videos, searchQuery]);
+  }, [videos, debouncedSearchQuery]);
 
   const sortedVideos = useMemo(() => {
     return sortVideos(

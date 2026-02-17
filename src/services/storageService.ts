@@ -3,7 +3,8 @@ import {
   DEFAULT_PLAYLISTS_BY_CHANNEL,
   DEFAULT_RATING_SETTINGS,
 } from './rutubeService';
-import { ChannelDef, RatingSettings } from '../types';
+import { ChannelDef, RatingSettings, MovieRatingData, CachedPlaylistData } from '../types';
+import { indexedDBService, METADATA_CACHE, VIDEO_CACHE, TTL } from './indexedDBService';
 
 // Define storage keys
 const STORAGE_KEYS = {
@@ -273,6 +274,186 @@ export class StorageService {
       }
     } catch {
       return { watched: {}, liked: {} };
+    }
+  }
+
+  // ==================== IndexedDB Methods ====================
+
+  /**
+   * Initialize IndexedDB and migrate data from localStorage
+   * Should be called once on app startup
+   */
+  static async initializeIndexedDB(): Promise<void> {
+    try {
+      await indexedDBService.init();
+      console.log('StorageService: IndexedDB initialized');
+
+      // Migrate metadata cache from localStorage to IndexedDB
+      await this.migrateMetadataCacheToIndexedDB();
+    } catch (error) {
+      console.error('StorageService: Failed to initialize IndexedDB', error);
+    }
+  }
+
+  /**
+   * Migrate metadata cache from localStorage to IndexedDB
+   */
+  private static async migrateMetadataCacheToIndexedDB(): Promise<void> {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.METADATA_CACHE);
+      if (!saved) return;
+
+      const localCache = JSON.parse(saved);
+      if (!localCache || Object.keys(localCache).length === 0) return;
+
+      // Check if IndexedDB already has data
+      const idbCache = await indexedDBService.getAll<MovieRatingData>(METADATA_CACHE);
+      if (Object.keys(idbCache).length > 0) {
+        console.log('StorageService: IndexedDB already has metadata cache, skipping migration');
+        return;
+      }
+
+      // Migrate each entry
+      let migratedCount = 0;
+      for (const [key, value] of Object.entries(localCache)) {
+        if (value) {
+          await indexedDBService.set(
+            METADATA_CACHE,
+            key,
+            value as MovieRatingData,
+            TTL.METADATA_CACHE
+          );
+          migratedCount++;
+        }
+      }
+
+      console.log(`StorageService: Migrated ${migratedCount} metadata entries to IndexedDB`);
+
+      // Keep localStorage as fallback for now, but clear after successful migration
+      // localStorage.removeItem(STORAGE_KEYS.METADATA_CACHE);
+    } catch (error) {
+      console.error('StorageService: Failed to migrate metadata cache', error);
+    }
+  }
+
+  /**
+   * Get metadata cache (async, from IndexedDB)
+   */
+  static async getMetadataCacheAsync(): Promise<Record<string, MovieRatingData>> {
+    try {
+      return await indexedDBService.getAll<MovieRatingData>(METADATA_CACHE);
+    } catch (error) {
+      console.error('StorageService: Failed to get metadata cache from IndexedDB', error);
+      // Fallback to localStorage
+      return this.getMetadataCache();
+    }
+  }
+
+  /**
+   * Set metadata cache entry in IndexedDB
+   */
+  static async setMetadataCacheEntry(key: string, data: MovieRatingData): Promise<void> {
+    try {
+      await indexedDBService.set(METADATA_CACHE, key, data, TTL.METADATA_CACHE);
+    } catch (error) {
+      console.error('StorageService: Failed to set metadata cache entry', error);
+    }
+  }
+
+  /**
+   * Get single metadata cache entry
+   */
+  static async getMetadataCacheEntry(key: string): Promise<MovieRatingData | null> {
+    try {
+      return await indexedDBService.get<MovieRatingData>(METADATA_CACHE, key);
+    } catch (error) {
+      console.error('StorageService: Failed to get metadata cache entry', error);
+      return null;
+    }
+  }
+
+  /**
+   * Clear metadata cache
+   */
+  static async clearMetadataCache(): Promise<void> {
+    try {
+      await indexedDBService.clearStore(METADATA_CACHE);
+      localStorage.removeItem(STORAGE_KEYS.METADATA_CACHE);
+    } catch (error) {
+      console.error('StorageService: Failed to clear metadata cache', error);
+    }
+  }
+
+  // ==================== Video Cache (IndexedDB) ====================
+
+  /**
+   * Get video cache from IndexedDB
+   */
+  static async getVideoCacheAsync(): Promise<Record<string, CachedPlaylistData>> {
+    try {
+      return await indexedDBService.getAll<CachedPlaylistData>(VIDEO_CACHE);
+    } catch (error) {
+      console.error('StorageService: Failed to get video cache from IndexedDB', error);
+      return {};
+    }
+  }
+
+  /**
+   * Get single video cache entry
+   */
+  static async getVideoCacheEntry(categoryId: string): Promise<CachedPlaylistData | null> {
+    try {
+      return await indexedDBService.get<CachedPlaylistData>(VIDEO_CACHE, categoryId);
+    } catch (error) {
+      console.error('StorageService: Failed to get video cache entry', error);
+      return null;
+    }
+  }
+
+  /**
+   * Set video cache entry in IndexedDB
+   */
+  static async setVideoCacheEntry(categoryId: string, data: CachedPlaylistData): Promise<void> {
+    try {
+      await indexedDBService.set(VIDEO_CACHE, categoryId, data, TTL.VIDEO_CACHE);
+    } catch (error) {
+      console.error('StorageService: Failed to set video cache entry', error);
+    }
+  }
+
+  /**
+   * Remove video cache entry
+   */
+  static async removeVideoCacheEntry(categoryId: string): Promise<void> {
+    try {
+      await indexedDBService.delete(VIDEO_CACHE, categoryId);
+    } catch (error) {
+      console.error('StorageService: Failed to remove video cache entry', error);
+    }
+  }
+
+  /**
+   * Clear video cache
+   */
+  static async clearVideoCache(): Promise<void> {
+    try {
+      await indexedDBService.clearStore(VIDEO_CACHE);
+    } catch (error) {
+      console.error('StorageService: Failed to clear video cache', error);
+    }
+  }
+
+  // ==================== Cleanup ====================
+
+  /**
+   * Cleanup expired entries in all caches
+   */
+  static async cleanupExpiredCaches(): Promise<void> {
+    try {
+      await indexedDBService.cleanupAllExpired();
+      console.log('StorageService: Cleaned up expired cache entries');
+    } catch (error) {
+      console.error('StorageService: Failed to cleanup expired caches', error);
     }
   }
 }

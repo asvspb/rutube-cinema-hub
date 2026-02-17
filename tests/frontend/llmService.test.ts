@@ -100,14 +100,18 @@ describe('llmService', () => {
     });
 
     it('should handle empty query', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => null,
-      } as Response);
-
       const result = await searchMovieRatings('');
 
-      expect(fetch).toHaveBeenCalled();
+      // Empty query returns null without calling fetch
+      expect(fetch).not.toHaveBeenCalled();
+      expect(result).toBeNull();
+    });
+
+    it('should handle whitespace-only query', async () => {
+      const result = await searchMovieRatings('   ');
+
+      // Whitespace-only query returns null without calling fetch
+      expect(fetch).not.toHaveBeenCalled();
       expect(result).toBeNull();
     });
 
