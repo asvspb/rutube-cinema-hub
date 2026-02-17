@@ -291,7 +291,11 @@ export const MainContent: React.FC<MainContentProps> = ({
 }) => {
   return (
     <>
-      <main className="pt-[74px] px-4 md:px-8 pb-12 max-w-7xl mx-auto">
+      <main
+        id="main-content"
+        className="pt-[74px] px-4 md:px-8 pb-12 max-w-7xl mx-auto"
+        role="main"
+      >
         {channels.length === 0 ? (
           <NoChannelsState
             setIsAddChannelModalOpen={setIsAddChannelModalOpen}

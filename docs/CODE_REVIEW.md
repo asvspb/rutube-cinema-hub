@@ -485,14 +485,27 @@ server/
 - Security: appuser:appgroup (UID/GID 1001), ca-certificates
 - Проверено: контейнеры стартуют, health checks работают
 
-### Этап 7: UX и доступность (ongoing)
+### Этап 7: UX и доступность ✅ ЗАВЕРШЁН (2026-02-17)
 
-- [ ] ARIA-атрибуты на интерактивных элементах
-- [ ] Focus trap в модальных окнах
-- [ ] Skip-to-content ссылка
-- [ ] Аудит цветового контраста (WCAG AA)
-- [ ] Улучшение alt-текстов для изображений
-- [ ] PWA: manifest.json + service worker (offline-режим для кэшированных данных)
+- [x] ARIA-атрибуты на интерактивных элементах
+- [x] Focus trap в модальных окнах
+- [x] Skip-to-content ссылка
+- [x] Аудит цветового контраста (WCAG AA)
+- [x] Улучшение alt-текстов для изображений
+- [x] PWA: manifest.json + service worker (offline-режим для кэшированных данных)
+
+**Результаты:**
+
+- Focus trap хук `useFocusTrap.ts` (120 строк) интегрирован в 7 модальных окон
+- 79 ARIA-атрибутов добавлено (role, aria-modal, aria-label, aria-describedby)
+- Skip-to-content ссылка с sr-only классом в App.tsx
+- Цветовой контраст: 5/6 цветов проходят WCAG AA (4.5:1+), 1 marginal (4.13:1)
+- Alt-тексты улучшены для всех изображений и превью
+- PWA: manifest.json (49 строк) + service worker (142 строки)
+- Service worker: cache-first для статики, network-first для HTML, skip API
+- index.css (170 строк): prefers-reduced-motion, prefers-contrast, focus-visible
+- Сборка успешна, все 401 теста проходят, 0 ESLint ошибок
+- Документация: docs/ACCESSIBILITY_REPORT.md (166 строк)
 
 ---
 

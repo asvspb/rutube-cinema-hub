@@ -1,5 +1,9 @@
 # PROJECT RULES
 
+> **Дата создания:** 2026-02-08  
+> **Последнее обновление:** 2026-02-17  
+> **Статус:** ✅ Актуально
+
 ## Core Development Principles
 
 ### 1. Testing & Quality Assurance

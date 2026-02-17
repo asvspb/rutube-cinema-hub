@@ -178,8 +178,22 @@ export const VideoCard: React.FC<VideoCardProps> = ({
     (checkAwards(externalData?.awards, 'Oscar Nominated') ||
       checkAwards(externalData?.awards, 'Nominated to Oscar'));
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick(video);
+    }
+  };
+
   return (
-    <div className="group cursor-pointer flex flex-col gap-3" onClick={() => onClick(video)}>
+    <article
+      className="group cursor-pointer flex flex-col gap-3"
+      onClick={() => onClick(video)}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="article"
+      aria-label={`Видео: ${video.title}`}
+    >
       {/* Thumbnail Container */}
       <div className="relative aspect-video rounded-xl overflow-hidden bg-zinc-900 shadow-lg group-hover:shadow-blue-900/20 transition-all duration-300">
         <img
@@ -187,7 +201,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             video.thumbnail_url ||
             'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiA5IiBmaWxsPSIjMzMzIj48cmVjdCB3aWR0aD0iMTYiIGhlaWdodD0iOSIvPjwvc3ZnPg=='
           }
-          alt={video.title}
+          alt={`Превью видео: ${video.title}`}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
           decoding="async"
@@ -524,7 +538,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
           <span>{formatRelativeTime(video.created_ts)}</span>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

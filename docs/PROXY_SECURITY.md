@@ -1,5 +1,9 @@
 # Proxy Security Implementation
 
+> **Дата создания:** 2026-02-09  
+> **Последнее обновление:** 2026-02-17  
+> **Статус:** ✅ Актуально (включает Circuit Breaker pattern)
+
 ## Overview
 
 This document describes the security measures implemented for the `/api/proxy` and `/api/ai/*` endpoints to protect against unauthorized access and potential security vulnerabilities.

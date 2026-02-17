@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { RatingSettings, RutubeVideo } from '../types';
 import { DEFAULT_RATING_SETTINGS, formatViews } from '../services/rutubeService';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface FormulaSettingsModalProps {
   settings: RatingSettings;
@@ -41,6 +42,12 @@ export const FormulaSettingsModal: React.FC<FormulaSettingsModalProps> = ({
   });
 
   const [activeStatsTab, setActiveStatsTab] = useState<'playlist' | 'global'>('playlist');
+
+  const focusTrapRef = useFocusTrap<HTMLDivElement>({
+    isActive: true,
+    onEscape: onClose,
+    initialFocusSelector: '[data-close-button]',
+  });
 
   // Calculate Statistics
   const playlistStats = useMemo(() => {
@@ -124,16 +131,30 @@ export const FormulaSettingsModal: React.FC<FormulaSettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="formula-settings-title"
+    >
+      <div
+        ref={focusTrapRef}
+        className="relative w-full max-w-lg bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800"
+        tabIndex={-1}
+      >
         <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900">
-          <h2 className="text-white font-semibold flex items-center gap-2">
-            <Calculator className="w-5 h-5 text-purple-500" />
+          <h2
+            id="formula-settings-title"
+            className="text-white font-semibold flex items-center gap-2"
+          >
+            <Calculator className="w-5 h-5 text-purple-500" aria-hidden="true" />
             Формула Рейтинга
           </h2>
           <button
+            data-close-button
             onClick={onClose}
-            className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white"
+            className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Закрыть"
           >
             <X className="w-5 h-5" />
           </button>

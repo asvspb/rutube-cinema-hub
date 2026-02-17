@@ -109,7 +109,11 @@ export const Navigation: React.FC<NavigationProps> = ({
   handleGoHome,
 }) => {
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 bg-[#000917]/95 backdrop-blur z-40 border-b border-zinc-800">
+    <nav
+      className="fixed top-0 left-0 right-0 h-16 bg-[#000917]/95 backdrop-blur z-40 border-b border-zinc-800"
+      role="navigation"
+      aria-label="Основная навигация"
+    >
       <div className="absolute left-0 top-0 h-full flex items-center pl-4 md:pl-8 z-50 pointer-events-none">
         <div className="pointer-events-auto">
           <button
