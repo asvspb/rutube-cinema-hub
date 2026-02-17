@@ -494,8 +494,14 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         </div>
 
         {/* Hover Play Icon */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100 pointer-events-none">
-          <div className="bg-blue-600/90 backdrop-blur-sm p-4 rounded-full shadow-xl">
+        <div
+          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100 cursor-pointer"
+          onClick={e => {
+            e.stopPropagation();
+            onClick(video);
+          }}
+        >
+          <div className="bg-blue-600/90 backdrop-blur-sm p-4 rounded-full shadow-xl hover:bg-blue-500 transition-colors">
             <Play className="w-8 h-8 text-white fill-white ml-1" />
           </div>
         </div>

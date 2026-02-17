@@ -438,6 +438,7 @@ export const useAppComposition = (): UseAppCompositionResult => {
     setAllPlaylists,
     removeFromCache,
     displayedVideos,
+    selectedVideo,
     setSelectedVideo,
     updateWatchedStatus,
     addToHistory,

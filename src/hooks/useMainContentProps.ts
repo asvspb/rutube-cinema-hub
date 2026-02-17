@@ -28,6 +28,7 @@ interface UseMainContentProps {
   setAllPlaylists: (playlists: Record<string, CategoryDef[]>) => void;
   removeFromCache: (key: string) => void;
   displayedVideos: RutubeVideo[];
+  selectedVideo: RutubeVideo | null;
   setSelectedVideo: (video: RutubeVideo) => void;
   updateWatchedStatus: (id: string, status: 'watched' | 'watch_later') => void;
   addToHistory: (video: RutubeVideo) => void;
@@ -134,6 +135,7 @@ export const useMainContentProps = ({
   setAllPlaylists,
   removeFromCache,
   displayedVideos,
+  selectedVideo,
   setSelectedVideo,
   updateWatchedStatus,
   addToHistory,
@@ -280,6 +282,7 @@ export const useMainContentProps = ({
       channelToImport,
       setChannelToImport,
       displayedVideos,
+      selectedVideo,
       handleVideoClick: (video: RutubeVideo) => {
         setSelectedVideo(video);
         updateWatchedStatus(video.id, 'watched');
@@ -398,6 +401,7 @@ export const useMainContentProps = ({
     allPlaylists,
     removeFromCache,
     displayedVideos,
+    selectedVideo,
     setSelectedVideo,
     updateWatchedStatus,
     addToHistory,
