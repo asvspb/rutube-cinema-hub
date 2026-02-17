@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { StorageService } from '../services/storageService';
 import {
   DEFAULT_CHANNELS,
@@ -141,10 +141,16 @@ export const useChannels = (): UseChannelsResult => {
     }
   };
 
-  const refreshChannelData = async () => {
+  const refreshChannelData = useCallback(async () => {
     if (viewMode === 'home') return;
 
-    const channel = channels.find(c => c.id === activeChannelId);
+    // Use functional update to get current channel
+    let channel: ChannelDef | undefined;
+    setChannels(prev => {
+      channel = prev.find(c => c.id === activeChannelId);
+      return prev;
+    });
+
     if (!channel) return;
 
     setIsChannelLoading(true);
@@ -157,7 +163,7 @@ export const useChannels = (): UseChannelsResult => {
 
       setChannelInfo(
         info || {
-          title: channel.label,
+          title: channel!.label,
           subscribers: '0',
           avatarUrl: '',
           bannerUrl: '',
@@ -168,8 +174,8 @@ export const useChannels = (): UseChannelsResult => {
 
       setAllPlaylists(prev => {
         const currentList = prev[activeChannelId] || [];
-        const listToUpdate =
-          currentList.length > 0 ? currentList : allPlaylists[channel.rutubeId] || [];
+        // Fix: use prev instead of allPlaylists to avoid stale closure
+        const listToUpdate = currentList.length > 0 ? currentList : prev[channel!.rutubeId] || [];
 
         const updatedList = listToUpdate.map(cat => {
           if (cat.isSystem && cat.type === 'channel' && info?.videoCount) {
@@ -192,7 +198,7 @@ export const useChannels = (): UseChannelsResult => {
     } catch (e) {
       console.error('Failed to fetch channel data', e);
       setChannelInfo({
-        title: channel.label,
+        title: channel!.label,
         subscribers: '0',
         avatarUrl: '',
         bannerUrl: '',
@@ -200,7 +206,7 @@ export const useChannels = (): UseChannelsResult => {
     } finally {
       setIsChannelLoading(false);
     }
-  };
+  }, [viewMode, activeChannelId]);
 
   return {
     channels,

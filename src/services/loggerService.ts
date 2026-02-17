@@ -12,18 +12,29 @@ const LOG_SERVER_URL = '/api/logs';
 
 class Logger {
   private consolePatched = false;
+  // Флаг для защиты от рекурсии внутри самого процесса логирования
+  private isSending = false;
+
   private originalConsole = {
     error: console.error.bind(console),
     warn: console.warn.bind(console),
+    log: console.log.bind(console),
   };
 
   private async send(entry: LogEntry, options: { skipConsole?: boolean } = {}) {
+    // Защита от рекурсии: если мы уже внутри отправки, не пытаемся отправить снова
+    if (this.isSending) {
+      return;
+    }
+
     try {
+      this.isSending = true;
+
       if (!options.skipConsole) {
-        // Also log to console for development
         const consoleMethod =
           entry.level === 'error' ? 'error' : entry.level === 'warn' ? 'warn' : 'log';
-        console[consoleMethod](
+        // Используем originalConsole для вывода, чтобы не триггерить перехватчики повторно
+        this.originalConsole[consoleMethod](
           `[${entry.level.toUpperCase()}] ${entry.message}`,
           entry.context || ''
         );
@@ -41,8 +52,10 @@ class Logger {
         }),
       });
     } catch (e) {
-      // Fallback if logging server is down
-      console.error('Failed to send log to server:', e);
+      // ИСПРАВЛЕНИЕ: Используем оригинальную консоль для вывода ошибки отправки
+      this.originalConsole.error('Failed to send log to server:', e);
+    } finally {
+      this.isSending = false;
     }
   }
 
@@ -68,19 +81,16 @@ class Logger {
   }
 
   private formatConsoleArgs(args: unknown[]) {
-    return args.map(arg => {
-      if (arg instanceof Error) {
-        return { message: arg.message, stack: arg.stack };
-      }
-      if (typeof arg === 'object') {
-        try {
-          return JSON.parse(JSON.stringify(arg));
-        } catch {
-          return String(arg);
+    try {
+      return args.map(arg => {
+        if (arg instanceof Error) {
+          return { message: arg.message, stack: arg.stack };
         }
-      }
-      return arg;
-    });
+        return arg;
+      });
+    } catch {
+      return ['Error formatting arguments'];
+    }
   }
 
   initConsoleCapture() {
@@ -88,14 +98,17 @@ class Logger {
     this.consolePatched = true;
 
     console.error = (...args: unknown[]) => {
+      // Сначала выводим в оригинальную консоль, чтобы разработчик видел ошибку сразу
       this.originalConsole.error(...args);
+
+      // Отправляем на сервер
       this.send(
         {
           level: 'error',
           message: 'Console error',
           context: { args: this.formatConsoleArgs(args) },
         },
-        { skipConsole: true }
+        { skipConsole: true } // Пропускаем вывод, т.к. уже вывели выше
       );
     };
 

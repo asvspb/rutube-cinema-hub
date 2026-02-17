@@ -8,6 +8,7 @@ import {
   ChannelInfo,
 } from '../types';
 import { logger } from './loggerService';
+import { CircuitBreaker } from '../utils/CircuitBreaker';
 
 const BASE_API = 'https://rutube.ru/api';
 
@@ -139,12 +140,17 @@ export const parseRutubeUrl = (
   }
 };
 
-type ProxyStatus = 'unknown' | 'up' | 'down';
-let localProxyStatus: ProxyStatus = 'unknown';
-
+// Синхронизированные таймауты: сервер max 60s, клиент ждёт 70s
+const CLIENT_PROXY_TIMEOUT_MS = 70000;
 const REQUEST_THROTTLE_MS = 800;
-const PROXY_RETRY_DELAY_MS = 1500;
+const PROXY_RETRY_DELAY_MS = 2000;
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Инициализация Circuit Breaker для локального прокси
+const localProxyBreaker = new CircuitBreaker({
+  failureThreshold: 3, // После 3 ошибок подряд открываем
+  resetTimeout: 30000, // Ждём 30 секунд перед проверкой
+});
 
 let throttleChain = Promise.resolve();
 const scheduleRequestSlot = async () => {
@@ -159,94 +165,86 @@ const scheduleRequestSlot = async () => {
   release();
 };
 
-const getProxies = () => {
-  const proxies: Array<(target: string) => string> = [];
-  // Always try local proxy first if not explicitly down
-  if (localProxyStatus !== 'down') {
-    proxies.push((target: string) => `/api/proxy?url=${encodeURIComponent(target)}`);
-  }
-  // Fallback: add direct HTTPS request as last resort
-  proxies.push((target: string) => target);
-  return proxies;
-};
-
 const isValidRutubeId = (id: string | undefined | null) => !!id && /^\d{6,}$/.test(id);
 
-// Helper: Tries proxies sequentially and returns the first successful text response
+// Export function to check proxy status for UI
+export const getProxyStatus = () => ({
+  state: localProxyBreaker.getState(),
+  failureCount: localProxyBreaker.getFailureCount(),
+  timeUntilReset: localProxyBreaker.getTimeUntilReset(),
+});
+
+// Helper: Makes request through local proxy with Circuit Breaker
 const fetchTextWithRace = async (
   targetUrl: string,
   options?: { signal?: AbortSignal }
 ): Promise<string> => {
-  const proxies = getProxies();
-  if (proxies.length === 0) {
-    throw new Error('No proxies available');
+  // 1. Проверяем, жив ли прокси (Circuit Breaker)
+  if (!localProxyBreaker.canRequest()) {
+    const timeUntilReset = localProxyBreaker.getTimeUntilReset();
+    throw new Error(
+      `Local proxy is temporarily unavailable (Circuit Breaker Open). ` +
+        `Retry in ${Math.ceil(timeUntilReset / 1000)}s`
+    );
   }
 
-  let lastError: Error | undefined;
+  const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), CLIENT_PROXY_TIMEOUT_MS);
 
-  for (const proxyGen of proxies) {
-    const url = proxyGen(targetUrl);
-    const isLocal = !/^https?:\/\//.test(url);
-    // Reduced timeouts: 15s for local proxy, 10s for direct requests
-    const timeoutMs = isLocal ? 15000 : 10000;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    await scheduleRequestSlot();
 
-    try {
-      await scheduleRequestSlot();
+    // Create a composite signal that combines both signals
+    const compositeSignal = options?.signal
+      ? createCompositeSignal(controller.signal, options.signal)
+      : controller.signal;
 
-      // Create a composite signal that combines both signals
-      const compositeSignal = options?.signal
-        ? createCompositeSignal(controller.signal, options.signal)
-        : controller.signal;
+    const res = await fetch(proxyUrl, { signal: compositeSignal });
+    clearTimeout(timeoutId);
 
-      const res = await fetch(url, { signal: compositeSignal });
-      clearTimeout(timeoutId);
-
-      if (!res.ok) {
-        if (res.status === 429) {
-          await wait(PROXY_RETRY_DELAY_MS);
-        }
-        lastError = new Error(`Status ${res.status}`);
-        continue;
+    if (!res.ok) {
+      // 5xx ошибки считаем сбоем инфраструктуры
+      if (res.status >= 500) {
+        localProxyBreaker.recordFailure();
       }
-
-      const text = await res.text();
-      if (
-        text.length > 20 &&
-        !text.includes('Proxy Error') &&
-        !text.includes('Access Denied') &&
-        !text.includes('Cloudflare')
-      ) {
-        if (isLocal) localProxyStatus = 'up';
-        return text;
-      }
-
-      lastError = new Error(
-        text.includes('Access Denied') ? 'Access Denied' : 'Proxy error or empty'
-      );
-    } catch (e) {
-      clearTimeout(timeoutId);
-      if (e instanceof Error && e.name === 'AbortError') {
-        // Mark local proxy as down on timeout
-        if (isLocal) {
-          localProxyStatus = 'down';
-          logger.warn('Local proxy timeout, marking as down', { targetUrl });
-        }
+      if (res.status === 429) {
         await wait(PROXY_RETRY_DELAY_MS);
-      } else {
-        // Mark local proxy as down on connection errors
-        if (isLocal && e instanceof Error) {
-          localProxyStatus = 'down';
-          logger.warn('Local proxy error, marking as down', { targetUrl, error: e.message });
-        }
       }
-      lastError = e instanceof Error ? e : new Error('Proxy fetch failed');
+      throw new Error(`Proxy status ${res.status}`);
     }
-  }
 
-  logger.error('All proxies failed for URL', { targetUrl });
-  throw lastError ?? new Error('All proxies failed');
+    const text = await res.text();
+
+    // Проверяем валидность ответа
+    if (
+      text.length <= 20 ||
+      text.includes('Proxy Error') ||
+      text.includes('Access Denied') ||
+      text.includes('Cloudflare')
+    ) {
+      localProxyBreaker.recordFailure();
+      throw new Error(text.includes('Access Denied') ? 'Access Denied' : 'Proxy error or empty');
+    }
+
+    // Успех! Сбрасываем счетчик ошибок
+    localProxyBreaker.recordSuccess();
+    return text;
+  } catch (e) {
+    clearTimeout(timeoutId);
+
+    // Записываем ошибку в Circuit Breaker
+    localProxyBreaker.recordFailure();
+
+    const errorMessage = e instanceof Error ? e.message : 'Proxy fetch failed';
+    logger.error('Proxy request failed', {
+      targetUrl,
+      error: errorMessage,
+      breakerState: localProxyBreaker.getState(),
+    });
+
+    throw e instanceof Error ? e : new Error('Proxy fetch failed');
+  }
 };
 
 // Helper function to create a composite signal that aborts when either signal aborts

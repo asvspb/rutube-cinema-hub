@@ -184,7 +184,7 @@ export const useAppComposition = (): UseAppCompositionResult => {
 
   useEffect(() => {
     refreshChannelData();
-  }, [activeChannelId, viewMode, channels, refreshChannelData]);
+  }, [activeChannelId, viewMode]); // Removed 'channels' and 'refreshChannelData' to prevent infinite loop
 
   useCategoryEffects({
     viewMode,
