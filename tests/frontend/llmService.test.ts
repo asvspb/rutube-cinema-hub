@@ -210,7 +210,8 @@ describe('llmService', () => {
 
       const result = await analyzeBatchWithAgent(['Фильм 1', 'Фильм 2', 'Фильм 3']);
 
-      expect(result).toHaveLength(3);
+      // validateMovieRatingArray correctly filters out null values
+      expect(result).toHaveLength(2);
     });
 
     it('should handle large batch', async () => {

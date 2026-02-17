@@ -115,7 +115,7 @@ export const useChannelMenu = ({
     setIsFetchAllMode(fetchAll);
     setCurrentPage(1);
 
-    setVideoCache(prev => {
+    setVideoCache((prev: Record<string, unknown>) => {
       const next = { ...prev };
       if (activeCategory) delete next[activeCategory.id];
       return next;

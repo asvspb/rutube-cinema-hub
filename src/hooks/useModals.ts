@@ -39,8 +39,8 @@ interface UseModalsResult {
   setIsConfirmModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   confirmMessage: string;
   setConfirmMessage: React.Dispatch<React.SetStateAction<string>>;
-  confirmCallback: () => void;
-  setConfirmCallback: React.Dispatch<React.SetStateAction<() => void>>;
+  confirmCallback: (() => void) | null;
+  setConfirmCallback: (callback: (() => void) | null) => void;
 
   // Notification modal
   isNotificationModalOpen: boolean;
@@ -69,7 +69,7 @@ export const useModals = (): UseModalsResult => {
   const [kinoRateContext, setKinoRateContext] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState('');
-  const [confirmCallback, setConfirmCallback] = useState<() => void>(() => {});
+  const [confirmCallback, setConfirmCallback] = useState<(() => void) | null>(null);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState<

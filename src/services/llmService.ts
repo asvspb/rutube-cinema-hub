@@ -1,4 +1,4 @@
-import { MovieRatingData } from '../types';
+import { MovieRatingData, validateMovieRatingData, validateMovieRatingArray } from '../types';
 
 export const searchMovieRatings = async (query: string): Promise<MovieRatingData | null> => {
   try {
@@ -12,8 +12,11 @@ export const searchMovieRatings = async (query: string): Promise<MovieRatingData
 
     if (!response.ok) return null;
 
-    const data = (await response.json()) as MovieRatingData | null;
-    return data;
+    const data = await response.json();
+
+    // Validate external data with Zod schema
+    const validatedData = validateMovieRatingData(data);
+    return validatedData;
   } catch (error) {
     console.error('LLM Search Error:', error);
     return null;
@@ -34,8 +37,11 @@ export const analyzeBatchWithAgent = async (queries: string[]): Promise<MovieRat
 
     if (!response.ok) return [];
 
-    const data = (await response.json()) as MovieRatingData[];
-    return Array.isArray(data) ? data : [];
+    const data = await response.json();
+
+    // Validate external data with Zod schema
+    const validatedData = validateMovieRatingArray(data);
+    return validatedData;
   } catch (error) {
     console.error('LLM Batch Error:', error);
     return [];

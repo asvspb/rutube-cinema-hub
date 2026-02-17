@@ -42,7 +42,7 @@ import { RecommendedChannelCard } from '../components/RecommendedChannelCard';
 interface ChannelListProps {
   channels: ChannelDef[];
   viewMode: 'home' | 'channel';
-  activeChannelId: string;
+  activeChannelId: string | null;
   handleChannelSelect: (channelId: string) => void;
   handleChannelMenuTrigger: (e: React.MouseEvent, channel: ChannelDef) => void;
   activeChannelMenuId: string | null;

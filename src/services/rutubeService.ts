@@ -6,6 +6,14 @@ import {
   SortOption,
   RatingSettings,
   ChannelInfo,
+  RutubeApiVideoItem,
+  RutubeReduxState,
+  RutubeApiPlaylistItem,
+  ParsedPageResult,
+  VideoWatchedStatusMap,
+  VideoLikedStatusMap,
+  parseProxyResponse,
+  extractNextUrl,
 } from '../types';
 import { logger } from './loggerService';
 import { CircuitBreaker } from '../utils/CircuitBreaker';
@@ -135,7 +143,7 @@ export const parseRutubeUrl = (
     }
 
     return null;
-  } catch (e) {
+  } catch {
     return null;
   }
 };
@@ -267,30 +275,11 @@ const createCompositeSignal = (signal1: AbortSignal, signal2: AbortSignal): Abor
   return controller.signal;
 };
 
-const parseProxyResponse = (text: string): any => {
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch (e) {
-    throw new Error('Received HTML or invalid JSON');
-  }
-
-  if (data && typeof data === 'object' && 'contents' in data && 'status' in data) {
-    try {
-      if (typeof data.contents === 'string') return JSON.parse(data.contents);
-      return data.contents;
-    } catch (e) {
-      throw new Error('Invalid wrapper');
-    }
-  }
-  return data;
-};
-
 const findIdInHtml = (html: string): string | null => {
   const reduxMatch = html.match(/window\.reduxState\s*=\s*(\{.+?\});/);
   if (reduxMatch && reduxMatch[1]) {
     try {
-      const state = JSON.parse(reduxMatch[1]);
+      const state = JSON.parse(reduxMatch[1]) as RutubeReduxState;
       const candidates = [
         state.userChannel?.id,
         state.channel?.id,
@@ -299,7 +288,9 @@ const findIdInHtml = (html: string): string | null => {
       ];
       const found = candidates.find(id => id && String(id).match(/^\d+$/));
       if (found) return String(found);
-    } catch (e) {}
+    } catch {
+      /* ignore */
+    }
   }
   return null;
 };
@@ -317,8 +308,10 @@ export const resolveRutubeId = async (
   try {
     const text = await fetchTextWithRace(apiUrl, options);
     const data = parseProxyResponse(text);
-    if (data && data.id) return String(data.id);
-  } catch (e) {
+    if (data && typeof data === 'object' && 'id' in data) {
+      return String((data as { id: string | number }).id);
+    }
+  } catch {
     /* ignore */
   }
 
@@ -336,9 +329,13 @@ export const resolveRutubeId = async (
         if (idMatch && idMatch[1]) return idMatch[1];
         const reduxId = findIdInHtml(html);
         if (reduxId) return reduxId;
-      } catch (e) {}
+      } catch {
+        /* ignore */
+      }
     }
-  } catch (e) {}
+  } catch {
+    /* ignore */
+  }
 
   return null;
 };
@@ -404,7 +401,7 @@ export const sortVideos = (
   videos: RutubeVideo[],
   option: SortOption,
   direction: 'asc' | 'desc' = 'desc',
-  videoWatchedStatuses: Record<string, 'watched' | 'watch_later'> = {},
+  videoWatchedStatuses: VideoWatchedStatusMap = {},
   videoLikedStatuses: Record<string, 'liked' | 'disliked'> = {}
 ): RutubeVideo[] => {
   if (option === 'default') return direction === 'asc' ? [...videos] : [...videos].reverse();
@@ -451,7 +448,7 @@ export const sortVideos = (
   }
 };
 
-const mapRutubeItem = (item: any, settings: RatingSettings) => {
+const mapRutubeItem = (item: RutubeApiVideoItem, settings: RatingSettings): RutubeVideo | null => {
   if (!item || typeof item !== 'object') return null;
   const views =
     typeof item.views === 'number' ? item.views : typeof item.hits === 'number' ? item.hits : 0;
@@ -474,7 +471,7 @@ const mapRutubeItem = (item: any, settings: RatingSettings) => {
 const fetchSinglePage = async (
   url: string,
   options?: { signal?: AbortSignal }
-): Promise<{ results: any[]; next: string | null }> => {
+): Promise<ParsedPageResult> => {
   const timestamp = new Date().getTime();
   let fetchUrl = url;
   if (fetchUrl.startsWith('http:')) fetchUrl = fetchUrl.replace('http:', 'https:');
@@ -487,28 +484,25 @@ const fetchSinglePage = async (
     const data = parseProxyResponse(text);
 
     if (Array.isArray(data)) {
-      return { results: data, next: null };
+      return { results: data as RutubeApiVideoItem[], next: null };
     }
 
-    if (data && (Array.isArray(data.results) || data.results)) {
-      const results = Array.isArray(data.results) ? data.results : [];
-      let next: string | null = null;
-      if (typeof data.next === 'string' && data.next.length > 0) {
-        next = data.next;
+    if (data && typeof data === 'object') {
+      const dataObj = data as Record<string, unknown>;
+      if (Array.isArray(dataObj.results)) {
+        const results = dataObj.results as RutubeApiVideoItem[];
+        const next = extractNextUrl(data);
+        return { results, next };
       }
-      if (data.has_next === false || data.has_next === 0) {
-        next = null;
-      }
-      return { results, next };
     }
-  } catch (e) {
+  } catch {
     /* ignore */
   }
 
   return { results: [], next: null };
 };
 
-const findVideosInRedux = (state: any): any[] => {
+const findVideosInRedux = (state: RutubeReduxState): RutubeApiVideoItem[] => {
   if (!state || typeof state !== 'object') return [];
 
   const potentialPaths = [
@@ -526,19 +520,21 @@ const findVideosInRedux = (state: any): any[] => {
   return [];
 };
 
-const extractVideosFromHtml = (html: string): any[] => {
+const extractVideosFromHtml = (html: string): RutubeApiVideoItem[] => {
   const reduxMatch = html.match(/window\.reduxState\s*=\s*(\{.+?\});/);
   if (reduxMatch && reduxMatch[1]) {
     try {
-      const state = JSON.parse(reduxMatch[1]);
+      const state = JSON.parse(reduxMatch[1]) as RutubeReduxState;
       const videos = findVideosInRedux(state);
       if (videos.length > 0) return videos;
-    } catch (e) {}
+    } catch {
+      /* ignore */
+    }
   }
 
-  const videos = new Map<string, any>();
+  const videos = new Map<string, RutubeApiVideoItem>();
   const scriptRegex = /\{[^{}]*"video_url"[^{}]*\}/g;
-  let m;
+  let m: RegExpExecArray | null;
   while ((m = scriptRegex.exec(html)) !== null) {
     try {
       const objStr = m[0];
@@ -561,7 +557,9 @@ const extractVideosFromHtml = (html: string): any[] => {
           });
         }
       }
-    } catch (e) {}
+    } catch {
+      /* ignore */
+    }
   }
 
   if (videos.size === 0) {
@@ -586,7 +584,7 @@ const extractVideosFromHtml = (html: string): any[] => {
 const scrapeVideosFromHtml = async (
   channelId: string,
   options?: { signal?: AbortSignal }
-): Promise<any[]> => {
+): Promise<RutubeApiVideoItem[]> => {
   try {
     let html = await fetchTextWithRace(`https://rutube.ru/channel/${channelId}/videos/`, options);
     let videos = extractVideosFromHtml(html);
@@ -602,7 +600,7 @@ const scrapeVideosFromHtml = async (
     videos = extractVideosFromHtml(html);
 
     return videos;
-  } catch (e) {
+  } catch {
     return [];
   }
 };
@@ -611,8 +609,8 @@ const scrapeVideosPaginated = async (
   channelId: string,
   maxPages: number,
   options?: { signal?: AbortSignal }
-): Promise<any[]> => {
-  const aggregated: any[] = [];
+): Promise<RutubeApiVideoItem[]> => {
+  const aggregated: RutubeApiVideoItem[] = [];
   const seenIds = new Set<string>();
 
   for (let page = 1; page <= maxPages; page++) {
@@ -630,8 +628,8 @@ const scrapeVideosPaginated = async (
     if (!pageVideos.length) break;
 
     pageVideos.forEach(v => {
-      if (v.id && !seenIds.has(v.id)) {
-        seenIds.add(v.id);
+      if (v.id && !seenIds.has(String(v.id))) {
+        seenIds.add(String(v.id));
         aggregated.push(v);
       }
     });
@@ -652,8 +650,8 @@ const scrapeVideosPaginated = async (
         const pageVideos = extractVideosFromHtml(html);
         if (!pageVideos.length) break;
         pageVideos.forEach(v => {
-          if (v.id && !seenIds.has(v.id)) {
-            seenIds.add(v.id);
+          if (v.id && !seenIds.has(String(v.id))) {
+            seenIds.add(String(v.id));
             aggregated.push(v);
           }
         });
@@ -754,7 +752,7 @@ export const fetchVideos = async (
     return { videos: [], nextUrl: null };
   }
 
-  let results: any[] = [];
+  let results: RutubeApiVideoItem[] = [];
   let next: string | null = null;
 
   const initialUrls = [
@@ -770,7 +768,7 @@ export const fetchVideos = async (
     }
   }
 
-  const mapAndFilter = (res: any[]) =>
+  const mapAndFilter = (res: RutubeApiVideoItem[]) =>
     res
       .map(item => mapRutubeItem(item, settings))
       .filter((item): item is RutubeVideo => item !== null);
@@ -809,14 +807,14 @@ export const fetchVideos = async (
   return { videos: allVideos, nextUrl: null };
 };
 
-const findPlaylistsInRedux = (state: any): any[] => {
+const findPlaylistsInRedux = (state: RutubeReduxState): RutubeApiPlaylistItem[] => {
   if (!state || typeof state !== 'object') return [];
 
-  const potentialPaths = [
+  const potentialPaths: Array<RutubeApiPlaylistItem[] | undefined> = [
     state.userChannel?.playlists?.results,
-    state.userChannel?.playlists,
+    Array.isArray(state.userChannel?.playlists) ? state.userChannel.playlists : undefined,
     state.profile?.playlists?.results,
-    state.profile?.playlists,
+    Array.isArray(state.profile?.playlists) ? state.profile.playlists : undefined,
     state.channel?.playlists?.results,
     state.playlists?.results,
   ];
@@ -828,14 +826,49 @@ const findPlaylistsInRedux = (state: any): any[] => {
   return [];
 };
 
+/** Fetch a single page of playlist data */
+const fetchSinglePlaylistPage = async (
+  url: string,
+  options?: { signal?: AbortSignal }
+): Promise<{ results: RutubeApiPlaylistItem[]; next: string | null }> => {
+  const timestamp = new Date().getTime();
+  let fetchUrl = url;
+  if (fetchUrl.startsWith('http:')) fetchUrl = fetchUrl.replace('http:', 'https:');
+  const urlWithCacheBust = fetchUrl.includes('_=')
+    ? fetchUrl
+    : `${fetchUrl}${fetchUrl.includes('?') ? '&' : '?'}_=${timestamp}`;
+
+  try {
+    const text = await fetchTextWithRace(urlWithCacheBust, options);
+    const data = parseProxyResponse(text);
+
+    if (Array.isArray(data)) {
+      return { results: data as RutubeApiPlaylistItem[], next: null };
+    }
+
+    if (data && typeof data === 'object') {
+      const dataObj = data as Record<string, unknown>;
+      if (Array.isArray(dataObj.results)) {
+        const results = dataObj.results as RutubeApiPlaylistItem[];
+        const next = extractNextUrl(data);
+        return { results, next };
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  return { results: [], next: null };
+};
+
 export const fetchChannelPlaylists = async (
   rutubeId: string,
   options?: { signal?: AbortSignal }
 ): Promise<CategoryDef[]> => {
   const uniquePlaylists = new Map<string, CategoryDef>();
 
-  const addPlaylists = (list: any[]) => {
-    list.forEach((item: any) => {
+  const addPlaylists = (list: RutubeApiPlaylistItem[]) => {
+    list.forEach((item: RutubeApiPlaylistItem) => {
       const id = String(item.id);
       const name = item.title || item.name || 'Без названия';
       const count = item.video_count || item.videos_count || item.count || undefined;
@@ -862,7 +895,7 @@ export const fetchChannelPlaylists = async (
       const MAX_PLAYLIST_PAGES = 10;
 
       while (currentUrl && pages < MAX_PLAYLIST_PAGES) {
-        const { results, next } = await fetchSinglePage(currentUrl, options);
+        const { results, next } = await fetchSinglePlaylistPage(currentUrl, options);
         if (results && results.length > 0) {
           addPlaylists(results);
           currentUrl = next;
@@ -872,7 +905,9 @@ export const fetchChannelPlaylists = async (
         }
       }
       if (uniquePlaylists.size > 20) break;
-    } catch (e) {}
+    } catch {
+      /* ignore */
+    }
   }
 
   const urlsToCheck = [`https://rutube.ru/channel/${rutubeId}/playlists/`];
@@ -887,14 +922,16 @@ export const fetchChannelPlaylists = async (
       const reduxMatch = html.match(/window\.reduxState\s*=\s*(\{.+?\});/);
       if (reduxMatch && reduxMatch[1]) {
         try {
-          const state = JSON.parse(reduxMatch[1]);
+          const state = JSON.parse(reduxMatch[1]) as RutubeReduxState;
           const list = findPlaylistsInRedux(state);
           if (list.length > 0) addPlaylists(list);
-        } catch (e) {}
+        } catch {
+          /* ignore */
+        }
       }
 
       const jsonLikeRegex = /\{[^{}]*"playlist_url"[^{}]*\}/g;
-      let m;
+      let m: RegExpExecArray | null;
       while ((m = jsonLikeRegex.exec(html)) !== null) {
         const objStr = m[0];
         const pidM = objStr.match(/"playlist_url":"\/plst\/(\d+)\/"/);
@@ -928,7 +965,9 @@ export const fetchChannelPlaylists = async (
           });
         }
       }
-    } catch (e) {}
+    } catch {
+      /* ignore */
+    }
   }
 
   return Array.from(uniquePlaylists.values());
@@ -943,7 +982,7 @@ export const formatSubscribers = (count: number): string => {
   return count.toLocaleString('ru-RU');
 };
 
-const fixRutubeUrl = (url: any): string => {
+const fixRutubeUrl = (url: string | undefined | null): string => {
   if (typeof url !== 'string' || !url) return '';
   if (url.startsWith('//')) return 'https:' + url;
   if (url.startsWith('/')) return 'https://rutube.ru' + url;
@@ -956,10 +995,10 @@ const cleanChannelTitle = (rawTitle: string): string => {
   let title = rawTitle;
 
   title = title
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&ndash;/g, '–')
     .replace(/&mdash;/g, '—')
@@ -999,7 +1038,13 @@ export const fetchChannelInfo = async (
   try {
     const html = await fetchTextWithRace(channelUrl, options);
 
-    const result: Partial<ChannelInfo> & { rawSubs?: number; rawVideos?: number } = {};
+    const result: {
+      title?: string;
+      avatarUrl?: string;
+      bannerUrl?: string;
+      rawSubs?: number;
+      rawVideos?: number;
+    } = {};
 
     let subMatch = html.match(/"followers_count":\s*(\d+)/);
     if (!subMatch) subMatch = html.match(/"subscribers_count":\s*(\d+)/);
@@ -1062,7 +1107,7 @@ export const fetchChannelInfo = async (
 
     if (!result.title) {
       const nameRegex = /"name":\s*"([^"]+)"/g;
-      let m;
+      let m: RegExpExecArray | null;
       while ((m = nameRegex.exec(html)) !== null) {
         const candidate = m[1];
         if (
@@ -1086,7 +1131,9 @@ export const fetchChannelInfo = async (
         videoCount: result.rawVideos,
       };
     }
-  } catch (e) {}
+  } catch {
+    /* ignore */
+  }
 
   return null;
 };

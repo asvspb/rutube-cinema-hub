@@ -29,7 +29,7 @@ interface UseMainContentProps {
   removeFromCache: (key: string) => void;
   displayedVideos: RutubeVideo[];
   selectedVideo: RutubeVideo | null;
-  setSelectedVideo: (video: RutubeVideo) => void;
+  setSelectedVideo: (video: RutubeVideo | null) => void;
   updateWatchedStatus: (id: string, status: 'watched' | 'watch_later') => void;
   addToHistory: (video: RutubeVideo) => void;
   videoWatchedStatuses: Record<string, 'watched' | 'watch_later'>;
@@ -283,6 +283,7 @@ export const useMainContentProps = ({
       setChannelToImport,
       displayedVideos,
       selectedVideo,
+      setSelectedVideo,
       handleVideoClick: (video: RutubeVideo) => {
         setSelectedVideo(video);
         updateWatchedStatus(video.id, 'watched');

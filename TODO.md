@@ -1,46 +1,152 @@
-# Stage 1 Refactoring Plan
+# Rutube Cinema Hub - Development TODO
 
-## Goals:
+> Отслеживание прогресса по усиленному плану развития
 
-1. Convert App.tsx to composition-only layer (≤500 lines)
-2. Fix useChannelMenu to use real handlers from useChannels
-3. Create unified state management
-4. Remove duplicate code
+**Последнее обновление:** 2026-02-17  
+**Текущий этап:** Этап 3 завершён ✅ → Переход к Этапу 4
 
-## Tasks:
+---
 
-### Phase 1: Fix useChannelMenu
+## 📊 Общий прогресс
 
-- [ ] 1.1 Update useChannelMenu.ts to accept handleRenameChannel and handleRemoveChannel from useChannels
-- [ ] 1.2 Implement handleRenameChannelSave to call injected handler
-- [ ] 1.3 Implement handleRemoveChannel to call injected handler
+| Этап                              | Статус          | Дата завершения |
+| --------------------------------- | --------------- | --------------- |
+| Этап -1: Мгновенные исправления   | ✅ Завершён     | 2026-02-15      |
+| Этап 0: Инфраструктура качества   | ✅ Завершён     | 2026-02-16      |
+| Этап 1: Декомпозиция App.tsx      | ✅ Завершён     | 2026-02-16      |
+| Этап 2: Декомпозиция server       | ✅ Завершён     | 2026-02-16      |
+| **Этап 3: Типизация и валидация** | ✅ **Завершён** | **2026-02-17**  |
+| Этап 4: Производительность        | 🔜 Следующий    | -               |
+| Этап 5: Тестирование и CI/CD      | ⏳ Запланирован | -               |
+| Этап 6: Docker и деплой           | ⏳ Запланирован | -               |
+| Этап 7: UX и доступность          | ⏳ Запланирован | -               |
 
-### Phase 2: Create unified composition hook
+---
 
-- [ ] 2.1 Create useAppComposition.ts that combines all state/effects
-- [ ] 2.2 Move all state from App.tsx to useAppComposition
-- [ ] 2.3 Move all effects from App.tsx to useAppComposition
-- [ ] 2.4 Move all computed values from App.tsx to useAppComposition
-- [ ] 2.5 Move all handlers from App.tsx to useAppComposition
+## ✅ Этап 3: Типизация и валидация (ЗАВЕРШЁН)
 
-### Phase 3: Refactor App.tsx
+### Задачи:
 
-- [ ] 3.1 Replace App.tsx state with useAppComposition()
-- [ ] 3.2 Wire hooks properly (useSearch, useSortingAndGrid, etc.)
-- [ ] 3.3 Render Navigation, MainContent, and Modals
-- [ ] 3.4 Remove all useState, useEffect, useMemo from App.tsx
+- [x] Устранить 15 `any` в `rutubeService.ts` — создать интерфейсы для API-ответов
+- [x] Перенести `types.ts` в `src/types/index.ts`
+- [x] Разделить типы: `types/rutube.ts`, `types/kinorate.ts`, `types/ui.ts`, `types/schemas.ts`
+- [x] Добавить Zod-схемы для валидации внешних данных (Rutube API, LLM ответы)
+- [x] Включить `strict: true` в tsconfig.json
+- [x] Исправить падающий тест в `llmService.test.ts`
+- [x] Создать документацию `docs/TYPE_SYSTEM.md`
 
-### Phase 4: Test and Verify
+### Результаты:
 
-- [ ] 4.1 Run TypeScript build to check for errors
-- [ ] 4.2 Test App loads without console errors
-- [ ] 4.3 Test channel switch works
-- [ ] 4.4 Test channel menu rename/remove works
-- [ ] 4.5 Verify proxy still works
+✅ 0 использований `any` (было 15+)  
+✅ 5 модулей типов, 540 строк  
+✅ 8 Zod-схем + 6 функций валидации  
+✅ 365/365 тестов проходят  
+✅ Strict TypeScript компиляция без ошибок
 
-## Quality Gates:
+---
 
-- App.tsx line count ≤ 500
-- No duplicated computed blocks
-- useChannelMenu has real functionality
-- Proxy scheme unchanged
+## 🔜 Этап 4: Производительность и UX (СЛЕДУЮЩИЙ)
+
+### Задачи:
+
+- [ ] `React.memo` для VideoCard и других тяжёлых компонентов
+- [ ] `useMemo` / `useCallback` для фильтрации и сортировки
+- [ ] Виртуализация списков (`@tanstack/virtual` или `react-window`)
+- [ ] Debounce на поисковом вводе (300ms)
+- [ ] `srcset` для responsive images
+- [ ] Кэширование LLM-ответов (TTL 7 дней, IndexedDB или серверный кэш)
+- [ ] Миграция видео-кэша на IndexedDB
+- [ ] Lazy loading изображений
+
+### Оценка:
+
+⏱️ **Время:** 1-2 дня  
+🎯 **Приоритет:** P1 (высокий)  
+📈 **Метрики:** LCP < 2.5s, FID < 100ms, CLS < 0.1
+
+---
+
+## ⏳ Этап 5: Тестирование и CI/CD
+
+### Задачи:
+
+- [ ] Unit-тесты для хуков (Vitest + React Testing Library)
+- [ ] Unit-тесты для серверных сервисов
+- [ ] Integration-тесты для API-эндпоинтов (supertest)
+- [ ] E2E-тесты для критических сценариев (Playwright)
+- [ ] Покрытие > 60% для бизнес-логики
+- [ ] GitHub Actions pipeline: lint → typecheck → test → build → smoke
+
+### Текущее состояние:
+
+✅ 365 тестов уже написаны  
+✅ CI/CD pipeline настроен  
+⚠️ Нужны E2E тесты
+
+---
+
+## ⏳ Этап 6: Docker и деплой
+
+### Задачи:
+
+- [ ] Multi-stage Dockerfile (build → production)
+- [ ] Кэширование node_modules в Docker
+- [ ] Health checks в docker-compose.yml
+- [ ] Docker Compose profiles (dev / prod)
+- [ ] Документация по деплою в `docs/DEPLOYMENT.md`
+
+---
+
+## ⏳ Этап 7: UX и доступность
+
+### Задачи:
+
+- [ ] ARIA-атрибуты на интерактивных элементах
+- [ ] Focus trap в модальных окнах
+- [ ] Skip-to-content ссылка
+- [ ] Аудит цветового контраста (WCAG AA)
+- [ ] Улучшение alt-текстов для изображений
+- [ ] PWA: manifest.json + service worker
+
+---
+
+## 📝 Технический долг
+
+### Закрыто:
+
+- ✅ TD-1: Удалить `geminiService.ts`
+- ✅ TD-2: Убрать `@ts-ignore`
+- ✅ TD-3: Зафиксировать версии зависимостей
+- ✅ TD-4: Заменить `confirm()`/`alert()`
+- ✅ TD-7: Перенос в `src/` + алиасы
+- ✅ TD-8: Zod/Valibot валидация
+- ✅ TD-9: ESLint + Prettier + husky
+- ✅ TD-10: Compression middleware
+- ✅ TD-11: Удалить пустые директории
+- ✅ TD-12: Health check эндпоинт
+- ✅ TD-13: Заменить isMounted на AbortController
+- ✅ TD-14: StorageService абстракция
+
+### Открыто:
+
+- ⚠️ TD-5: Декомпозиция App.tsx (частично: 17 строк, цель < 500)
+- ❌ TD-6: Декомпозиция server/index.js (частично: 52 строки, цель < 100)
+- ❌ TD-15: Синхронизировать ARCHITECTURE.md с реальностью
+
+---
+
+## 🎯 Приоритеты на следующую сессию
+
+1. **Начать Этап 4** - Производительность и UX
+2. **Виртуализация списков** - самое большое улучшение производительности
+3. **Debounce поиска** - быстрая победа для UX
+4. **React.memo оптимизация** - снизить лишние рендеры
+
+---
+
+## 📚 Связанные документы
+
+- [CODE_REVIEW.md](docs/CODE_REVIEW.md) - Полный план развития
+- [TYPE_SYSTEM.md](docs/TYPE_SYSTEM.md) - Документация системы типов
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Архитектура проекта
+- [TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) - Стратегия тестирования

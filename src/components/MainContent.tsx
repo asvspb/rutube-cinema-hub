@@ -67,16 +67,16 @@ import { Pagination } from '../components/Pagination';
 interface MainContentProps {
   channels: ChannelDef[];
   viewMode: 'home' | 'channel';
-  activeChannelId: string;
+  activeChannelId: string | null;
   handleAddChannel: (name: string, id: string) => void;
   setIsAddChannelModalOpen: (open: boolean) => void;
   activeChannel: ChannelDef | undefined;
   handleGoHome: () => void;
   channelInfo: ChannelInfo | null;
   isChannelLoading: boolean;
-  currentChannelPlaylists: CategoryDef[];
+  currentChannelPlaylists: CategoryDef[] | undefined;
   activeCategory: CategoryDef | null;
-  setActiveCategory: React.Dispatch<React.SetStateAction<CategoryDef | null>>;
+  setActiveCategory: (category: CategoryDef | null) => void;
   videos: RutubeVideo[];
   handleRemovePlaylist: (categoryToRemove: CategoryDef) => void;
   handleRenamePlaylist: (categoryToRename: CategoryDef, newName: string) => void;
@@ -84,7 +84,7 @@ interface MainContentProps {
   handleReorderPlaylists: (newOrder: CategoryDef[]) => void;
   setIsAddPlaylistModalOpen: (open: boolean) => void;
   channelToImport: ChannelDef | null;
-  setChannelToImport: React.Dispatch<React.SetStateAction<ChannelDef | null>>;
+  setChannelToImport: (channel: ChannelDef | null) => void;
   displayedVideos: RutubeVideo[];
   handleVideoClick: (video: RutubeVideo) => void;
   videoWatchedStatuses: Record<string, 'watched' | 'watch_later'>;
@@ -92,7 +92,7 @@ interface MainContentProps {
   toggleVideoWatchedStatus: (videoId: string) => void;
   toggleVideoLikedStatus: (videoId: string) => void;
   ratingSettings: RatingSettings;
-  handleAnalyzeVideo: (title: string) => Promise<void>;
+  handleAnalyzeVideo: (title: string) => void;
   loadingMetadataFor: Set<string>;
   metadataCache: Record<string, MovieRatingData>;
   getGridClass: () => string;
@@ -118,7 +118,7 @@ interface MainContentProps {
   isGridMenuOpen: boolean;
   gridMenuRef: React.RefObject<HTMLDivElement>;
   selectedVideo: RutubeVideo | null;
-  setSelectedVideo: React.Dispatch<React.SetStateAction<RutubeVideo | null>>;
+  setSelectedVideo: (video: RutubeVideo | null) => void;
   isAddPlaylistModalOpen: boolean;
   setIsAddPlaylistModalOpenForMain: (open: boolean) => void;
   handleAddPlaylist: (name: string, rutubeId: string, type: 'channel' | 'playlist') => void;
@@ -131,15 +131,15 @@ interface MainContentProps {
   isKinoRateOpen: boolean;
   setIsKinoRateOpen: (open: boolean) => void;
   kinoRateQuery: string;
-  setKinoRateQuery: React.Dispatch<React.SetStateAction<string>>;
+  setKinoRateQuery: (query: string) => void;
   kinoRateContext: string | null;
   setKinoRateContext: React.Dispatch<React.SetStateAction<string | null>>;
   isConfirmModalOpen: boolean;
   setIsConfirmModalOpen: (open: boolean) => void;
   confirmMessage: string;
-  setConfirmMessage: React.Dispatch<React.SetStateAction<string>>;
-  confirmCallback: () => void;
-  setConfirmCallback: React.Dispatch<React.SetStateAction<() => void>>;
+  setConfirmMessage: (msg: string) => void;
+  confirmCallback: (() => void) | null;
+  setConfirmCallback: (callback: (() => void) | null) => void;
   isNotificationModalOpen: boolean;
   setIsNotificationModalOpen: (open: boolean) => void;
   notificationMessage: string;
@@ -321,7 +321,7 @@ export const MainContent: React.FC<MainContentProps> = ({
             {viewMode === 'channel' && activeCategory && (
               <div className="mb-6">
                 <CategoryFilter
-                  categories={currentChannelPlaylists}
+                  categories={currentChannelPlaylists || []}
                   activeCategory={activeCategory}
                   currentLoadedCount={videos.length}
                   onSelect={setActiveCategory}
@@ -539,7 +539,7 @@ export const MainContent: React.FC<MainContentProps> = ({
           isOpen={isConfirmModalOpen}
           message={confirmMessage}
           onConfirm={() => {
-            confirmCallback();
+            if (confirmCallback) confirmCallback();
             setIsConfirmModalOpen(false);
           }}
           onCancel={() => setIsConfirmModalOpen(false)}
