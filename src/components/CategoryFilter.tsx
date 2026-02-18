@@ -142,47 +142,68 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
             const isMenuOpen = activeMenuId === cat.id;
 
             return (
-              <Reorder.Item
-                key={cat.id}
-                value={cat}
-                whileDrag={{ scale: 1.05, cursor: 'grabbing' }}
-                className="relative"
-              >
-                <div className="group/item relative">
+              <Reorder.Item key={cat.id} value={cat} className="relative shrink-0">
+                <div className="group/item relative h-full flex items-center">
                   <button
                     onClick={() => onSelect(cat)}
                     title={cat.label}
                     className={`
                       relative
-                      px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all duration-200
-                      flex items-center justify-center cursor-grab active:cursor-grabbing select-none
+                      flex items-center justify-center
+                      h-10 rounded-lg text-sm font-bold whitespace-nowrap
+                      transition-all duration-300 ease-out select-none
+                      cursor-pointer
                       max-w-[min(420px,80vw)]
                       ${
                         isActive
-                          ? 'bg-[#0047b9] text-white shadow-lg shadow-blue-900/20 pr-9'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                          ? 'bg-[#0047b9] text-white shadow-lg shadow-blue-900/20 px-4 group-hover/item:pl-10 group-hover/item:pr-10'
+                          : 'bg-zinc-800 text-zinc-400 px-4 hover:bg-zinc-700 hover:text-white hover:pl-10 hover:pr-10'
                       }
                     `}
                   >
-                    <div className="overflow-hidden w-0 group-hover/item:w-5 transition-[width] duration-200 ease-out flex items-center">
-                      <GripVertical className="w-3.5 h-3.5 text-zinc-600 mr-1.5" />
+                    {/* --- ЛЕВАЯ ИКОНКА (Drag Handle / 6 точек) --- */}
+                    <div
+                      className={`
+                      absolute left-1 top-1/2 -translate-y-1/2
+                      w-6 h-6 flex items-center justify-center
+                      transition-all duration-200
+                      opacity-0 scale-75 group-hover/item:opacity-60 group-hover/item:scale-100
+                    `}
+                    >
+                      <GripVertical
+                        className={`w-3.5 h-3.5 ${isActive ? 'text-white/70' : 'text-zinc-500'}`}
+                      />
                     </div>
-                    <span className="block min-w-0 truncate">{cat.label}</span>
 
-                    {isActive && (
-                      <div
-                        role="button"
-                        onPointerDown={e => e.stopPropagation()}
-                        onClick={e => handleMenuTrigger(e, cat)}
-                        className={`
-                          absolute right-1 top-1/2 -translate-y-1/2 p-1 
-                          hover:bg-white/20 rounded-full transition-all duration-200 cursor-pointer
-                          ${isMenuOpen ? 'opacity-100' : 'opacity-0 group-hover/item:opacity-100'}
-                        `}
-                      >
-                        <MoreVertical className="w-3.5 h-3.5 text-white" />
-                      </div>
-                    )}
+                    {/* --- ТЕКСТ КНОПКИ --- */}
+                    <span className="z-10 truncate max-w-[120px] px-2">{cat.label}</span>
+
+                    {/* --- ПРАВАЯ ИКОНКА (Меню / 3 точки) --- */}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onPointerDown={e => e.stopPropagation()}
+                      onClick={e => handleMenuTrigger(e, cat)}
+                      onKeyDown={e =>
+                        e.key === 'Enter' &&
+                        handleMenuTrigger(e as unknown as React.MouseEvent, cat)
+                      }
+                      className={`
+                        absolute right-0.5 top-1/2 -translate-y-1/2
+                        w-4 h-4 flex items-center justify-center
+                        rounded-full hover:bg-white/20 transition-all duration-200
+                        cursor-pointer z-20
+                        focus:outline-none
+                        opacity-0 scale-75 group-hover/item:opacity-100 group-hover/item:scale-100
+                        ${isMenuOpen ? '!opacity-100 !scale-100' : ''}
+                      `}
+                      aria-label="Меню"
+                      aria-haspopup="menu"
+                    >
+                      <MoreVertical
+                        className={`w-3 h-3 ${isActive ? 'text-white' : 'text-inherit'}`}
+                      />
+                    </div>
                   </button>
                 </div>
               </Reorder.Item>

@@ -81,47 +81,69 @@ export const ChannelList: React.FC<ChannelListProps> = ({
         const isMenuOpen = activeChannelMenuId === channel.id;
 
         return (
-          <Reorder.Item
-            key={channel.id}
-            value={channel}
-            whileDrag={{ scale: 1.05 }}
-            className="relative shrink-0"
-          >
-            <div className="group/channel relative">
+          <Reorder.Item key={channel.id} value={channel} className="relative shrink-0">
+            <div className="group/channel relative h-full flex items-center">
               <button
                 onClick={() => handleChannelSelect(channel.id)}
                 className={`
-                    relative
-                    px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all duration-200
-                    flex items-center justify-center cursor-grab active:cursor-grabbing select-none
-                    ${
-                      isActive
-                        ? 'bg-[#cdab8f] text-[#000917] shadow-lg shadow-[#cdab8f]/20 pr-9'
-                        : 'bg-zinc-800 text-zinc-400 hover:bg-[#cdab8f] hover:text-[#000917]'
-                    }
-                  `}
+                  relative
+                  flex items-center justify-center
+                  h-10 rounded-lg text-sm font-bold whitespace-nowrap
+                  transition-all duration-300 ease-out select-none
+                  cursor-pointer
+                  ${
+                    isActive
+                      ? 'bg-[#cdab8f] text-[#000917] shadow-lg shadow-[#cdab8f]/20 px-4 group-hover/channel:pl-10 group-hover/channel:pr-10'
+                      : 'bg-zinc-800 text-zinc-400 px-4 hover:bg-[#cdab8f] hover:text-[#000917] hover:pl-10 hover:pr-10'
+                  }
+                `}
               >
-                <div className="overflow-hidden w-0 group-hover/channel:w-5 transition-[width] duration-200 ease-out flex items-center">
+                {/* --- ЛЕВАЯ ИКОНКА (Drag Handle / 6 точек) --- */}
+                <div
+                  className={`
+                  absolute left-1 top-1/2 -translate-y-1/2
+                  w-6 h-6 flex items-center justify-center
+                  transition-all duration-200
+                  opacity-0 scale-75 group-hover/channel:opacity-60 group-hover/channel:scale-100
+                `}
+                >
                   <GripVertical
-                    className={`w-3.5 h-3.5 ${isActive ? 'text-[#000917]' : 'text-zinc-600 group-hover:text-[#000917]'}`}
+                    className={`w-3.5 h-3.5 ${isActive ? 'text-[#000917]' : 'text-zinc-500'}`}
                   />
                 </div>
-                {channel.label}
 
-                {isActive && (
-                  <div
-                    role="button"
-                    onPointerDown={e => e.stopPropagation()}
-                    onClick={e => handleChannelMenuTrigger(e, channel)}
-                    className={`
-                        absolute right-1 top-1/2 -translate-y-1/2 p-1
-                        hover:bg-white/20 rounded-full transition-all duration-200 cursor-pointer
-                        ${isMenuOpen ? 'opacity-100' : 'opacity-0 group-hover/channel:opacity-100'}
-                      `}
-                  >
-                    <MoreVertical className="w-3.5 h-3.5 text-[#000917]" />
-                  </div>
-                )}
+                {/* --- ТЕКСТ КНОПКИ --- */}
+                <span className="z-10 truncate max-w-[120px] px-2">{channel.label}</span>
+
+                {/* --- ПРАВАЯ ИКОНКА (Меню / 3 точки) --- */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onPointerDown={e => e.stopPropagation()}
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleChannelMenuTrigger(e, channel);
+                  }}
+                  onKeyDown={e =>
+                    e.key === 'Enter' &&
+                    handleChannelMenuTrigger(e as unknown as React.MouseEvent, channel)
+                  }
+                  className={`
+                    absolute right-0.5 top-1/2 -translate-y-1/2
+                    w-4 h-4 flex items-center justify-center
+                    rounded-full hover:bg-black/10 transition-all duration-200
+                    cursor-pointer z-20
+                    focus:outline-none
+                    opacity-0 scale-75 group-hover/channel:opacity-100 group-hover/channel:scale-100
+                    ${isMenuOpen ? '!opacity-100 !scale-100' : ''}
+                  `}
+                  aria-label="Меню"
+                  aria-haspopup="menu"
+                >
+                  <MoreVertical
+                    className={`w-3 h-3 ${isActive ? 'text-[#000917]' : 'text-inherit'}`}
+                  />
+                </div>
               </button>
             </div>
           </Reorder.Item>
