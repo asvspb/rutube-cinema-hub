@@ -2,7 +2,7 @@
 
 > **Статус проекта:** ✅ Production Ready  
 > **Версия:** 1.0.0  
-> **Последнее обновление:** 2026-02-17
+> **Последнее обновление:** 2026-02-18
 
 Современный веб-интерфейс для просмотра видео из Rutube с интеллектуальной системой рейтингов на основе LLM и продвинутыми возможностями управления контентом.
 
@@ -11,10 +11,10 @@
 - 🎬 **KinoRate AI** — умная система рейтингов на основе LLM (Gemini + Mistral)
 - 🔄 **Мульти-стратегия парсинга** — 4 способа получения данных из Rutube
 - 🎨 **Современный UI** — React 18 + TailwindCSS + Framer Motion
-- ♿ **WCAG AA compliant** — полная поддержка доступности
+- ♿ **WCAG AA compliant** — 17/18 критериев доступности
 - 📱 **PWA ready** — работает offline, устанавливается как приложение
 - 🐳 **Docker support** — готовые контейнеры для dev и production
-- ✅ **Хорошо протестировано** — 401 автотест + CI/CD pipeline
+- ✅ **Хорошо протестировано** — 522 автотеста + CI/CD pipeline
 - 🚀 **Производительность** — IndexedDB кэширование, React.memo, debounce
 
 ## 📊 Метрики проекта
@@ -24,10 +24,11 @@
 | Строк кода TypeScript | ~5000+                                  |
 | App.tsx               | 17 строк (декомпозирован)               |
 | Хуков React           | 22 специализированных                   |
-| Тестов                | 401 (100% pass)                         |
+| Тестов                | 522 (100% pass)                         |
 | Покрытие кода         | 49.23% lines, 57.87% functions          |
 | CI/CD jobs            | 5 (lint, typecheck, test, build, smoke) |
 | Docker образ          | 330MB (Alpine + multi-stage)            |
+| Bundle size           | ~303KB gzipped                          |
 
 ## 📋 Установка, настройка и запуск приложения
 
@@ -161,13 +162,37 @@ npm run test:api
 
 ### Скрипты
 
+#### Разработка
+
 - `npm run dev` - запуск frontend сервера (Vite) на порту 9229
-- `npm run build` - сборка проекта для продакшена
-- `npm run preview` - предпросмотр продакшен-сборки
 - `npm run server` - запуск backend сервера на порту 9230
 - `npm run dev:all` - запуск frontend и backend серверов одновременно
-- `npm run test` - запуск smoke-тестов
-- `npm run test:api` - запуск тестов API
+- `npm run build` - сборка проекта для продакшена
+- `npm run preview` - предпросмотр продакшен-сборки
+
+#### Тестирование
+
+- `npm run test` - запуск всех тестов (frontend + backend)
+- `npm run test:api` - запуск backend тестов
+- `npm run test:frontend` - запуск frontend тестов (Vitest)
+- `npm run test:frontend:watch` - запуск frontend тестов в watch-режиме
+- `npm run test:frontend:coverage` - запуск тестов с отчётом покрытия
+- `npm run test:proxy` - тестирование прокси
+
+#### Docker
+
+- `npm run docker:rebuild` - быстрая пересборка Docker-образа
+- `npm run docker:rebuild:full` - полная пересборка Docker-образа
+- `npm run docker:clean` - очистка Docker-контейнеров и томов
+- `npm run docker:logs` - просмотр логов Docker
+- `npm run docker:ps` - статус Docker-контейнеров
+
+#### Качество кода
+
+- `npm run lint` - проверка ESLint
+- `npm run lint:fix` - автоисправление ESLint ошибок
+- `npm run format` - форматирование кода Prettier
+- `npm run format:check` - проверка форматирования
 
 ## 🎬 Демонстрация функционала
 
@@ -283,11 +308,43 @@ _(Здесь будет добавлено GIF-демонстрация осно
 
 ### 3. Стек технологий
 
-- **Frontend:** React 18, TypeScript.
-- **Стилизация:** Tailwind CSS.
-- **Иконки:** Lucide React.
-- **Анимации:** Framer Motion.
-- **Сборка:** В текущей версии используется CDN-импорт (`esm.sh`) через `importmap` в `index.html` для запуска без сборщика. Для продакшена рекомендуется миграция на Vite.
+#### Frontend
+
+- **React 18.3.1** — UI framework
+- **TypeScript (strict mode)** — типобезопасность
+- **TailwindCSS** — utility-first CSS
+- **Framer Motion** — анимации
+- **Lucide React** — иконки
+- **Recharts** — графики рейтингов
+- **Vite 6.2** — сборщик
+
+#### Backend
+
+- **Node.js 18+** — runtime
+- **Express 5** — веб-фреймворк
+- **Helmet.js** — security headers
+- **express-rate-limit** — rate limiting
+- **Zod** — runtime валидация
+
+#### AI/LLM
+
+- **Google Gemini API** — primary LLM
+- **Mistral AI** — fallback LLM
+- **Dual-provider** с автоматическим fallback
+
+#### Storage
+
+- **IndexedDB** — клиентское хранилище (50MB+)
+- **localStorage** — настройки (fallback)
+
+#### DevOps
+
+- **Docker** — контейнеризация (multi-stage build)
+- **Docker Compose** — оркестрация
+- **GitHub Actions** — CI/CD (5 jobs)
+- **Vitest** — unit testing
+- **Playwright** — E2E testing (config готов)
+- **ESLint + Prettier** — code quality
 
 ### 4. Основные файлы и их назначение
 
@@ -307,14 +364,36 @@ Rutube API фрагментирован. Если стандартный JSON AP
 2.  **Direct Regex:** Поиск JSON-подобных структур в теле страницы.
 3.  **Metainfo API:** Использование эндпоинтов для TV-приложений (они часто стабильнее веб-версии).
 
-## 🏗️ Архитектура проекта
+## 🔒 Безопасность
 
-Для подробного описания архитектуры см. [ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+Проект реализует многоуровневую защиту:
 
-## 📊 Управление состоянием
+| Компонент           | Реализация                                |
+| ------------------- | ----------------------------------------- |
+| Rate limiting       | 100 req/15min (proxy), 50 req/15min (AI)  |
+| Domain allowlist    | rutube.ru, \*.rutube.ru                   |
+| Private IP blocking | IPv4 + IPv6                               |
+| CORS whitelist      | localhost origins                         |
+| Security headers    | Helmet.js                                 |
+| Circuit Breaker     | Proxy endpoints (30s timeout, 5 failures) |
+| Zod validation      | 8 схем валидации данных                   |
 
-Для информации об управлении состоянием в приложении см. [STATE_MANAGEMENT.md](./docs/STATE_MANAGEMENT.md)
+## 📚 Документация
 
-## 📝 Архитектурные решения
+### Основная документация
 
-Для просмотра архитектурных решений см. [документы ADR](./docs/adr/)
+| Документ                                                  | Описание                       |
+| --------------------------------------------------------- | ------------------------------ |
+| [ARCHITECTURE.md](./docs/ARCHITECTURE.md)                 | Архитектура проекта            |
+| [STATE_MANAGEMENT.md](./docs/STATE_MANAGEMENT.md)         | Управление состоянием          |
+| [TYPE_SYSTEM.md](./docs/TYPE_SYSTEM.md)                   | Система типов и валидация      |
+| [PERFORMANCE.md](./docs/PERFORMANCE.md)                   | Оптимизации производительности |
+| [DEPLOYMENT.md](./docs/DEPLOYMENT.md)                     | Руководство по деплою          |
+| [ACCESSIBILITY_REPORT.md](./docs/ACCESSIBILITY_REPORT.md) | Отчёт по доступности           |
+| [PROJECT_STATUS.md](./docs/PROJECT_STATUS.md)             | Статус проекта                 |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)                      | Как внести вклад               |
+
+### Архитектурные решения (ADR)
+
+- [ADR-001: Multi-strategy data fetching](./docs/adr/001-use-multi-strategy-data-fetching-from-rutube.md) — 4 стратегии парсинга
+- [ADR-002: Dual LLM provider](./docs/adr/002-use-dual-llm-provider-with-auto-fallback.md) — Gemini + Mistral fallback
