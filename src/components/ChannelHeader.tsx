@@ -4,9 +4,14 @@ import { ChannelInfo } from '../types';
 interface ChannelHeaderProps {
   channelInfo: ChannelInfo | null;
   isLoading: boolean;
+  fallbackTitle?: string;
 }
 
-export const ChannelHeader: React.FC<ChannelHeaderProps> = ({ channelInfo, isLoading }) => {
+export const ChannelHeader: React.FC<ChannelHeaderProps> = ({
+  channelInfo,
+  isLoading,
+  fallbackTitle,
+}) => {
   const [avatarError, setAvatarError] = useState(false);
   const [bannerError, setBannerError] = useState(false);
 
@@ -48,7 +53,49 @@ export const ChannelHeader: React.FC<ChannelHeaderProps> = ({ channelInfo, isLoa
     );
   }
 
-  if (!channelInfo) return null;
+  if (!channelInfo) {
+    return (
+      <div className="relative w-full mb-[10px] rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 min-h-[200px] group shadow-2xl">
+        {/* Fallback Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900">
+          <div
+            className="absolute inset-0 opacity-5"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+              backgroundSize: '32px 32px',
+            }}
+          ></div>
+        </div>
+
+        {/* Gradient Overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(to top, rgba(19, 19, 23, 0.95) 0%, rgba(19, 19, 23, 0.4) 100%)',
+          }}
+        />
+
+        {/* Content */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col md:flex-row items-center md:items-end gap-6 z-10">
+          {/* Fallback Avatar */}
+          <div className="shrink-0 relative">
+            <div className="w-32 h-32 rounded-full border-4 border-zinc-700 shadow-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-3xl font-bold">
+              {getInitials(fallbackTitle || 'Канал')}
+            </div>
+          </div>
+
+          {/* Text Content */}
+          <div className="flex-1 text-center md:text-left pb-2 w-full min-w-0">
+            <h1 className="text-3xl font-bold md:text-4xl text-white mb-2 tracking-tight drop-shadow-lg truncate">
+              {fallbackTitle || 'Канал'}
+            </h1>
+            <p className="text-zinc-500 font-medium text-lg">Информация недоступна</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const { title, subscribers, avatarUrl, bannerUrl } = channelInfo;
 

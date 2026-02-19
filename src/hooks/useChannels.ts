@@ -142,17 +142,28 @@ export const useChannels = (): UseChannelsResult => {
   };
 
   const refreshChannelData = useCallback(async () => {
-    if (viewMode === 'home') return;
+    if (viewMode === 'home') {
+      return;
+    }
 
-    // Use functional update to get current channel
-    let channel: ChannelDef | undefined;
-    setChannels(prev => {
-      channel = prev.find(c => c.id === activeChannelId);
-      return prev;
-    });
+    if (!activeChannelId) {
+      return;
+    }
 
-    if (!channel) return;
+    // Get channel directly from state
+    const channel = channels.find(c => c.id === activeChannelId);
 
+    if (!channel) {
+      console.error('[refreshChannelData] Channel not found for id:', activeChannelId);
+      return;
+    }
+
+    console.log(
+      '[refreshChannelData] Fetching channel data for:',
+      channel.label,
+      'rutubeId:',
+      channel.rutubeId
+    );
     setIsChannelLoading(true);
 
     try {
@@ -160,6 +171,8 @@ export const useChannels = (): UseChannelsResult => {
         fetchChannelInfo(channel.rutubeId),
         fetchChannelPlaylists(channel.rutubeId),
       ]);
+
+      console.log('[refreshChannelData] Received info:', info);
 
       setChannelInfo(
         info || {
@@ -206,7 +219,7 @@ export const useChannels = (): UseChannelsResult => {
     } finally {
       setIsChannelLoading(false);
     }
-  }, [viewMode, activeChannelId]);
+  }, [viewMode, activeChannelId, channels]);
 
   return {
     channels,

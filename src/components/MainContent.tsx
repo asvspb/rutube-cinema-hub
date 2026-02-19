@@ -84,7 +84,7 @@ interface MainContentProps {
   handleReorderPlaylists: (newOrder: CategoryDef[]) => void;
   setIsAddPlaylistModalOpen: (open: boolean) => void;
   channelToImport: ChannelDef | null;
-  setChannelToImport: (channel: ChannelDef | null) => void;
+  setChannelToImport: React.Dispatch<React.SetStateAction<ChannelDef | null>>;
   displayedVideos: RutubeVideo[];
   handleVideoClick: (video: RutubeVideo) => void;
   videoWatchedStatuses: Record<string, 'watched' | 'watch_later'>;
@@ -92,7 +92,7 @@ interface MainContentProps {
   toggleVideoWatchedStatus: (videoId: string) => void;
   toggleVideoLikedStatus: (videoId: string) => void;
   ratingSettings: RatingSettings;
-  handleAnalyzeVideo: (title: string) => void;
+  handleAnalyzeVideo: (title: string) => Promise<void>;
   loadingMetadataFor: Set<string>;
   metadataCache: Record<string, MovieRatingData>;
   getGridClass: () => string;
@@ -137,9 +137,9 @@ interface MainContentProps {
   isConfirmModalOpen: boolean;
   setIsConfirmModalOpen: (open: boolean) => void;
   confirmMessage: string;
-  setConfirmMessage: (msg: string) => void;
+  setConfirmMessage: React.Dispatch<React.SetStateAction<string>>;
   confirmCallback: (() => void) | null;
-  setConfirmCallback: (callback: (() => void) | null) => void;
+  setConfirmCallback: React.Dispatch<React.SetStateAction<(() => void) | null>>;
   isNotificationModalOpen: boolean;
   setIsNotificationModalOpen: (open: boolean) => void;
   notificationMessage: string;
@@ -172,7 +172,7 @@ interface MainContentProps {
   closeChannelMenu: () => void;
   handleRemoveChannel: (channelId: string) => void;
   channelEditName: string;
-  setChannelEditName: (name: string) => void;
+  setChannelEditName: React.Dispatch<React.SetStateAction<string>>;
   channelInputRef: React.RefObject<HTMLInputElement>;
   handleRenameChannelSave: () => void;
   channelMenuRef: React.RefObject<HTMLDivElement>;
@@ -310,16 +310,12 @@ export const MainContent: React.FC<MainContentProps> = ({
               </div>
             )}
 
-            {viewMode === 'channel' && (channelInfo || isChannelLoading) && (
-              <ChannelHeader channelInfo={channelInfo} isLoading={isChannelLoading} />
-            )}
-
-            {!channelInfo && !isChannelLoading && viewMode === 'channel' && (
-              <div className="mb-[10px]">
-                <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                  {activeChannel?.label || 'Видео'}
-                </h1>
-              </div>
+            {viewMode === 'channel' && (
+              <ChannelHeader
+                channelInfo={channelInfo}
+                isLoading={isChannelLoading}
+                fallbackTitle={activeChannel?.label}
+              />
             )}
 
             {viewMode === 'channel' && activeCategory && (

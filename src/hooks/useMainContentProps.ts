@@ -37,7 +37,7 @@ interface UseMainContentProps {
   toggleVideoWatchedStatus: (videoId: string) => void;
   toggleVideoLikedStatus: (videoId: string) => void;
   ratingSettings: RatingSettings;
-  handleAnalyzeVideo: (title: string) => void;
+  handleAnalyzeVideo: (title: string) => Promise<void>;
   loadingMetadataFor: Set<string>;
   metadataCache: Record<string, MovieRatingData>;
   gridColumns: 2 | 3 | 4;
@@ -78,15 +78,17 @@ interface UseMainContentProps {
   isConfirmModalOpen: boolean;
   setIsConfirmModalOpen: (open: boolean) => void;
   confirmMessage: string;
-  setConfirmMessage: (msg: string) => void;
+  setConfirmMessage: React.Dispatch<React.SetStateAction<string>>;
   confirmCallback: (() => void) | null;
-  setConfirmCallback: (callback: (() => void) | null) => void;
+  setConfirmCallback: React.Dispatch<React.SetStateAction<(() => void) | null>>;
   isNotificationModalOpen: boolean;
   setIsNotificationModalOpen: (open: boolean) => void;
   notificationMessage: string;
-  setNotificationMessage: (msg: string) => void;
+  setNotificationMessage: React.Dispatch<React.SetStateAction<string>>;
   notificationType: 'info' | 'success' | 'warning' | 'error';
-  setNotificationType: (type: 'info' | 'success' | 'warning' | 'error') => void;
+  setNotificationType: React.Dispatch<
+    React.SetStateAction<'info' | 'success' | 'warning' | 'error'>
+  >;
   handleSettingsSave: (newSettings: RatingSettings) => void;
   channelAvailablePlaylists: CategoryDef[];
   handleImportPlaylists: (newPlaylists: CategoryDef[]) => void;
@@ -98,7 +100,7 @@ interface UseMainContentProps {
   openKinoRate: () => void;
   handleClearMetadataCache: () => void;
   showNotification: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
-  setChannelToImport: (channel: ChannelDef | null) => void;
+  setChannelToImport: React.Dispatch<React.SetStateAction<ChannelDef | null>>;
   setIsAddPlaylistModalOpenForMain: (open: boolean) => void;
   setIsAddChannelModalOpenForMain: (open: boolean) => void;
   ratingSettingsForModal: RatingSettings;
@@ -111,7 +113,7 @@ interface UseMainContentProps {
   closeChannelMenu: () => void;
   handleRemoveChannel: (id: string) => void;
   channelEditName: string;
-  setChannelEditName: (name: string) => void;
+  setChannelEditName: React.Dispatch<React.SetStateAction<string>>;
   channelInputRef: React.RefObject<HTMLInputElement>;
   handleRenameChannelSave: () => void;
   channelMenuRef: React.RefObject<HTMLDivElement>;

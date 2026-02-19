@@ -22,31 +22,31 @@ const BASE_API = 'https://rutube.ru/api';
 
 export const DEFAULT_CHANNELS: ChannelDef[] = [
   {
-    id: '32869212',
+    id: 'channel-32869212-system',
     label: 'Смотри кино',
     rutubeId: '32869212',
     isSystem: true,
   },
   {
-    id: '32181632',
+    id: 'channel-32181632-system',
     label: 'Фильмач',
     rutubeId: '32181632',
     isSystem: true,
   },
   {
-    id: '36921062',
+    id: 'channel-36921062-system',
     label: 'Синемач',
     rutubeId: '36921062',
     isSystem: true,
   },
   {
-    id: '38284124',
+    id: 'channel-38284124-system',
     label: 'Твое кино',
     rutubeId: '38284124',
     isSystem: true,
   },
   {
-    id: '33284182',
+    id: 'channel-33284182-system',
     label: 'СмотретьOnline',
     rutubeId: '33284182',
     isSystem: true,
@@ -54,45 +54,45 @@ export const DEFAULT_CHANNELS: ChannelDef[] = [
 ];
 
 export const DEFAULT_PLAYLISTS_BY_CHANNEL: Record<string, CategoryDef[]> = {
-  '32869212': [
+  'channel-32869212-system': [
     {
-      id: 'all-32869212',
+      id: 'all-channel-32869212-system',
       label: 'Все видео',
       rutubeId: '32869212',
       type: 'channel',
       isSystem: true,
     },
   ],
-  '32181632': [
+  'channel-32181632-system': [
     {
-      id: 'all-32181632',
+      id: 'all-channel-32181632-system',
       label: 'Все видео',
       rutubeId: '32181632',
       type: 'channel',
       isSystem: true,
     },
   ],
-  '36921062': [
+  'channel-36921062-system': [
     {
-      id: 'all-36921062',
+      id: 'all-channel-36921062-system',
       label: 'Все видео',
       rutubeId: '36921062',
       type: 'channel',
       isSystem: true,
     },
   ],
-  '38284124': [
+  'channel-38284124-system': [
     {
-      id: 'all-38284124',
+      id: 'all-channel-38284124-system',
       label: 'Все видео',
       rutubeId: '38284124',
       type: 'channel',
       isSystem: true,
     },
   ],
-  '33284182': [
+  'channel-33284182-system': [
     {
-      id: 'all-33284182',
+      id: 'all-channel-33284182-system',
       label: 'Все видео',
       rutubeId: '33284182',
       type: 'channel',

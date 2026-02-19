@@ -40,7 +40,7 @@ interface UseModalsResult {
   confirmMessage: string;
   setConfirmMessage: React.Dispatch<React.SetStateAction<string>>;
   confirmCallback: (() => void) | null;
-  setConfirmCallback: (callback: (() => void) | null) => void;
+  setConfirmCallback: React.Dispatch<React.SetStateAction<(() => void) | null>>;
 
   // Notification modal
   isNotificationModalOpen: boolean;
