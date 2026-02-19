@@ -474,3 +474,81 @@ export const ChannelMenuContent: React.FC<ChannelMenuContentProps> = ({
     </div>
   );
 };
+
+// ============================================
+// SKELETON LOADER COMPONENTS
+// ============================================
+
+/**
+ * VideoCardSkeleton - единичная карточка-скелетон, имитирующая структуру VideoCard.
+ * Использует animate-pulse для плавной анимации загрузки.
+ */
+export const VideoCardSkeleton: React.FC = () => {
+  return (
+    <div className="flex flex-col gap-3 animate-pulse">
+      {/* Thumbnail Skeleton */}
+      <div className="relative aspect-video rounded-xl overflow-hidden bg-zinc-800">
+        {/* Top Left: Rating + Like placeholders */}
+        <div className="absolute top-2 left-2 flex items-center gap-1">
+          <div className="h-5 w-12 rounded bg-zinc-700" />
+          <div className="h-7 w-7 rounded-full bg-zinc-700" />
+        </div>
+
+        {/* Bottom Right: Duration placeholder */}
+        <div className="absolute bottom-2 right-2 h-5 w-14 rounded bg-zinc-700" />
+      </div>
+
+      {/* Info Skeleton */}
+      <div className="flex flex-col gap-1.5">
+        <div className="h-4 w-3/4 rounded bg-zinc-700" />
+        <div className="h-3 w-1/2 rounded bg-zinc-800" />
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Вспомогательная функция для получения grid-класса для скелетона
+ * (дублирует логику useGridClass для использования в функциональном компоненте)
+ */
+const getGridClassForSkeleton = (gridColumns: 2 | 3 | 4): string => {
+  switch (gridColumns) {
+    case 2:
+      return 'grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8';
+    case 3:
+      return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8';
+    case 4:
+    default:
+      return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-8';
+  }
+};
+
+interface VideoGridSkeletonProps {
+  gridColumns: 2 | 3 | 4;
+  count?: number;
+}
+
+/**
+ * VideoGridSkeleton - контейнер для N карточек скелетона.
+ * Использует ту же Grid-систему, что и VideoGrid.
+ *
+ * @param gridColumns - количество колонок (2, 3 или 4)
+ * @param count - количество скелетонов (по умолчанию: gridColumns * 2)
+ */
+export const VideoGridSkeleton: React.FC<VideoGridSkeletonProps> = ({ gridColumns, count }) => {
+  // Адаптивное количество: 2 ряда для текущей сетки
+  const defaultCount = gridColumns * 2;
+  const skeletonCount = count ?? defaultCount;
+
+  const gridClass = getGridClassForSkeleton(gridColumns);
+
+  return (
+    <div className={gridClass} role="status" aria-label="Загрузка видео">
+      {Array.from({ length: skeletonCount }).map((_, index) => (
+        <VideoCardSkeleton key={`skeleton-${index}`} />
+      ))}
+      {/* Screen reader only text */}
+      <span className="sr-only">Загрузка видео...</span>
+    </div>
+  );
+};

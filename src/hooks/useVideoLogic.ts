@@ -164,6 +164,13 @@ export const useVideoLogic = ({
         return;
       }
 
+      // Сначала очищаем старые видео и показываем skeleton
+      if (!abortController.signal.aborted) {
+        setVideos([]);
+        setNextPageUrl(null);
+        setIsVideoLoading(true);
+      }
+
       if (getFromCache(activeCategory.id)) {
         const cached = getFromCache(activeCategory.id);
         if (!abortController.signal.aborted && cached) {
@@ -173,8 +180,6 @@ export const useVideoLogic = ({
         }
         return;
       }
-
-      if (!abortController.signal.aborted) setIsVideoLoading(true);
 
       try {
         if (!activeCategory.rutubeId) throw new Error('Invalid category ID');

@@ -61,6 +61,7 @@ import {
   SortOptionsList,
   GridOptionsList,
   ChannelMenuContent,
+  VideoGridSkeleton,
 } from '../components/UIComponents';
 import { Pagination } from '../components/Pagination';
 
@@ -386,8 +387,8 @@ export const MainContent: React.FC<MainContentProps> = ({
               </div>
             )}
 
-            {isVideoLoading && !isLoadingMore ? (
-              <LoadingState isLoadingMore={isLoadingMore} />
+            {(isVideoLoading || isChannelLoading) && !isLoadingMore ? (
+              <VideoGridSkeleton gridColumns={gridColumns} />
             ) : displayedVideos.length === 0 ? (
               <EmptyState viewMode={viewMode} handleRefresh={handleRefresh} />
             ) : (
