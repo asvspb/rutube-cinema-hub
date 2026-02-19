@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { StorageService } from '../services/storageService';
 import {
   DEFAULT_CHANNELS,
@@ -44,6 +44,17 @@ export const useChannels = (): UseChannelsResult => {
     StorageService.getAllPlaylists()
   );
   const [channelAvailablePlaylists, setChannelAvailablePlaylists] = useState<CategoryDef[]>([]);
+
+  // Ref to track the current request's channel ID and abort controller
+  const refreshRequestIdRef = useRef<number>(0);
+
+  // Ref to store the latest channels array to avoid recreating refreshChannelData
+  const channelsRef = useRef<ChannelDef[]>(channels);
+
+  // Update channels ref when channels change
+  useEffect(() => {
+    channelsRef.current = channels;
+  }, [channels]);
 
   // Update active channel ID when channels change
   useEffect(() => {
@@ -150,11 +161,16 @@ export const useChannels = (): UseChannelsResult => {
       return;
     }
 
-    // Get channel directly from state
-    const channel = channels.find(c => c.id === activeChannelId);
+    // Increment request ID to track this specific request
+    const currentRequestId = ++refreshRequestIdRef.current;
+    const currentChannelId = activeChannelId;
+
+    // Use ref to get the channel from the latest state without triggering re-renders
+    // This prevents the refreshChannelData from being recreated on every channels change
+    const channel = channelsRef.current.find(c => c.id === currentChannelId);
 
     if (!channel) {
-      console.error('[refreshChannelData] Channel not found for id:', activeChannelId);
+      console.error('[refreshChannelData] Channel not found for id:', currentChannelId);
       return;
     }
 
@@ -164,6 +180,7 @@ export const useChannels = (): UseChannelsResult => {
       'rutubeId:',
       channel.rutubeId
     );
+
     setIsChannelLoading(true);
 
     try {
@@ -172,11 +189,23 @@ export const useChannels = (): UseChannelsResult => {
         fetchChannelPlaylists(channel.rutubeId),
       ]);
 
+      // CRITICAL: Check if the channel is still the same after async operations
+      // This prevents race conditions when user switches channels quickly
+      if (currentRequestId !== refreshRequestIdRef.current) {
+        console.log(
+          '[refreshChannelData] Request outdated, ignoring. Current request ID:',
+          refreshRequestIdRef.current,
+          'This request ID:',
+          currentRequestId
+        );
+        return;
+      }
+
       console.log('[refreshChannelData] Received info:', info);
 
       setChannelInfo(
         info || {
-          title: channel!.label,
+          title: channel.label,
           subscribers: '0',
           avatarUrl: '',
           bannerUrl: '',
@@ -186,9 +215,8 @@ export const useChannels = (): UseChannelsResult => {
       setChannelAvailablePlaylists(fetchedPlaylists);
 
       setAllPlaylists(prev => {
-        const currentList = prev[activeChannelId] || [];
-        // Fix: use prev instead of allPlaylists to avoid stale closure
-        const listToUpdate = currentList.length > 0 ? currentList : prev[channel!.rutubeId] || [];
+        const currentList = prev[currentChannelId] || [];
+        const listToUpdate = currentList.length > 0 ? currentList : prev[channel.rutubeId] || [];
 
         const updatedList = listToUpdate.map(cat => {
           if (cat.isSystem && cat.type === 'channel' && info?.videoCount) {
@@ -205,21 +233,30 @@ export const useChannels = (): UseChannelsResult => {
 
         return {
           ...prev,
-          [activeChannelId]: updatedList,
+          [currentChannelId]: updatedList,
         };
       });
     } catch (e) {
       console.error('Failed to fetch channel data', e);
+
+      // Check again after error to prevent updating wrong channel
+      if (currentRequestId !== refreshRequestIdRef.current) {
+        return;
+      }
+
       setChannelInfo({
-        title: channel!.label,
+        title: channel.label,
         subscribers: '0',
         avatarUrl: '',
         bannerUrl: '',
       });
     } finally {
-      setIsChannelLoading(false);
+      // Only update loading state if this is still the current request
+      if (currentRequestId === refreshRequestIdRef.current) {
+        setIsChannelLoading(false);
+      }
     }
-  }, [viewMode, activeChannelId, channels]);
+  }, [viewMode, activeChannelId]); // Removed channels from dependencies - using channelsRef instead
 
   return {
     channels,
