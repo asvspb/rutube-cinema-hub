@@ -1,8 +1,8 @@
 # Kino Club
 
 > **Статус проекта:** ✅ Production Ready  
-> **Версия:** 1.0.0  
-> **Последнее обновление:** 2026-02-18
+> **Версия:** 1.1.0  
+> **Последнее обновление:** 2026-02-19
 
 Современный веб-интерфейс для просмотра видео из Rutube с интеллектуальной системой рейтингов на основе LLM и продвинутыми возможностями управления контентом.
 
@@ -15,7 +15,9 @@
 - 📱 **PWA ready** — работает offline, устанавливается как приложение
 - 🐳 **Docker support** — готовые контейнеры для dev и production
 - ✅ **Хорошо протестировано** — 522 автотеста + CI/CD pipeline
+- 🔐 **Аутентификация** — JWT токены, Prisma ORM, серверные сессии
 - 🚀 **Производительность** — IndexedDB кэширование, React.memo, debounce
+- ⚡ **Skeleton Loader** — плавная загрузка UI с анимацией
 
 ## 📊 Метрики проекта
 
@@ -325,6 +327,8 @@ _(Здесь будет добавлено GIF-демонстрация осно
 - **Helmet.js** — security headers
 - **express-rate-limit** — rate limiting
 - **Zod** — runtime валидация
+- **Prisma** — ORM для аутентификации (SQLite dev / PostgreSQL prod)
+- **JWT** — токены аутентификации с серверными сессиями
 
 #### AI/LLM
 
@@ -382,16 +386,26 @@ Rutube API фрагментирован. Если стандартный JSON AP
 
 ### Основная документация
 
-| Документ                                                  | Описание                       |
-| --------------------------------------------------------- | ------------------------------ |
-| [ARCHITECTURE.md](./docs/ARCHITECTURE.md)                 | Архитектура проекта            |
-| [STATE_MANAGEMENT.md](./docs/STATE_MANAGEMENT.md)         | Управление состоянием          |
-| [TYPE_SYSTEM.md](./docs/TYPE_SYSTEM.md)                   | Система типов и валидация      |
-| [PERFORMANCE.md](./docs/PERFORMANCE.md)                   | Оптимизации производительности |
-| [DEPLOYMENT.md](./docs/DEPLOYMENT.md)                     | Руководство по деплою          |
-| [ACCESSIBILITY_REPORT.md](./docs/ACCESSIBILITY_REPORT.md) | Отчёт по доступности           |
-| [PROJECT_STATUS.md](./docs/PROJECT_STATUS.md)             | Статус проекта                 |
-| [CONTRIBUTING.md](./CONTRIBUTING.md)                      | Как внести вклад               |
+| Документ                                                  | Описание                           |
+| --------------------------------------------------------- | ---------------------------------- |
+| [ARCHITECTURE.md](./docs/ARCHITECTURE.md)                 | Архитектура проекта                |
+| [STATE_MANAGEMENT.md](./docs/STATE_MANAGEMENT.md)         | Управление состоянием              |
+| [TYPE_SYSTEM.md](./docs/TYPE_SYSTEM.md)                   | Система типов и валидация          |
+| [PERFORMANCE.md](./docs/PERFORMANCE.md)                   | Оптимизации производительности     |
+| [DEPLOYMENT.md](./docs/DEPLOYMENT.md)                     | Руководство по деплою              |
+| [ACCESSIBILITY_REPORT.md](./docs/ACCESSIBILITY_REPORT.md) | Отчёт по доступности               |
+| [PROJECT_STATUS.md](./docs/PROJECT_STATUS.md)             | Статус проекта                     |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)                      | Как внести вклад                   |
+| [DB_SCHEMA_AUTH.md](./docs/DB_SCHEMA_AUTH.md)             | Схема БД аутентификации (Prisma)   |
+| [REST_API_AUTH.md](./docs/REST_API_AUTH.md)               | Документация Auth REST API         |
+| [ERROR_LOG_ANALYSIS.md](./docs/ERROR_LOG_ANALYSIS.md)     | Анализ логов ошибок и рекомендации |
+
+### Документация разработки (devai)
+
+| Документ                                                                  | Описание                     |
+| ------------------------------------------------------------------------- | ---------------------------- |
+| [SKELETON_LOADER_SPEC.md](./docs/devai/SKELETON_LOADER_SPEC.md)           | Спецификация Skeleton Loader |
+| [PLAYLIST_AUTO_IMPORT_PLAN.md](./docs/devai/PLAYLIST_AUTO_IMPORT_PLAN.md) | План авт. импорта плейлистов |
 
 ### Архитектурные решения (ADR)
 

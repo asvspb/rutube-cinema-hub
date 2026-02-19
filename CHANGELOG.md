@@ -4,6 +4,58 @@
 
 ## [Не выпущено]
 
+### Этап 6: Аутентификация и UI улучшения - 2026-02-19
+
+#### Добавлено
+
+- **Система аутентификации** — полноценная auth-система с JWT токенами
+  - Prisma ORM с поддержкой SQLite (dev) и PostgreSQL (prod)
+  - REST API: `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/me`, `/api/auth/refresh`
+  - Серверные сессии с поддержкой JWT revocation
+  - Модели: `User` (email + password hash), `Session` (server-side session records)
+- **Skeleton Loader** — загрузочный UI для видео-карточек
+  - `VideoCardSkeleton` — компонент скелетона отдельной карточки
+  - `VideoGridSkeleton` — сетка скелетонов с адаптивным количеством
+  - Анимация `animate-pulse` с доступностью (a11y)
+- **Кэширование плейлистов каналов** — per-channel playlist caching
+  - Локальное хранение для быстрой загрузки
+  - Персистентность между сессиями
+- **Drag-and-drop реорганизация каналов** — перетаскивание каналов в списке
+- **Hover-responsive навигация** — динамические иконки при наведении
+- **Fallback UI для ChannelHeader** — отображение при отсутствии данных канала
+
+#### Изменено
+
+- **Переименование проекта** — Rutube Cinema Hub → Kino Club
+  - Обновлены `index.html`, `manifest.json`, `sw.js`
+  - Обновлён favicon
+- **Оптимизация useChannels hook** — предотвращение race conditions и лишних ре-рендеров
+- **Улучшена структура документации** — файлы организованы в `docs/devai/`
+- **Удалены redundant conditional стили** из меню компонентов
+
+#### Новая документация
+
+- `docs/DB_SCHEMA_AUTH.md` — схема БД аутентификации (Prisma)
+- `docs/REST_API_AUTH.md` — документация Auth REST API
+- `docs/ERROR_LOG_ANALYSIS.md` — детальный анализ логов ошибок с рекомендациями
+- `docs/devai/PLAYLIST_AUTO_IMPORT_PLAN.md` — план автоматического импорта плейлистов
+- `docs/devai/SKELETON_LOADER_SPEC.md` — спецификация Skeleton Loader
+
+#### Новые скрипты
+
+- `scripts/generate-prisma-schemas.sh` — генерация Prisma схем
+- `prisma.config.ts` — конфигурация Prisma для Vite
+
+#### Тесты
+
+- `tests/frontend/VideoGridSkeleton.test.tsx` — 11 тестов для Skeleton Loader
+
+#### Миграции БД
+
+- `prisma/migrations/20260213075346_init/` — начальная миграция аутентификации
+
+---
+
 ### Этап 5: Тестирование и CI/CD - 2026-02-17
 
 **Новые тесты (5 файлов, 1083 строки):**
