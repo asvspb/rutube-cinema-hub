@@ -25,6 +25,7 @@ interface UseAppCompositionResult {
 export const useAppComposition = (): UseAppCompositionResult => {
   const {
     channels,
+    setChannels,
     activeChannelId,
     viewMode,
     activeChannel,
@@ -382,6 +383,7 @@ export const useAppComposition = (): UseAppCompositionResult => {
 
   const navigationProps = useNavigationProps({
     channels,
+    setChannels,
     viewMode,
     activeChannelId,
     handleChannelSelect,

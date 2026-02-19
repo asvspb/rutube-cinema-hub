@@ -3,6 +3,7 @@ import { ChannelDef, SortOption } from '../types';
 
 interface UseNavigationProps {
   channels: ChannelDef[];
+  setChannels: React.Dispatch<React.SetStateAction<ChannelDef[]>>;
   viewMode: 'home' | 'channel';
   activeChannelId: string | null;
   handleChannelSelect: (id: string) => void;
@@ -43,6 +44,7 @@ interface UseNavigationProps {
 
 export const useNavigationProps = ({
   channels,
+  setChannels,
   viewMode,
   activeChannelId,
   handleChannelSelect,
@@ -83,6 +85,7 @@ export const useNavigationProps = ({
   const navigationProps = useMemo(() => {
     return {
       channels,
+      setChannels,
       viewMode,
       activeChannelId,
       handleChannelSelect,
@@ -122,6 +125,7 @@ export const useNavigationProps = ({
     };
   }, [
     channels,
+    setChannels,
     viewMode,
     activeChannelId,
     handleChannelSelect,

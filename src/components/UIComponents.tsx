@@ -56,6 +56,7 @@ interface ChannelListProps {
   setIsAddChannelModalOpen: (open: boolean) => void;
   channelMenuRef: React.RefObject<HTMLDivElement>;
   handleAddChannel: () => void;
+  setChannels: React.Dispatch<React.SetStateAction<ChannelDef[]>>;
 }
 
 export const ChannelList: React.FC<ChannelListProps> = ({
@@ -68,12 +69,13 @@ export const ChannelList: React.FC<ChannelListProps> = ({
   setIsAddChannelModalOpen,
   channelMenuRef,
   handleAddChannel,
+  setChannels,
 }) => {
   return (
     <Reorder.Group
       axis="x"
       values={channels}
-      onReorder={() => {}} // This would be handled by parent
+      onReorder={setChannels}
       className="flex flex-row flex-nowrap items-center gap-2"
     >
       {channels.map(channel => {
@@ -81,7 +83,12 @@ export const ChannelList: React.FC<ChannelListProps> = ({
         const isMenuOpen = activeChannelMenuId === channel.id;
 
         return (
-          <Reorder.Item key={channel.id} value={channel} className="relative shrink-0">
+          <Reorder.Item
+            key={channel.id}
+            value={channel}
+            whileDrag={{ scale: 1.05 }}
+            className="relative shrink-0"
+          >
             <div className="group/channel relative h-full flex items-center">
               <button
                 onClick={() => handleChannelSelect(channel.id)}

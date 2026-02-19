@@ -31,6 +31,7 @@ import { ChannelList } from './UIComponents';
 
 interface NavigationProps {
   channels: ChannelDef[];
+  setChannels: React.Dispatch<React.SetStateAction<ChannelDef[]>>;
   viewMode: 'home' | 'channel';
   activeChannelId: string | null;
   handleChannelSelect: (channelId: string) => void;
@@ -71,6 +72,7 @@ interface NavigationProps {
 
 export const Navigation: React.FC<NavigationProps> = ({
   channels,
+  setChannels,
   viewMode,
   activeChannelId,
   handleChannelSelect,
@@ -134,6 +136,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-full group">
             <ChannelList
               channels={channels}
+              setChannels={setChannels}
               viewMode={viewMode}
               activeChannelId={activeChannelId}
               handleChannelSelect={handleChannelSelect}
