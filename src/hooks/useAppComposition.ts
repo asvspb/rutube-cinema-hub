@@ -41,6 +41,10 @@ export const useAppComposition = (): UseAppCompositionResult => {
     setAllPlaylists,
     channelAvailablePlaylists,
     refreshChannelData,
+    availablePlaylistsByChannel,
+    getAvailablePlaylistsForChannel,
+    loadAvailablePlaylistsForChannel,
+    loadingPlaylistsForChannel,
   } = useChannels();
 
   const [activeCategory, setActiveCategory] = useState<CategoryDef | null>(null);
@@ -529,6 +533,9 @@ export const useAppComposition = (): UseAppCompositionResult => {
     channelInputRef,
     handleRenameChannelSave,
     channelMenuRef,
+    availablePlaylistsByChannel,
+    loadAvailablePlaylistsForChannel,
+    loadingPlaylistsForChannel,
   });
 
   return {

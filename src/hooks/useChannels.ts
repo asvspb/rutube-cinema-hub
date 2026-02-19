@@ -30,6 +30,11 @@ interface UseChannelsResult {
   channelAvailablePlaylists: CategoryDef[];
   setChannelAvailablePlaylists: React.Dispatch<React.SetStateAction<CategoryDef[]>>;
   refreshChannelData: () => void;
+  // New: per-channel available playlists
+  availablePlaylistsByChannel: Record<string, CategoryDef[]>;
+  getAvailablePlaylistsForChannel: (rutubeId: string) => CategoryDef[];
+  loadAvailablePlaylistsForChannel: (rutubeId: string) => Promise<CategoryDef[]>;
+  loadingPlaylistsForChannel: Record<string, boolean>;
 }
 
 export const useChannels = (): UseChannelsResult => {
@@ -44,6 +49,24 @@ export const useChannels = (): UseChannelsResult => {
     StorageService.getAllPlaylists()
   );
   const [channelAvailablePlaylists, setChannelAvailablePlaylists] = useState<CategoryDef[]>([]);
+
+  // New: per-channel available playlists storage (keyed by rutubeId)
+  const [availablePlaylistsByChannel, setAvailablePlaylistsByChannel] = useState<
+    Record<string, CategoryDef[]>
+  >(() => {
+    // Initialize from cache
+    const cache = StorageService.getAvailablePlaylistsCache();
+    const result: Record<string, CategoryDef[]> = {};
+    for (const [rutubeId, cached] of Object.entries(cache)) {
+      result[rutubeId] = cached.playlists;
+    }
+    return result;
+  });
+
+  // Track which channels are currently loading playlists
+  const [loadingPlaylistsForChannel, setLoadingPlaylistsForChannel] = useState<
+    Record<string, boolean>
+  >({});
 
   // Ref to track the current request's channel ID and abort controller
   const refreshRequestIdRef = useRef<number>(0);
@@ -214,6 +237,14 @@ export const useChannels = (): UseChannelsResult => {
 
       setChannelAvailablePlaylists(fetchedPlaylists);
 
+      // Also update the per-channel storage
+      setAvailablePlaylistsByChannel(prev => ({
+        ...prev,
+        [channel.rutubeId]: fetchedPlaylists,
+      }));
+      // Save to cache
+      StorageService.setAvailablePlaylistsForChannel(channel.rutubeId, fetchedPlaylists);
+
       setAllPlaylists(prev => {
         const currentList = prev[currentChannelId] || [];
         const listToUpdate = currentList.length > 0 ? currentList : prev[channel.rutubeId] || [];
@@ -258,6 +289,68 @@ export const useChannels = (): UseChannelsResult => {
     }
   }, [viewMode, activeChannelId]); // Removed channels from dependencies - using channelsRef instead
 
+  // Get available playlists for a specific channel (from memory cache)
+  const getAvailablePlaylistsForChannel = useCallback(
+    (rutubeId: string): CategoryDef[] => {
+      return availablePlaylistsByChannel[rutubeId] || [];
+    },
+    [availablePlaylistsByChannel]
+  );
+
+  // Load available playlists for a specific channel (with cache and loading state)
+  const loadAvailablePlaylistsForChannel = useCallback(
+    async (rutubeId: string): Promise<CategoryDef[]> => {
+      // Check if already in memory
+      if (availablePlaylistsByChannel[rutubeId]?.length > 0) {
+        return availablePlaylistsByChannel[rutubeId];
+      }
+
+      // Check localStorage cache
+      const cached = StorageService.getAvailablePlaylistsForChannel(rutubeId);
+      if (cached && cached.length > 0) {
+        setAvailablePlaylistsByChannel(prev => ({
+          ...prev,
+          [rutubeId]: cached,
+        }));
+        return cached;
+      }
+
+      // Not cached - need to fetch
+      // Prevent duplicate requests
+      if (loadingPlaylistsForChannel[rutubeId]) {
+        return [];
+      }
+
+      setLoadingPlaylistsForChannel(prev => ({
+        ...prev,
+        [rutubeId]: true,
+      }));
+
+      try {
+        const playlists = await fetchChannelPlaylists(rutubeId);
+
+        // Update state and cache
+        setAvailablePlaylistsByChannel(prev => ({
+          ...prev,
+          [rutubeId]: playlists,
+        }));
+        StorageService.setAvailablePlaylistsForChannel(rutubeId, playlists);
+
+        return playlists;
+      } catch (error) {
+        console.error('[loadAvailablePlaylistsForChannel] Failed to fetch playlists:', error);
+        return [];
+      } finally {
+        setLoadingPlaylistsForChannel(prev => {
+          const next = { ...prev };
+          delete next[rutubeId];
+          return next;
+        });
+      }
+    },
+    [availablePlaylistsByChannel, loadingPlaylistsForChannel]
+  );
+
   return {
     channels,
     setChannels,
@@ -281,5 +374,10 @@ export const useChannels = (): UseChannelsResult => {
     channelAvailablePlaylists,
     setChannelAvailablePlaylists,
     refreshChannelData,
+    // New: per-channel available playlists
+    availablePlaylistsByChannel,
+    getAvailablePlaylistsForChannel,
+    loadAvailablePlaylistsForChannel,
+    loadingPlaylistsForChannel,
   };
 };

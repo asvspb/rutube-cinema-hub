@@ -177,6 +177,10 @@ interface MainContentProps {
   channelInputRef: React.RefObject<HTMLInputElement>;
   handleRenameChannelSave: () => void;
   channelMenuRef: React.RefObject<HTMLDivElement>;
+  // New: per-channel available playlists
+  availablePlaylistsByChannel: Record<string, CategoryDef[]>;
+  loadAvailablePlaylistsForChannel: (rutubeId: string) => Promise<CategoryDef[]>;
+  loadingPlaylistsForChannel: Record<string, boolean>;
 }
 
 export const MainContent: React.FC<MainContentProps> = ({
@@ -289,6 +293,9 @@ export const MainContent: React.FC<MainContentProps> = ({
   channelInputRef,
   handleRenameChannelSave,
   channelMenuRef,
+  availablePlaylistsByChannel,
+  loadAvailablePlaylistsForChannel,
+  loadingPlaylistsForChannel,
 }) => {
   return (
     <>
@@ -469,6 +476,9 @@ export const MainContent: React.FC<MainContentProps> = ({
                 setChannelEditName={setChannelEditName}
                 channelInputRef={channelInputRef}
                 handleRenameChannelSave={handleRenameChannelSave}
+                availablePlaylistsByChannel={availablePlaylistsByChannel}
+                loadAvailablePlaylistsForChannel={loadAvailablePlaylistsForChannel}
+                loadingPlaylistsForChannel={loadingPlaylistsForChannel}
               />
             </div>
           </div>,

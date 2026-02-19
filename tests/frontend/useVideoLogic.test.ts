@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach, type Mock } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useVideoLogic } from '../../src/hooks/useVideoLogic';
 import { fetchVideos } from '../../src/services/rutubeService';
@@ -38,11 +38,11 @@ const defaultRatingSettings: RatingSettings = {
 };
 
 describe('useVideoLogic', () => {
-  let setVideosMock: ReturnType<typeof vi.fn>;
-  let setIsVideoLoadingMock: ReturnType<typeof vi.fn>;
-  let setNextPageUrlMock: ReturnType<typeof vi.fn>;
-  let getFromCacheMock: ReturnType<typeof vi.fn>;
-  let addToCacheMock: ReturnType<typeof vi.fn>;
+  let setVideosMock: Mock;
+  let setIsVideoLoadingMock: Mock;
+  let setNextPageUrlMock: Mock;
+  let getFromCacheMock: Mock;
+  let addToCacheMock: Mock;
 
   beforeEach(() => {
     vi.clearAllMocks();

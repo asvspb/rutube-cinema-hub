@@ -21,7 +21,18 @@ const STORAGE_KEYS = {
   METADATA_CACHE: 'rutube_cinema_v2_metadata_cache',
   RATING_SETTINGS: 'rutube_cinema_v2_rating_settings',
   GRID_COLUMNS: 'rutube_cinema_v2_grid_columns',
+  AVAILABLE_PLAYLISTS: 'rutube_cinema_v2_available_playlists',
 } as const;
+
+// TTL for available playlists cache (24 hours)
+const AVAILABLE_PLAYLISTS_TTL = 24 * 60 * 60 * 1000;
+
+// Interface for cached available playlists
+export interface CachedAvailablePlaylists {
+  playlists: any[]; // CategoryDef[]
+  timestamp: number;
+  rutubeId: string;
+}
 
 // Define storage types
 export interface StorageData {
@@ -443,6 +454,103 @@ export class StorageService {
     }
   }
 
+  // ==================== Available Playlists Cache (per channel) ====================
+
+  /**
+   * Get all cached available playlists (Record<rutubeId, playlists>)
+   */
+  static getAvailablePlaylistsCache(): Record<string, CachedAvailablePlaylists> {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.AVAILABLE_PLAYLISTS);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Get available playlists for a specific channel by rutubeId
+   * Returns null if not cached or expired
+   */
+  static getAvailablePlaylistsForChannel(rutubeId: string): any[] | null {
+    try {
+      const cache = this.getAvailablePlaylistsCache();
+      const cached = cache[rutubeId];
+
+      if (!cached) return null;
+
+      // Check if expired
+      const isExpired = Date.now() - cached.timestamp > AVAILABLE_PLAYLISTS_TTL;
+      if (isExpired) {
+        // Remove expired entry
+        this.invalidateAvailablePlaylists(rutubeId);
+        return null;
+      }
+
+      return cached.playlists;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Set available playlists for a specific channel
+   */
+  static setAvailablePlaylistsForChannel(rutubeId: string, playlists: any[]): void {
+    try {
+      const cache = this.getAvailablePlaylistsCache();
+      cache[rutubeId] = {
+        playlists,
+        timestamp: Date.now(),
+        rutubeId,
+      };
+      localStorage.setItem(STORAGE_KEYS.AVAILABLE_PLAYLISTS, JSON.stringify(cache));
+    } catch (error) {
+      console.error('StorageService: Failed to set available playlists cache', error);
+    }
+  }
+
+  /**
+   * Invalidate (remove) cached available playlists for a channel
+   */
+  static invalidateAvailablePlaylists(rutubeId: string): void {
+    try {
+      const cache = this.getAvailablePlaylistsCache();
+      if (cache[rutubeId]) {
+        delete cache[rutubeId];
+        localStorage.setItem(STORAGE_KEYS.AVAILABLE_PLAYLISTS, JSON.stringify(cache));
+      }
+    } catch (error) {
+      console.error('StorageService: Failed to invalidate available playlists', error);
+    }
+  }
+
+  /**
+   * Clear all cached available playlists
+   */
+  static clearAllAvailablePlaylists(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.AVAILABLE_PLAYLISTS);
+    } catch (error) {
+      console.error('StorageService: Failed to clear available playlists cache', error);
+    }
+  }
+
+  /**
+   * Get age of cached playlists for a channel (in ms)
+   * Returns null if not cached
+   */
+  static getAvailablePlaylistsAge(rutubeId: string): number | null {
+    try {
+      const cache = this.getAvailablePlaylistsCache();
+      const cached = cache[rutubeId];
+      if (!cached) return null;
+      return Date.now() - cached.timestamp;
+    } catch {
+      return null;
+    }
+  }
+
   // ==================== Cleanup ====================
 
   /**
@@ -451,6 +559,24 @@ export class StorageService {
   static async cleanupExpiredCaches(): Promise<void> {
     try {
       await indexedDBService.cleanupAllExpired();
+
+      // Also cleanup expired available playlists in localStorage
+      const cache = this.getAvailablePlaylistsCache();
+      const now = Date.now();
+      let cleaned = 0;
+
+      for (const [rutubeId, cached] of Object.entries(cache)) {
+        if (now - cached.timestamp > AVAILABLE_PLAYLISTS_TTL) {
+          delete cache[rutubeId];
+          cleaned++;
+        }
+      }
+
+      if (cleaned > 0) {
+        localStorage.setItem(STORAGE_KEYS.AVAILABLE_PLAYLISTS, JSON.stringify(cache));
+        console.log(`StorageService: Cleaned up ${cleaned} expired available playlists entries`);
+      }
+
       console.log('StorageService: Cleaned up expired cache entries');
     } catch (error) {
       console.error('StorageService: Failed to cleanup expired caches', error);

@@ -117,6 +117,10 @@ interface UseMainContentProps {
   channelInputRef: React.RefObject<HTMLInputElement>;
   handleRenameChannelSave: () => void;
   channelMenuRef: React.RefObject<HTMLDivElement>;
+  // New: per-channel available playlists
+  availablePlaylistsByChannel: Record<string, CategoryDef[]>;
+  loadAvailablePlaylistsForChannel: (rutubeId: string) => Promise<CategoryDef[]>;
+  loadingPlaylistsForChannel: Record<string, boolean>;
 }
 
 export const useMainContentProps = ({
@@ -224,6 +228,9 @@ export const useMainContentProps = ({
   channelInputRef,
   handleRenameChannelSave,
   channelMenuRef,
+  availablePlaylistsByChannel,
+  loadAvailablePlaylistsForChannel,
+  loadingPlaylistsForChannel,
 }: UseMainContentProps) => {
   const mainContentProps = useMemo(() => {
     return {
@@ -386,6 +393,9 @@ export const useMainContentProps = ({
       channelInputRef,
       handleRenameChannelSave,
       channelMenuRef,
+      availablePlaylistsByChannel,
+      loadAvailablePlaylistsForChannel,
+      loadingPlaylistsForChannel,
     };
   }, [
     channels,
@@ -488,6 +498,9 @@ export const useMainContentProps = ({
     channelInputRef,
     handleRenameChannelSave,
     channelMenuRef,
+    availablePlaylistsByChannel,
+    loadAvailablePlaylistsForChannel,
+    loadingPlaylistsForChannel,
   ]);
 
   return mainContentProps;

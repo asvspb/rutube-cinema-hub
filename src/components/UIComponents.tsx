@@ -395,6 +395,10 @@ interface ChannelMenuContentProps {
   setChannelEditName: (name: string) => void;
   channelInputRef: React.RefObject<HTMLInputElement>;
   handleRenameChannelSave: () => void;
+  // New: per-channel playlists
+  availablePlaylistsByChannel: Record<string, CategoryDef[]>;
+  loadAvailablePlaylistsForChannel: (rutubeId: string) => Promise<CategoryDef[]>;
+  loadingPlaylistsForChannel: Record<string, boolean>;
 }
 
 export const ChannelMenuContent: React.FC<ChannelMenuContentProps> = ({
@@ -410,7 +414,27 @@ export const ChannelMenuContent: React.FC<ChannelMenuContentProps> = ({
   setChannelEditName,
   channelInputRef,
   handleRenameChannelSave,
+  availablePlaylistsByChannel,
+  loadAvailablePlaylistsForChannel,
+  loadingPlaylistsForChannel,
 }) => {
+  // Get playlists for the specific channel (not the active one)
+  const rutubeId = activeMenuChannel?.rutubeId;
+  const playlistsForMenuChannel = rutubeId ? availablePlaylistsByChannel[rutubeId] || [] : [];
+  const isLoadingPlaylists = rutubeId ? loadingPlaylistsForChannel[rutubeId] || false : false;
+
+  // Load playlists when menu opens if not already loaded
+  const handleMenuOpen = async () => {
+    if (activeMenuChannel && rutubeId && playlistsForMenuChannel.length === 0) {
+      await loadAvailablePlaylistsForChannel(rutubeId);
+    }
+  };
+
+  // Trigger load on mount
+  React.useEffect(() => {
+    handleMenuOpen();
+  }, [rutubeId]);
+
   return (
     <div className="p-1.5 bg-zinc-900">
       {!isEditingChannel ? (
@@ -430,7 +454,7 @@ export const ChannelMenuContent: React.FC<ChannelMenuContentProps> = ({
               className="ml-auto text-xs font-mono text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded"
               title="Загружено плейлистов с Rutube"
             >
-              {isChannelLoading ? '...' : channelAvailablePlaylists.length}
+              {isLoadingPlaylists ? '...' : playlistsForMenuChannel.length}
             </span>
           </button>
 
