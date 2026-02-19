@@ -21,6 +21,8 @@ stats.html
 .env
 !.env.example
 *.local
+.qodo
+.blackboxcli
 
 # TypeScript / tool caches
 *.tsbuildinfo
