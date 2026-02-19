@@ -22,7 +22,7 @@ if ! npm list --depth=0 | grep -q "concurrently\|nodemon"; then
   npm install --no-save concurrently nodemon
 fi
 
-echo "Starting Rutube Cinema Hub development servers..."
+echo "Starting Kino Club development servers..."
 echo "Vite on http://localhost:9229"
 echo "Backend on http://localhost:9230"
 

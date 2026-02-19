@@ -123,9 +123,9 @@ export const Navigation: React.FC<NavigationProps> = ({
             className="flex items-center gap-1 transition-opacity hover:opacity-80 group relative shrink-0 select-none"
             title="На главную"
           >
-            <span className="text-3xl font-bold tracking-tighter text-white">Rutube</span>
+            <span className="text-3xl font-bold tracking-tighter text-white">Kino</span>
             <span className="text-3xl font-bold tracking-tighter text-[#000917] bg-[#cdab8f] px-2.5 pt-1 pb-1.5 rounded-md leading-none flex items-center ml-0.5">
-              kino
+              club
             </span>
           </button>
         </div>

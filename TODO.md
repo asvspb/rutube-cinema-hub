@@ -1,4 +1,4 @@
-# Rutube Cinema Hub - Roadmap
+# Kino Club - Roadmap
 
 ## ✅ Завершённые этапы (Этапы -1 через 5)
 

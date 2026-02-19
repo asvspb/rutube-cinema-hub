@@ -139,7 +139,7 @@ start_services() {
 
 # Основная логика скрипта
 main() {
-  print_info "=== Запуск Rutube Cinema Hub (все в одном) ==="
+  print_info "=== Запуск Kino Club (все в одном) ==="
   print_info "Vite: http://localhost:9229"
   print_info "Backend: http://localhost:9230"
   print_info "=============================================="

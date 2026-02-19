@@ -1,4 +1,4 @@
-# Testing Suite for Rutube Cinema Hub
+# Testing Suite for Kino Club
 
 This directory contains comprehensive tests to verify the application's functionality after changes.
 

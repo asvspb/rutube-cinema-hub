@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * E2E тесты для Rutube Cinema Hub
+ * E2E тесты для Kino Club
  *
  * Для запуска E2E тестов необходимо установить Playwright:
  * npm install -D @playwright/test

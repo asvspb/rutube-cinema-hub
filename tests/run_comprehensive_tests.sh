@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Comprehensive test script for Rutube Cinema Hub
+# Comprehensive test script for Kino Club
 # This script verifies all functionality after changes
 
 set -euo pipefail
@@ -146,7 +146,7 @@ test_backend_server() {
     fi
     
     # Test basic endpoint
-    if curl -s http://localhost:9230/ | grep -q "Rutube Cinema Hub"; then
+    if curl -s http://localhost:9230/ | grep -q "Kino Club"; then
         print_success "Backend server basic endpoint works"
     else
         print_error "Backend server basic endpoint failed"
@@ -188,7 +188,7 @@ test_frontend_server() {
     fi
     
     # Test basic endpoint
-    if curl -s http://localhost:9229/ | grep -q "Rutube Cinema Hub"; then
+    if curl -s http://localhost:9229/ | grep -q "Kino Club"; then
         print_success "Frontend server basic endpoint works"
     else
         print_error "Frontend server basic endpoint failed"
@@ -403,7 +403,7 @@ test_server_log_errors() {
 
 # Main test function
 main() {
-    print_info "Starting comprehensive tests for Rutube Cinema Hub..."
+    print_info "Starting comprehensive tests for Kino Club..."
     
     local all_tests_passed=true
     

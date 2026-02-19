@@ -1,5 +1,5 @@
 /**
- * E2E тесты для Rutube Cinema Hub
+ * E2E тесты для Kino Club
  *
  * КРИТИЧЕСКИЕ СЦЕНАРИИ:
  * 1. Загрузка главной страницы
@@ -22,7 +22,7 @@ test.describe('Homepage', () => {
 
   test('should load homepage successfully', async ({ page }) => {
     // Проверка заголовка страницы
-    await expect(page).toHaveTitle(/Rutube Cinema Hub|Cinema/i);
+    await expect(page).toHaveTitle(/Kino Club|Cinema/i);
 
     // Проверка наличия навигации
     await expect(page.locator('nav, [role="navigation"], header')).toBeVisible();

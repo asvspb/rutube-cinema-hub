@@ -1,4 +1,4 @@
-# Система типов Rutube Cinema Hub
+# Система типов Kino Club
 
 > Документация модульной архитектуры типов и runtime валидации
 
@@ -455,4 +455,4 @@ import { RutubeVideo, MovieRatingData } from '../types';
 ---
 
 **Последнее обновление:** 2026-02-17  
-**Автор:** Rutube Cinema Hub Team
+**Автор:** Kino Club Team

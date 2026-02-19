@@ -47,6 +47,6 @@ app.use(errorHandler);
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Rutube Cinema Hub Proxy Server running on port ${PORT}`);
+  console.log(`Kino Club Proxy Server running on port ${PORT}`);
   console.log(`Proxy endpoint available at http://localhost:${PORT}/api/proxy`);
 });

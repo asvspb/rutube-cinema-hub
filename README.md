@@ -1,4 +1,4 @@
-# Rutube Cinema Hub
+# Kino Club
 
 > **Статус проекта:** ✅ Production Ready  
 > **Версия:** 1.0.0  

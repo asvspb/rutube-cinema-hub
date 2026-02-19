@@ -1,7 +1,7 @@
 {
-  "name": "Rutube Cinema Hub",
-  "short_name": "RutubeKino",
-  "description": "Кинотеатр на базе Rutube - просмотр видео и фильмов",
+  "name": "Kino Club",
+  "short_name": "KinoClub",
+  "description": "Kino Club - просмотр видео и фильмов онлайн",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000917",
@@ -18,7 +18,7 @@
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%23000917'/%3E%3Ctext x='50%25' y='45%25' text-anchor='middle' font-family='Arial,sans-serif' font-size='180' font-weight='bold' fill='white'%3ER%3C/text%3E%3Crect x='220' y='280' width='180' height='80' rx='16' fill='%23cdab8f'/%3E%3Ctext x='310' y='340' text-anchor='middle' font-family='Arial,sans-serif' font-size='52' font-weight='bold' fill='%23000917'%3Ekino%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%23000917'/%3E%3Ctext x='50%25' y='45%25' text-anchor='middle' font-family='Arial,sans-serif' font-size='180' font-weight='bold' fill='white'%3EK%3C/text%3E%3Crect x='220' y='280' width='180' height='80' rx='16' fill='%23cdab8f'/%3E%3Ctext x='310' y='340' text-anchor='middle' font-family='Arial,sans-serif' font-size='52' font-weight='bold' fill='%23000917'%3Eclub%3C/text%3E%3C/svg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }
@@ -29,7 +29,7 @@
       "sizes": "512x512",
       "type": "image/svg+xml",
       "form_factor": "wide",
-      "label": "Rutube Cinema Hub - главная страница"
+      "label": "Kino Club - главная страница"
     }
   ],
   "shortcuts": [

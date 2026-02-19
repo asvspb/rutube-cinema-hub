@@ -1,11 +1,11 @@
 /**
- * Service Worker for Rutube Cinema Hub
+ * Service Worker for Kino Club
  * Provides offline caching for static assets
  * @version 1.0.0
  */
 
-const CACHE_NAME = 'rutube-cinema-hub-v1';
-const STATIC_CACHE_NAME = 'rutube-cinema-hub-static-v1';
+const CACHE_NAME = 'kino-club-v1';
+const STATIC_CACHE_NAME = 'kino-club-static-v1';
 
 // Static assets to cache on install
 const STATIC_ASSETS = ['/', '/index.html', '/favicon_rh.svg'];
