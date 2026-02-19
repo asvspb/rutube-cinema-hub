@@ -195,7 +195,6 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                         cursor-pointer z-20
                         focus:outline-none
                         opacity-0 scale-75 group-hover/item:opacity-100 group-hover/item:scale-100
-                        ${isMenuOpen ? '!opacity-100 !scale-100' : ''}
                       `}
                       aria-label="Меню"
                       aria-haspopup="menu"

@@ -135,7 +135,6 @@ export const ChannelList: React.FC<ChannelListProps> = ({
                     cursor-pointer z-20
                     focus:outline-none
                     opacity-0 scale-75 group-hover/channel:opacity-100 group-hover/channel:scale-100
-                    ${isMenuOpen ? '!opacity-100 !scale-100' : ''}
                   `}
                   aria-label="Меню"
                   aria-haspopup="menu"
