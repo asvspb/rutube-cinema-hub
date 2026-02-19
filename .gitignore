@@ -40,6 +40,8 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+temp
+*.log
 
 # Runtime / generated
 error_logs.json
