@@ -2,24 +2,34 @@
 
 Base URL: `/api/auth`
 
+## Authentication Mechanism
+
+This API uses a dual-token strategy:
+
+- **Access Token**: Returned in the response body. Should be stored in memory. Used in `Authorization: Bearer <token>` header.
+- **Refresh Token**: Sent via a secure, httpOnly cookie (`refreshToken`). Used automatically by the `/refresh` endpoint.
+
 ## Register
 
 `POST /api/auth/register`
 
 **Body**
 
-```
+```json
 {
   "email": "user@example.com",
-  "password": "your-password"
+  "password": "securePassword123"
 }
 ```
 
 **Response 201**
 
-```
+- **Set-Cookie**: `refreshToken=<token>; HttpOnly; Secure; SameSite=Strict`
+- **Body**:
+
+```json
 {
-  "token": "<jwt>",
+  "accessToken": "<jwt>",
   "user": {
     "id": "uuid",
     "email": "user@example.com"
@@ -33,18 +43,21 @@ Base URL: `/api/auth`
 
 **Body**
 
-```
+```json
 {
   "email": "user@example.com",
-  "password": "your-password"
+  "password": "securePassword123"
 }
 ```
 
 **Response 200**
 
-```
+- **Set-Cookie**: `refreshToken=<token>; HttpOnly; Secure; SameSite=Strict`
+- **Body**:
+
+```json
 {
-  "token": "<jwt>",
+  "accessToken": "<jwt>",
   "user": {
     "id": "uuid",
     "email": "user@example.com"
@@ -64,7 +77,9 @@ Authorization: Bearer <jwt>
 
 **Response 200**
 
-```
+- **Set-Cookie**: `refreshToken=; Max-Age=0`
+
+```json
 { "status": "ok" }
 ```
 
@@ -80,7 +95,7 @@ Authorization: Bearer <jwt>
 
 **Response 200**
 
-```
+```json
 {
   "user": {
     "id": "uuid",
@@ -95,15 +110,16 @@ Authorization: Bearer <jwt>
 
 **Headers**
 
-```
-Authorization: Bearer <jwt>
-```
+- Cookie: `refreshToken=<token>`
 
 **Response 200**
 
-```
+- **Set-Cookie**: `refreshToken=<new_token>; HttpOnly; Secure; SameSite=Strict`
+- **Body**:
+
+```json
 {
-  "token": "<jwt>",
+  "accessToken": "<new_jwt>",
   "user": {
     "id": "uuid",
     "email": "user@example.com"
@@ -113,7 +129,8 @@ Authorization: Bearer <jwt>
 
 ## Error responses
 
-- `400` invalid input
-- `401` invalid or missing credentials
-- `409` email already registered
-- `500` server/config error
+- `400` Invalid input (bad email or weak password)
+- `401` Invalid or expired credentials
+- `403` Refresh token rotation failure (re-login required)
+- `409` Email already registered
+- `500` Server configuration error
