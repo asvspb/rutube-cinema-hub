@@ -203,14 +203,10 @@ Movie title ──→ top250Data (локальная БД) ──→ LLM API (Ge
 
 ### 🔴 Критические (требуют немедленного внимания)
 
-1. **29 оставшихся типов `any` в кодовой базе.**
-   - `storageService.ts`: 7 шт. (`playlists: any[]`, `watchHistory: any[]`, `getAvailablePlaylistsForChannel: any[]`)
-   - `loggerService.ts`: 4 шт. (`context?: any` в info/warn/error/debug)
-   - `hooks/`: 7 шт. (`useChannelMenu`, `useMainContentProps`, `useAppLogic`, `useCategoryEffects`)
-   - `components/`: 4 шт. (`UIComponents`, `AddCategoryModal`, `AddChannelModal`, `KinoRateModal`)
-   - `top250Data.ts`: 3 шт. (`toAwardObjects`, `normalizeDataset`)
-   - Остальные: 4 шт. в различных файлах.
-   - **Решение**: заменить на конкретные интерфейсы; для `context` использовать `Record<string, unknown>`; для `playlists` — `CategoryDef[]`.
+1. ~~**29 оставшихся типов `any` в кодовой базе.**~~ ✅ **Исправлено 2026-02-23**
+   - Все 29 вхождений `any` устранены.
+   - Добавлены типы: `WatchHistoryItem`, `AvailablePlaylist`, `VideoCache`, `MetadataCache`, `KinoRateContext`, `TopMovieRaw`, `TopDatasetJson`, `LogContext`.
+   - См. `docs/devai/TD-17-remove-any-types.md` для деталей.
 
 2. **Система аутентификации спланирована, но не реализована.**
    - Prisma-схема определена (User, Session), документация готова (594 + 937 строк).
@@ -328,7 +324,7 @@ Movie title ──→ top250Data (локальная БД) ──→ LLM API (Ge
 
 ## Лучшие практики (что уже соблюдается)
 
-- **TypeScript strict mode** — полная типобезопасность (29 `any` осталось, было 15+ только в rutubeService).
+- **TypeScript strict mode** — полная типобезопасность (0 `any` ✅, было 15+ только в rutubeService).
 - **Hook-based архитектура** — 22 специализированных хука с единой ответственностью.
 - **Модульный сервер** — routes/, middleware/, services/, config/ с чёткими границами.
 - **Tailwind CSS** — утилитарный подход, единообразие стилей.
@@ -363,7 +359,7 @@ Movie title ──→ top250Data (локальная БД) ──→ LLM API (Ge
 
 | #     | Элемент                                         | Приоритет | Сложность | Статус    |
 | ----- | ----------------------------------------------- | --------- | --------- | --------- |
-| TD-17 | Устранить 29 оставшихся `any` типов             | 🔴 P0     | Средняя   | ❌ Открыт |
+| TD-17 | ~~Устранить 29 оставшихся `any` типов~~         | ✅ P0     | Средняя   | ✅ Закрыт |
 | TD-18 | Реализовать auth систему (JWT + Prisma)         | 🔴 P0     | Высокая   | ❌ Открыт |
 | TD-19 | Установить Playwright + запустить E2E           | 🟡 P1     | Низкая    | ❌ Открыт |
 | TD-20 | Разделить useAppComposition (545 строк)         | 🟡 P1     | Средняя   | ❌ Открыт |
@@ -546,7 +542,7 @@ src/
 | ---------------------------- | -------------------- | ------------------------ | ---------------- | --------- |
 | App.tsx строк                | 1947                 | **24** ✅                | < 50             | ✅ Done   |
 | server/index.js строк        | 893                  | **52** ✅                | < 100            | ✅ Done   |
-| `any` типов                  | 15+ (только сервисы) | **29** (весь проект)     | 0                | 🔴 P0     |
+| `any` типов                  | 15+ (только сервисы) | **0** ✅                 | 0                | ✅ Done   |
 | isMounted паттернов          | 26                   | **0** ✅                 | 0                | ✅ Done   |
 | Прямых localStorage вызовов  | 27                   | **1** (ErrorBoundary) ✅ | 0                | 🟢 P2     |
 | Покрытие тестами (lines)     | 0%                   | **49.23%**               | 70%+             | 🟡 P1     |
