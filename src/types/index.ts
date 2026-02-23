@@ -26,6 +26,9 @@ export type {
   AiKinorateSearchResponse,
   AiKinorateBatchResponse,
   LlmServiceResponse,
+  TopMovieRaw,
+  TopDatasetJson,
+  Award,
 } from './kinorate';
 
 // UI types
@@ -38,6 +41,11 @@ export type {
   VideoLikedStatus,
   VideoWatchedStatusMap,
   VideoLikedStatusMap,
+  WatchHistoryItem,
+  AvailablePlaylist,
+  VideoCache,
+  MetadataCache,
+  KinoRateContext,
 } from './ui';
 
 // Zod schemas and validation helpers

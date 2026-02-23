@@ -56,3 +56,32 @@ export interface LlmServiceResponse<T> {
   error?: string;
   source?: 'local' | 'ai';
 }
+
+// ============================================================================
+// Top250 Dataset Types
+// ============================================================================
+
+/** Raw movie data from Top250 dataset */
+export interface TopMovieRaw {
+  id?: string | number;
+  imdbId?: string | number;
+  title?: string;
+  originalTitle?: string;
+  year?: string | number;
+  rating?: string | number;
+  votes?: string | number;
+  awards?: unknown[];
+}
+
+/** Raw Top250 JSON structure */
+export interface TopDatasetJson {
+  movies?: TopMovieRaw[];
+  [key: string]: unknown;
+}
+
+/** Award object structure */
+export interface Award {
+  name: string;
+  year?: number;
+  nomination?: string;
+}

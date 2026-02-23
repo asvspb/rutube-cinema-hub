@@ -1,9 +1,14 @@
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
+/** Log context data - flexible structure for logging various data types */
+export interface LogContext {
+  [key: string]: string | number | boolean | Error | object | undefined | unknown;
+}
+
 interface LogEntry {
   level: LogLevel;
   message: string;
-  context?: any;
+  context?: LogContext;
   url?: string;
   stack?: string;
 }
@@ -59,15 +64,15 @@ class Logger {
     }
   }
 
-  info(message: string, context?: any) {
+  info(message: string, context?: LogContext) {
     this.send({ level: 'info', message, context });
   }
 
-  warn(message: string, context?: any) {
+  warn(message: string, context?: LogContext) {
     this.send({ level: 'warn', message, context });
   }
 
-  error(message: string, context?: any, error?: Error) {
+  error(message: string, context?: LogContext, error?: Error) {
     this.send({
       level: 'error',
       message,
@@ -76,7 +81,7 @@ class Logger {
     });
   }
 
-  debug(message: string, context?: any) {
+  debug(message: string, context?: LogContext) {
     this.send({ level: 'debug', message, context });
   }
 

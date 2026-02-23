@@ -18,7 +18,7 @@ import {
 import { MovieRatingData, BatchItem } from '../../types';
 import { searchMovieRatings, analyzeBatchWithAgent } from '../../services/llmService';
 import { RatingChart } from './RatingChart';
-import { TOP_250_MOVIES, TOP_IMDB_MOVIES } from '../../services/top250Data';
+import { TOP_250_MOVIES, TOP_IMDB_MOVIES, TopMovie } from '../../services/top250Data';
 
 interface KinoRateModalProps {
   initialQuery?: string;
@@ -220,7 +220,7 @@ export const KinoRateModal: React.FC<KinoRateModalProps> = ({
     setListPage(1);
   }, [mode, listSearch]);
 
-  const handleListItemClick = (movie: any) => {
+  const handleListItemClick = (movie: TopMovie) => {
     setMode('single');
     setSingleQuery(movie.title);
     handleSingleSearch(movie.title);

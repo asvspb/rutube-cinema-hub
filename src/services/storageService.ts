@@ -3,7 +3,16 @@ import {
   DEFAULT_PLAYLISTS_BY_CHANNEL,
   DEFAULT_RATING_SETTINGS,
 } from './rutubeService';
-import { ChannelDef, RatingSettings, MovieRatingData, CachedPlaylistData } from '../types';
+import {
+  ChannelDef,
+  RatingSettings,
+  MovieRatingData,
+  CachedPlaylistData,
+  CategoryDef,
+  WatchHistoryItem,
+  AvailablePlaylist,
+  MetadataCache,
+} from '../types';
 import { indexedDBService, METADATA_CACHE, VIDEO_CACHE, TTL } from './indexedDBService';
 
 // Define storage keys
@@ -29,7 +38,7 @@ const AVAILABLE_PLAYLISTS_TTL = 24 * 60 * 60 * 1000;
 
 // Interface for cached available playlists
 export interface CachedAvailablePlaylists {
-  playlists: any[]; // CategoryDef[]
+  playlists: CategoryDef[];
   timestamp: number;
   rutubeId: string;
 }
@@ -39,11 +48,11 @@ export interface StorageData {
   channels: ChannelDef[];
   activeChannelId: string;
   isLoggedIn: boolean;
-  watchHistory: any[]; // Using any for now since we'll define this in hooks
+  watchHistory: WatchHistoryItem[];
   videoWatchedStatuses: Record<string, 'watched' | 'watch_later'>;
   videoLikedStatuses: Record<string, 'liked' | 'disliked'>;
-  metadataCache: Record<string, any>; // Using any for now since we'll define this in hooks
-  allPlaylists: Record<string, any[]>; // Using any for now since we'll define this in hooks
+  metadataCache: MetadataCache;
+  allPlaylists: Record<string, CategoryDef[]>;
   ratingSettings: RatingSettings;
   gridColumns: 2 | 3 | 4;
 }
@@ -117,7 +126,7 @@ export class StorageService {
   }
 
   // Watch History
-  static getWatchHistory(isLoggedIn: boolean): any[] {
+  static getWatchHistory(isLoggedIn: boolean): WatchHistoryItem[] {
     try {
       const key = isLoggedIn ? STORAGE_KEYS.HISTORY_USER : STORAGE_KEYS.HISTORY_GUEST;
       const saved = localStorage.getItem(key);
@@ -127,7 +136,7 @@ export class StorageService {
     }
   }
 
-  static setWatchHistory(history: any[], isLoggedIn: boolean): void {
+  static setWatchHistory(history: WatchHistoryItem[], isLoggedIn: boolean): void {
     const key = isLoggedIn ? STORAGE_KEYS.HISTORY_USER : STORAGE_KEYS.HISTORY_GUEST;
     localStorage.setItem(key, JSON.stringify(history));
   }
@@ -175,7 +184,7 @@ export class StorageService {
   }
 
   // Metadata Cache
-  static getMetadataCache(): Record<string, any> {
+  static getMetadataCache(): MetadataCache {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.METADATA_CACHE);
       return saved ? JSON.parse(saved) : {};
@@ -184,12 +193,12 @@ export class StorageService {
     }
   }
 
-  static setMetadataCache(cache: Record<string, any>): void {
+  static setMetadataCache(cache: MetadataCache): void {
     localStorage.setItem(STORAGE_KEYS.METADATA_CACHE, JSON.stringify(cache));
   }
 
   // All Playlists
-  static getAllPlaylists(): Record<string, any[]> {
+  static getAllPlaylists(): Record<string, CategoryDef[]> {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.PLAYLISTS);
       if (saved) {
@@ -204,7 +213,7 @@ export class StorageService {
     return DEFAULT_PLAYLISTS_BY_CHANNEL;
   }
 
-  static setAllPlaylists(playlists: Record<string, any[]>): void {
+  static setAllPlaylists(playlists: Record<string, CategoryDef[]>): void {
     localStorage.setItem(STORAGE_KEYS.PLAYLISTS, JSON.stringify(playlists));
   }
 
@@ -472,7 +481,7 @@ export class StorageService {
    * Get available playlists for a specific channel by rutubeId
    * Returns null if not cached or expired
    */
-  static getAvailablePlaylistsForChannel(rutubeId: string): any[] | null {
+  static getAvailablePlaylistsForChannel(rutubeId: string): CategoryDef[] | null {
     try {
       const cache = this.getAvailablePlaylistsCache();
       const cached = cache[rutubeId];
@@ -496,7 +505,7 @@ export class StorageService {
   /**
    * Set available playlists for a specific channel
    */
-  static setAvailablePlaylistsForChannel(rutubeId: string, playlists: any[]): void {
+  static setAvailablePlaylistsForChannel(rutubeId: string, playlists: CategoryDef[]): void {
     try {
       const cache = this.getAvailablePlaylistsCache();
       cache[rutubeId] = {

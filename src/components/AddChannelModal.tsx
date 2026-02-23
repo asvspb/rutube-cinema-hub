@@ -60,8 +60,9 @@ export const AddChannelModal: React.FC<AddChannelModalProps> = ({ onClose, onAdd
 
       onAdd(channelName, resolvedId);
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Произошла ошибка при добавлении');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при добавлении';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

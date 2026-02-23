@@ -39,6 +39,7 @@ import {
   SortOption,
   RatingSettings,
   MovieRatingData,
+  MetadataCache,
 } from '../types';
 import VideoCard from '../components/VideoCard';
 import { CategoryFilter } from '../components/CategoryFilter';
@@ -166,10 +167,10 @@ interface VideoGridProps {
   videoLikedStatuses: Record<string, 'liked' | 'disliked'>;
   toggleVideoWatchedStatus: (videoId: string) => void;
   toggleVideoLikedStatus: (videoId: string) => void;
-  ratingSettings: any; // Using any temporarily
+  ratingSettings: RatingSettings;
   handleAnalyzeVideo: (title: string) => Promise<void>;
   loadingMetadataFor: Set<string>;
-  metadataCache: any; // Using any temporarily
+  metadataCache: MetadataCache;
   getGridClass: () => string;
 }
 

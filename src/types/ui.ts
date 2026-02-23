@@ -79,3 +79,53 @@ export type VideoLikedStatus = 'liked' | 'disliked';
 /** Video status map types */
 export type VideoWatchedStatusMap = Record<string, VideoWatchedStatus>;
 export type VideoLikedStatusMap = Record<string, VideoLikedStatus>;
+
+// ============================================================================
+// Watch History & Playlists
+// ============================================================================
+
+/** Watch history item stored in localStorage */
+export interface WatchHistoryItem {
+  videoId: string;
+  title: string;
+  thumbnailUrl: string;
+  viewedAt: number; // timestamp
+  channelId?: string;
+}
+
+/** Available playlist for channel */
+export interface AvailablePlaylist {
+  id: string;
+  title: string;
+  itemCount: number;
+  thumbnailUrl?: string;
+}
+
+// ============================================================================
+// Cache Types
+// ============================================================================
+
+/** Video cache by category ID */
+export interface VideoCache {
+  [categoryId: string]: {
+    data: import('./rutube').RutubeVideo[];
+    timestamp: number;
+  };
+}
+
+/** Metadata cache for video ratings */
+export interface MetadataCache {
+  [videoId: string]: import('./kinorate').MovieRatingData;
+}
+
+// ============================================================================
+// KinoRate Context
+// ============================================================================
+
+/** KinoRate context state */
+export interface KinoRateContext {
+  query: string;
+  results: import('./kinorate').MovieRatingData[];
+  isLoading: boolean;
+  error?: string;
+}

@@ -7,6 +7,7 @@ import {
   RatingSettings,
   ChannelInfo,
   MovieRatingData,
+  KinoRateContext,
 } from '../types';
 import { calculateRating, calculateGravity } from '../services/rutubeService';
 
@@ -73,8 +74,8 @@ interface UseMainContentProps {
   setIsKinoRateOpen: (open: boolean) => void;
   kinoRateQuery: string;
   setKinoRateQuery: (query: string) => void;
-  kinoRateContext: any;
-  setKinoRateContext: (context: any) => void;
+  kinoRateContext: KinoRateContext | null;
+  setKinoRateContext: (context: KinoRateContext | null) => void;
   isConfirmModalOpen: boolean;
   setIsConfirmModalOpen: (open: boolean) => void;
   confirmMessage: string;

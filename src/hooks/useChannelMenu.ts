@@ -1,17 +1,17 @@
 import { useState, useRef } from 'react';
-import { ChannelDef } from '../types';
+import { ChannelDef, CategoryDef, VideoCache } from '../types';
 
 interface UseChannelMenuProps {
   channels: ChannelDef[];
   activeChannelId: string;
   viewMode: 'home' | 'channel';
-  currentChannelPlaylists: any[]; // Using any for now
-  setActiveCategory: (category: any) => void; // Using any for now
+  currentChannelPlaylists: CategoryDef[];
+  setActiveCategory: (category: CategoryDef | null) => void;
   setIsFetchAllMode: (fetch: boolean) => void;
   setCurrentPage: (page: number) => void;
   setRefreshKey: (key: number) => void;
-  setVideoCache: (cache: Record<string, any>) => void; // Using Record<string, any> for now
-  activeCategory: any; // Using any for now
+  setVideoCache: (cache: VideoCache) => void;
+  activeCategory: CategoryDef | null;
   handleRenameChannel: (channelId: string, newName: string) => void;
   handleRemoveChannel: (channelId: string) => void;
 }
@@ -115,7 +115,7 @@ export const useChannelMenu = ({
     setIsFetchAllMode(fetchAll);
     setCurrentPage(1);
 
-    setVideoCache((prev: Record<string, unknown>) => {
+    setVideoCache((prev: VideoCache) => {
       const next = { ...prev };
       if (activeCategory) delete next[activeCategory.id];
       return next;

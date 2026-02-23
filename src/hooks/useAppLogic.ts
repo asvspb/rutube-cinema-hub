@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CategoryDef, SortOption, ChannelDef } from '../types';
+import { CategoryDef, SortOption, ChannelDef, RatingSettings, RutubeVideo } from '../types';
 import { StorageService } from '../services/storageService';
 
 interface UseAppLogicProps {
@@ -11,17 +11,17 @@ interface UseAppLogicProps {
   setIsFetchAllMode: React.Dispatch<React.SetStateAction<boolean>>;
   setSortOption: React.Dispatch<React.SetStateAction<SortOption>>;
   setGridColumns: React.Dispatch<React.SetStateAction<2 | 3 | 4>>;
-  setRatingSettings: React.Dispatch<React.SetStateAction<any>>;
+  setRatingSettings: React.Dispatch<React.SetStateAction<RatingSettings>>;
   setRefreshKey: React.Dispatch<React.SetStateAction<number>>;
   removeFromCache: (categoryId: string) => void;
   activeCategory: CategoryDef | null;
   channels: ChannelDef[];
-  addToCache: (categoryId: string, data: any) => void;
+  addToCache: (categoryId: string, data: RutubeVideo[]) => void;
   handleVideoRefresh: (fetchAll: boolean) => void;
   setActiveCategory: React.Dispatch<React.SetStateAction<CategoryDef | null>>;
   setIsVideoLoading: React.Dispatch<React.SetStateAction<boolean>>;
   setNextPageUrl: React.Dispatch<React.SetStateAction<string | null>>;
-  setVideos: React.Dispatch<React.SetStateAction<any[]>>;
+  setVideos: React.Dispatch<React.SetStateAction<RutubeVideo[]>>;
 }
 
 interface UseAppLogicResult {
@@ -87,14 +87,14 @@ export const useAppLogic = ({
     setIsFetchAllMode(false);
   }, [activeCategory, setSearchQuery, setCurrentPage, setIsFetchAllMode]);
 
-  // Handle grid columns changes
+  // Handle grid columns changes - sync setter reference for external storage access
   useEffect(() => {
-    StorageService.setGridColumns(setGridColumns as any);
+    StorageService.setGridColumns(setGridColumns as unknown as 2 | 3 | 4);
   }, [setGridColumns]);
 
-  // Handle rating settings changes
+  // Handle rating settings changes - sync setter reference for external storage access
   useEffect(() => {
-    StorageService.setRatingSettings(setRatingSettings as any);
+    StorageService.setRatingSettings(setRatingSettings as unknown as RatingSettings);
   }, [setRatingSettings]);
 
   const handleCategoryChange = () => {

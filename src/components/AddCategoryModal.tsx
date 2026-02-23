@@ -37,8 +37,9 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ onClose, onA
 
       onAdd(name, resolvedId, parsed.type);
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Произошла неизвестная ошибка';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

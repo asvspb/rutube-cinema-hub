@@ -1,5 +1,6 @@
 import top250Json from '../../scripts/top250-2025.json';
 import topImdbJson from '../../scripts/topIMDB.json';
+import { TopMovieRaw, TopDatasetJson } from '../types';
 
 export interface Award {
   type: string;
@@ -44,7 +45,7 @@ const parseOscarAward = (text: string): Award | null => {
   return { type: 'Oscar', status: '', description: t };
 };
 
-const toAwardObjects = (awards: any[]): Award[] =>
+const toAwardObjects = (awards: unknown[]): Award[] =>
   (Array.isArray(awards) ? awards : [])
     .map(a => {
       if (typeof a === 'string') {
@@ -76,10 +77,13 @@ const toAwardObjects = (awards: any[]): Award[] =>
     })
     .filter(Boolean) as Award[];
 
-const normalizeDataset = (json: any, source: 'top250' | 'topIMDB'): TopMovie[] => {
+const normalizeDataset = (
+  json: TopDatasetJson | TopMovieRaw[],
+  source: 'top250' | 'topIMDB'
+): TopMovie[] => {
   const movies = Array.isArray(json) ? json : (json?.movies ?? []);
   return movies
-    .map((m: any) => {
+    .map((m: TopMovieRaw) => {
       const imdbId = String(m.imdbId ?? m.id ?? '').replace(/^tt/, '');
       const title = String(m.title ?? m.name ?? '').trim();
       if (!title || !imdbId) return null;

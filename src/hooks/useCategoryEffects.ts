@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
-import { CategoryDef } from '../types';
+import { CategoryDef, SortOption } from '../types';
 
 interface UseCategoryEffectsProps {
   viewMode: 'home' | 'channel';
   currentChannelPlaylists: CategoryDef[] | undefined;
   activeCategory: CategoryDef | null;
   setActiveCategory: (category: CategoryDef | null) => void;
-  setSortOption: (option: any) => void;
+  setSortOption: (option: SortOption) => void;
   setIsFetchAllMode: (mode: boolean) => void;
   setCurrentPage: (page: number) => void;
   activeChannelId: string | null;
