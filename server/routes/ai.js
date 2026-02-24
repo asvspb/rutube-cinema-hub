@@ -1,5 +1,20 @@
 import { Router } from 'express';
 import { kinoRateSearch, kinoRateBatch, normalizeKinoRate } from '../services/llm.js';
+import { writeLog } from '../middleware/logging.js';
+
+// Безопасное логирование ошибок (без console.error для предотвращения EPIPE)
+const logError = (message, error) => {
+  try {
+    writeLog({
+      level: 'error',
+      source: 'ai',
+      message,
+      context: { error: error?.message || String(error) },
+    });
+  } catch {
+    // Игнорируем ошибки логирования
+  }
+};
 
 export const aiRouter = aiLimiter => {
   const router = Router();
@@ -18,7 +33,7 @@ export const aiRouter = aiLimiter => {
       res.setHeader('X-LLM-Provider', provider);
       res.status(200).json(normalizeKinoRate(data));
     } catch (e) {
-      console.error('KinoRate AI search error:', e);
+      logError('KinoRate AI search error', e);
       if (e.message && e.message.includes('Too many requests')) {
         res.status(429).json({ error: 'Rate limit exceeded' });
       } else {
@@ -41,7 +56,7 @@ export const aiRouter = aiLimiter => {
       res.setHeader('X-LLM-Provider', provider);
       res.status(200).json(normalizeKinoRate(data));
     } catch (e) {
-      console.error('KinoRate AI batch error:', e);
+      logError('KinoRate AI batch error', e);
       if (e.message && e.message.includes('Too many requests')) {
         res.status(429).json({ error: 'Rate limit exceeded' });
       } else {
