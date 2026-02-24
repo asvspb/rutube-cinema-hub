@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { loadEnv, validateEnv } from './config/env.js';
@@ -14,6 +15,7 @@ import { healthRouter } from './routes/health.js';
 import { logsRouter } from './routes/logs.js';
 import { aiRouter } from './routes/ai.js';
 import { proxyRouter } from './routes/proxy.js';
+import authRouter from './routes/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,12 +38,14 @@ const maxRedirects = parseInt(process.env.PROXY_MAX_REDIRECTS) || 5;
 app.use(securityMiddleware);
 app.use(cors(getCorsOptions()));
 app.use(compressionMiddleware);
+app.use(cookieParser());
 app.use(express.json({ limit: '1mb' }));
 
 app.use(healthRouter);
 app.use(logsRouter);
 app.use(aiRouter(aiLimiter));
 app.use(proxyRouter({ proxyLimiter, allowedDomains, maxRedirects }));
+app.use('/api/auth', authRouter);
 
 app.use(errorHandler);
 app.use(express.static(path.join(__dirname, '..', 'dist')));

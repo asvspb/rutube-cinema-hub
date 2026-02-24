@@ -1,9 +1,8 @@
-// AUTO-GENERATED at 2026-02-13T07:52:56Z
+// AUTO-GENERATED at 2026-02-24T09:14:00Z
 // Do not edit directly. Edit prisma/schema.base.prisma instead.
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -14,19 +13,33 @@ model User {
   id           String    @id @default(uuid())
   email        String    @unique
   passwordHash String
+  isActive     Boolean   @default(true)
+  isVerified   Boolean   @default(false)
+  verifiedAt   DateTime?
+  lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   sessions     Session[]
+
+  @@index([email])
 }
 
 model Session {
-  id        String    @id @default(uuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
-  createdAt DateTime  @default(now())
-  expiresAt DateTime
-  revokedAt DateTime?
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String    @unique
+  userAgent   String?
+  ip          String?
+  fingerprint String?
+  name        String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  lastUsedAt  DateTime  @default(now())
 
   @@index([userId])
+  @@index([token])
   @@index([expiresAt])
+  @@index([userId, revokedAt])
 }
