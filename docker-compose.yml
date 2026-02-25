@@ -49,6 +49,7 @@ services:
       HUSKY: '0'
       NODE_ENV: development
       NODE_OPTIONS: '--max-old-space-size=512'
+      DISABLE_RATE_LIMIT: 'true'
       PROXY_CONNECT_TIMEOUT_MS: '30000'
       PROXY_REQUEST_TIMEOUT_MS: '60000'
       PROXY_RATE_LIMIT_MAX_REQUESTS: '1000'
