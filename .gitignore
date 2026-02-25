@@ -49,3 +49,5 @@ error_logs.json
 /generated/prisma
 
 *.db
+/playwright-report
+/test-results
