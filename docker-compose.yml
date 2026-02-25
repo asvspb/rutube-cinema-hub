@@ -59,7 +59,7 @@ services:
     ports:
       - '9230:9230'
     command: >-
-      sh -c "apk add --no-cache ca-certificates curl && update-ca-certificates && npm install --no-audit --no-fund && npx --yes nodemon --watch server/index.js --watch server/ --watch .env --ignore logs --ignore server/logs --ext js,json server/index.js"
+      sh -c "apk add --no-cache ca-certificates curl && update-ca-certificates && npm install --no-audit --no-fund && npx prisma generate && npx prisma db push && npx --yes nodemon --watch server/index.js --watch server/ --watch .env --ignore logs --ignore server/logs --ext js,json server/index.js"
     dns:
       - 8.8.8.8
       - 1.1.1.1

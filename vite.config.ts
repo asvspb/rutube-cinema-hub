@@ -11,6 +11,11 @@ export default defineConfig(() => {
       // App runs on 9229 (DB planned for 9009).
       port: 9229,
       host: '0.0.0.0',
+      strictPort: true,
+      hmr: {
+        port: 9229,
+        host: 'localhost',
+      },
       proxy: {
         '/api': {
           target: proxyTarget,

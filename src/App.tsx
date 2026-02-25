@@ -1,10 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navigation } from './components/Navigation';
 import { MainContent } from './components/MainContent';
+import { AuthModal } from './components/Auth/AuthModal';
 import { useAppComposition } from './hooks/useAppComposition';
+import { useAuth } from './hooks/useAuth';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const { navigationProps, mainContentProps } = useAppComposition();
+  const { isAuthenticated, logout } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Override the login/logout handlers in navigationProps
+  const handleLoginClick = () => {
+    setIsAuthModalOpen(true);
+    navigationProps.setIsUserMenuOpen(false);
+  };
+
+  const handleLogoutClick = () => {
+    logout();
+    navigationProps.setIsLoggedIn(false);
+    navigationProps.setIsUserMenuOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#000917] text-white">
@@ -15,10 +31,24 @@ const App: React.FC = () => {
       >
         Перейти к основному контенту
       </a>
-      <Navigation {...navigationProps} />
+      <Navigation
+        {...navigationProps}
+        isLoggedIn={isAuthenticated}
+        onLoginClick={handleLoginClick}
+        onLogoutClick={handleLogoutClick}
+      />
       <MainContent {...mainContentProps} />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode="login"
+      />
     </div>
   );
+};
+
+const App: React.FC = () => {
+  return <AppContent />;
 };
 
 export default App;

@@ -18,7 +18,7 @@ export default defineConfig({
   reporter: 'html',
 
   use: {
-    baseURL: 'http://localhost:9230',
+    baseURL: 'http://localhost:9229',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -40,11 +40,11 @@ export default defineConfig({
     // },
   ],
 
-  // Запуск сервера перед тестами
-  webServer: {
-    command: 'npm run build && npm run server',
-    url: 'http://localhost:9230',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  // Используем существующий dev сервер (Docker)
+  // webServer: {
+  //   command: 'npm run dev',
+  //   url: 'http://localhost:9229',
+  //   reuseExistingServer: true,
+  //   timeout: 120 * 1000,
+  // },
 });

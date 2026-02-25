@@ -1,30 +1,27 @@
 import { z } from 'zod';
 
-// Password validation regex
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{}|;:,.<>?]).{8,}$/;
-
-// Custom error messages
-const PASSWORD_ERROR =
-  'Password must be at least 8 characters with uppercase, lowercase, number, and special character';
-
 /**
- * Email validation schema
+ * Username validation schema
+ * - Minimum 3 characters
+ * - Maximum 30 characters
+ * - Alphanumeric, underscores, and hyphens allowed
  */
-export const emailSchema = z
+export const usernameSchema = z
   .string()
-  .min(1, 'Email is required')
-  .email('Invalid email format')
-  .max(255, 'Email is too long')
-  .transform(email => email.toLowerCase().trim());
+  .min(3, 'Username must be at least 3 characters')
+  .max(30, 'Username is too long')
+  .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens')
+  .transform(username => username.trim());
 
 /**
- * Password validation schema with strength requirements
+ * Password validation schema for registration
+ * - Minimum 6 characters
+ * - Maximum 128 characters
  */
 export const passwordSchema = z
   .string()
-  .min(8, 'Password must be at least 8 characters')
-  .max(128, 'Password is too long')
-  .regex(PASSWORD_REGEX, PASSWORD_ERROR);
+  .min(6, 'Password must be at least 6 characters')
+  .max(128, 'Password is too long');
 
 /**
  * Simple password schema (for login - no strength check)
@@ -35,7 +32,7 @@ export const loginPasswordSchema = z.string().min(1, 'Password is required');
  * Registration schema
  */
 export const registerSchema = z.object({
-  email: emailSchema,
+  username: usernameSchema,
   password: passwordSchema,
 });
 
@@ -43,7 +40,7 @@ export const registerSchema = z.object({
  * Login schema
  */
 export const loginSchema = z.object({
-  email: emailSchema,
+  username: usernameSchema,
   password: loginPasswordSchema,
 });
 
@@ -66,28 +63,6 @@ export const passwordChangeSchema = z
     message: 'New password must be different from old password',
     path: ['newPassword'],
   });
-
-/**
- * Password reset request schema
- */
-export const passwordResetRequestSchema = z.object({
-  email: emailSchema,
-});
-
-/**
- * Password reset schema
- */
-export const passwordResetSchema = z.object({
-  token: z.string().min(1, 'Reset token is required'),
-  newPassword: passwordSchema,
-});
-
-/**
- * Email verification schema
- */
-export const emailVerificationSchema = z.object({
-  token: z.string().min(1, 'Verification token is required'),
-});
 
 /**
  * Session ID schema (for revoking sessions)
@@ -140,23 +115,11 @@ export function validateBody(schema, data) {
 export function validatePasswordStrength(password) {
   const errors = [];
 
-  if (password.length < 8) {
-    errors.push('Password must be at least 8 characters');
+  if (password.length < 6) {
+    errors.push('Password must be at least 6 characters');
   }
   if (password.length > 128) {
     errors.push('Password is too long');
-  }
-  if (!/[a-z]/.test(password)) {
-    errors.push('Password must contain a lowercase letter');
-  }
-  if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain an uppercase letter');
-  }
-  if (!/\d/.test(password)) {
-    errors.push('Password must contain a number');
-  }
-  if (!/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(password)) {
-    errors.push('Password must contain a special character');
   }
 
   return {
@@ -173,8 +136,8 @@ export function validatePasswordStrength(password) {
 export function getPasswordStrength(password) {
   let score = 0;
 
-  if (password.length >= 8) score++;
-  if (password.length >= 12) score++;
+  if (password.length >= 6) score++;
+  if (password.length >= 10) score++;
   if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
   if (/\d/.test(password)) score++;
   if (/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(password)) score++;

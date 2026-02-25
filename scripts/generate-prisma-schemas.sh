@@ -24,7 +24,6 @@ generate_schema() {
     echo
     echo "datasource db {"
     echo "  provider = \"$provider\""
-    echo "  url      = env(\"DATABASE_URL\")"
     echo "}"
     echo
     cat "$base_schema"

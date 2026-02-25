@@ -4,7 +4,7 @@ generator client {
 
 model User {
   id           String    @id @default(uuid())
-  email        String    @unique
+  username     String    @unique
   passwordHash String
   isActive     Boolean   @default(true)
   isVerified   Boolean   @default(false)
@@ -14,7 +14,7 @@ model User {
   updatedAt    DateTime  @updatedAt
   sessions     Session[]
 
-  @@index([email])
+  @@index([username])
 }
 
 model Session {

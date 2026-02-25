@@ -34,13 +34,13 @@ export async function comparePassword(password, hash) {
 
 /**
  * Generate a JWT access token
- * @param {object} user - User object with id and email
+ * @param {object} user - User object with id and username
  * @returns {string} JWT access token
  */
 export function generateAccessToken(user) {
   const payload = {
     userId: user.id,
-    email: user.email,
+    username: user.username,
   };
 
   return jwt.sign(payload, JWT_ACCESS_SECRET, {
@@ -154,7 +154,7 @@ export async function refreshSession(oldRefreshToken, metadata = {}) {
     refreshToken: newRefreshToken,
     user: {
       id: session.user.id,
-      email: session.user.email,
+      username: session.user.username,
       isVerified: session.user.isVerified,
       isActive: session.user.isActive,
     },
@@ -278,19 +278,22 @@ export function generateSessionName(userAgent) {
 
 /**
  * Register a new user
- * @param {string} email - User email
+ * @param {string} username - User username
  * @param {string} password - User password
  * @param {object} metadata - Session metadata
  * @returns {Promise<object>} Created user and tokens
  */
-export async function registerUser(email, password, metadata = {}) {
+export async function registerUser(username, password, metadata = {}) {
+  // Normalize username
+  const normalizedUsername = username.toLowerCase().trim();
+
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({
-    where: { email: email.toLowerCase() },
+    where: { username: normalizedUsername },
   });
 
   if (existingUser) {
-    return { error: 'EMAIL_EXISTS' };
+    return { error: 'USERNAME_EXISTS' };
   }
 
   // Hash password
@@ -299,7 +302,7 @@ export async function registerUser(email, password, metadata = {}) {
   // Create user
   const user = await prisma.user.create({
     data: {
-      email: email.toLowerCase(),
+      username: normalizedUsername,
       passwordHash,
     },
   });
@@ -316,7 +319,7 @@ export async function registerUser(email, password, metadata = {}) {
     refreshToken,
     user: {
       id: user.id,
-      email: user.email,
+      username: user.username,
       isVerified: user.isVerified,
       isActive: user.isActive,
       createdAt: user.createdAt,
@@ -326,15 +329,15 @@ export async function registerUser(email, password, metadata = {}) {
 
 /**
  * Login a user
- * @param {string} email - User email
+ * @param {string} username - User username
  * @param {string} password - User password
  * @param {object} metadata - Session metadata
  * @returns {Promise<object>} User and tokens
  */
-export async function loginUser(email, password, metadata = {}) {
+export async function loginUser(username, password, metadata = {}) {
   // Find user
   const user = await prisma.user.findUnique({
-    where: { email: email.toLowerCase() },
+    where: { username: username.toLowerCase().trim() },
   });
 
   if (!user) {
@@ -370,7 +373,7 @@ export async function loginUser(email, password, metadata = {}) {
     refreshToken,
     user: {
       id: user.id,
-      email: user.email,
+      username: user.username,
       isVerified: user.isVerified,
       isActive: user.isActive,
       lastLoginAt: new Date(),
@@ -431,7 +434,7 @@ export async function getUserById(userId) {
 
   return {
     id: user.id,
-    email: user.email,
+    username: user.username,
     isVerified: user.isVerified,
     isActive: user.isActive,
     lastLoginAt: user.lastLoginAt,

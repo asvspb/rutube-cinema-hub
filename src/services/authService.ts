@@ -3,7 +3,7 @@ import axios, { AxiosError } from 'axios';
 // Types
 export interface User {
   id: string;
-  email: string;
+  username: string;
   isVerified: boolean;
   isActive: boolean;
   lastLoginAt?: string;
@@ -126,8 +126,8 @@ api.interceptors.response.use(
 /**
  * Register a new user
  */
-export async function register(email: string, password: string): Promise<AuthResponse> {
-  const { data } = await api.post<AuthResponse>('/auth/register', { email, password });
+export async function register(username: string, password: string): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>('/auth/register', { username, password });
   setAccessToken(data.accessToken);
   return data;
 }
@@ -135,8 +135,8 @@ export async function register(email: string, password: string): Promise<AuthRes
 /**
  * Login a user
  */
-export async function login(email: string, password: string): Promise<AuthResponse> {
-  const { data } = await api.post<AuthResponse>('/auth/login', { email, password });
+export async function login(username: string, password: string): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>('/auth/login', { username, password });
   setAccessToken(data.accessToken);
   return data;
 }

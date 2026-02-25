@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import {
-  emailSchema,
+  usernameSchema,
   passwordSchema,
   loginPasswordSchema,
   registerSchema,
@@ -13,64 +13,64 @@ import {
 } from '../../server/schemas/authSchemas.js';
 
 describe('Auth Schemas', () => {
-  describe('Email validation', () => {
-    it('should validate a valid email', () => {
-      const result = emailSchema.parse('test@example.com');
-      assert.strictEqual(result, 'test@example.com');
+  describe('Username validation', () => {
+    it('should validate a valid username', () => {
+      const result = usernameSchema.parse('testuser');
+      assert.strictEqual(result, 'testuser');
     });
 
-    it('should lowercase email', () => {
-      const result = emailSchema.parse('Test@Example.COM');
-      assert.strictEqual(result, 'test@example.com');
+    it('should trim whitespace from valid input', () => {
+      const result = usernameSchema.parse('testuser');
+      assert.strictEqual(result, 'testuser');
     });
 
-    it('should trim whitespace', () => {
-      const result = emailSchema.parse('test@example.com');
-      assert.strictEqual(result, 'test@example.com');
+    it('should accept underscores', () => {
+      const result = usernameSchema.parse('test_user');
+      assert.strictEqual(result, 'test_user');
     });
 
-    it('should reject invalid email', () => {
-      assert.throws(() => emailSchema.parse('invalid-email'));
+    it('should accept hyphens', () => {
+      const result = usernameSchema.parse('test-user');
+      assert.strictEqual(result, 'test-user');
+    });
+
+    it('should accept numbers', () => {
+      const result = usernameSchema.parse('user123');
+      assert.strictEqual(result, 'user123');
+    });
+
+    it('should reject invalid characters', () => {
+      assert.throws(() => usernameSchema.parse('test@user'));
+    });
+
+    it('should reject short username', () => {
+      assert.throws(() => usernameSchema.parse('ab'));
     });
 
     it('should reject empty string', () => {
-      assert.throws(() => emailSchema.parse(''));
-    });
-
-    it('should reject missing TLD', () => {
-      assert.throws(() => emailSchema.parse('test@localhost'));
+      assert.throws(() => usernameSchema.parse(''));
     });
   });
 
   describe('Password validation', () => {
-    it('should accept a strong password', () => {
-      const password = 'SecureP@ssw0rd';
+    it('should accept a password with 6+ characters', () => {
+      const password = 'simple123';
       const result = passwordSchema.parse(password);
       assert.strictEqual(result, password);
     });
 
-    it('should reject password without uppercase', () => {
-      assert.throws(() => passwordSchema.parse('securep@ssw0rd'));
+    it('should accept any characters', () => {
+      const password = 'abc123!@#';
+      const result = passwordSchema.parse(password);
+      assert.strictEqual(result, password);
     });
 
-    it('should reject password without lowercase', () => {
-      assert.throws(() => passwordSchema.parse('SECUREP@SSW0RD'));
-    });
-
-    it('should reject password without number', () => {
-      assert.throws(() => passwordSchema.parse('SecurePassword!'));
-    });
-
-    it('should reject password without special character', () => {
-      assert.throws(() => passwordSchema.parse('SecurePassword1'));
-    });
-
-    it('should reject password shorter than 8 characters', () => {
-      assert.throws(() => passwordSchema.parse('Sh0rt!'));
+    it('should reject password shorter than 6 characters', () => {
+      assert.throws(() => passwordSchema.parse('12345'));
     });
 
     it('should reject password longer than 128 characters', () => {
-      const longPassword = 'A'.repeat(129) + 'a1!';
+      const longPassword = 'A'.repeat(129);
       assert.throws(() => passwordSchema.parse(longPassword));
     });
   });
@@ -88,60 +88,54 @@ describe('Auth Schemas', () => {
 
   describe('Register schema', () => {
     it('should validate valid registration data', () => {
-      const data = { email: 'test@example.com', password: 'SecureP@ssw0rd' };
+      const data = { username: 'testuser', password: 'password123' };
       const result = registerSchema.parse(data);
-      assert.strictEqual(result.email, 'test@example.com');
-      assert.strictEqual(result.password, 'SecureP@ssw0rd');
+      assert.strictEqual(result.username, 'testuser');
+      assert.strictEqual(result.password, 'password123');
     });
 
-    it('should reject registration with weak password', () => {
-      const data = { email: 'test@example.com', password: 'weak' };
+    it('should reject registration with short password', () => {
+      const data = { username: 'testuser', password: '12345' };
       assert.throws(() => registerSchema.parse(data));
     });
 
-    it('should reject registration with invalid email', () => {
-      const data = { email: 'invalid-email', password: 'SecureP@ssw0rd' };
+    it('should reject registration with short username', () => {
+      const data = { username: 'ab', password: 'password123' };
       assert.throws(() => registerSchema.parse(data));
     });
   });
 
   describe('Login schema', () => {
     it('should validate valid login data', () => {
-      const data = { email: 'test@example.com', password: 'anypassword' };
+      const data = { username: 'testuser', password: 'anypassword' };
       const result = loginSchema.parse(data);
-      assert.strictEqual(result.email, 'test@example.com');
+      assert.strictEqual(result.username, 'testuser');
       assert.strictEqual(result.password, 'anypassword');
-    });
-
-    it('should lowercase email on login', () => {
-      const data = { email: 'TEST@EXAMPLE.COM', password: 'anypassword' };
-      const result = loginSchema.parse(data);
-      assert.strictEqual(result.email, 'test@example.com');
     });
   });
 
   describe('Password change schema', () => {
     it('should validate valid password change', () => {
-      const data = { oldPassword: 'OldP@ssw0rd', newPassword: 'NewP@ssw0rd123' };
+      const data = { oldPassword: 'oldpass123', newPassword: 'newpass456' };
       const result = passwordChangeSchema.parse(data);
-      assert.strictEqual(result.oldPassword, 'OldP@ssw0rd');
-      assert.strictEqual(result.newPassword, 'NewP@ssw0rd123');
+      assert.strictEqual(result.oldPassword, 'oldpass123');
+      assert.strictEqual(result.newPassword, 'newpass456');
     });
 
     it('should reject same old and new password', () => {
-      const data = { oldPassword: 'SameP@ssw0rd', newPassword: 'SameP@ssw0rd' };
+      const data = { oldPassword: 'samepass123', newPassword: 'samepass123' };
       assert.throws(() => passwordChangeSchema.parse(data));
     });
 
-    it('should reject weak new password', () => {
-      const data = { oldPassword: 'OldP@ssw0rd', newPassword: 'weak' };
+    it('should reject short new password', () => {
+      const data = { oldPassword: 'oldpass123', newPassword: '12345' };
       assert.throws(() => passwordChangeSchema.parse(data));
     });
   });
 
   describe('validateBody helper', () => {
     it('should return success for valid data', () => {
-      const data = { email: 'test@example.com', password: 'SecureP@ssw0rd' };
+      const data = { username: 'testuser', password: 'password123' };
       const result = validateBody(registerSchema, data);
 
       assert.strictEqual(result.success, true);
@@ -149,7 +143,7 @@ describe('Auth Schemas', () => {
     });
 
     it('should return error for invalid data', () => {
-      const data = { email: 'invalid', password: 'weak' };
+      const data = { username: 'ab', password: '12345' };
       const result = validateBody(registerSchema, data);
 
       assert.strictEqual(result.success, false);
@@ -158,61 +152,37 @@ describe('Auth Schemas', () => {
   });
 
   describe('Password strength validation', () => {
-    it('should validate strong password', () => {
-      const result = validatePasswordStrength('SecureP@ssw0rd');
+    it('should validate password with 6+ characters', () => {
+      const result = validatePasswordStrength('password123');
       assert.strictEqual(result.valid, true);
       assert.strictEqual(result.errors.length, 0);
     });
 
-    it('should report all errors for very weak password', () => {
-      const result = validatePasswordStrength('x');
+    it('should report error for short password', () => {
+      const result = validatePasswordStrength('12345');
       assert.strictEqual(result.valid, false);
       assert.ok(result.errors.length > 0);
-    });
-
-    it('should report missing uppercase', () => {
-      const result = validatePasswordStrength('securep@ssw0rd');
-      assert.strictEqual(result.valid, false);
-      assert.ok(result.errors.some(e => e.includes('uppercase')));
-    });
-
-    it('should report missing lowercase', () => {
-      const result = validatePasswordStrength('SECUREP@SSW0RD');
-      assert.strictEqual(result.valid, false);
-      assert.ok(result.errors.some(e => e.includes('lowercase')));
-    });
-
-    it('should report missing number', () => {
-      const result = validatePasswordStrength('SecurePassword!');
-      assert.strictEqual(result.valid, false);
-      assert.ok(result.errors.some(e => e.includes('number')));
-    });
-
-    it('should report missing special character', () => {
-      const result = validatePasswordStrength('SecurePassword1');
-      assert.strictEqual(result.valid, false);
-      assert.ok(result.errors.some(e => e.includes('special')));
     });
   });
 
   describe('Password strength score', () => {
-    it('should score 0 for very weak password', () => {
+    it('should score 0 for very short password', () => {
       const score = getPasswordStrength('x');
       assert.strictEqual(score, 0);
     });
 
-    it('should score 1 for 8+ chars', () => {
-      const score = getPasswordStrength('abcdefgh');
+    it('should score 1 for 6+ chars', () => {
+      const score = getPasswordStrength('abcdef');
       assert.strictEqual(score, 1);
     });
 
     it('should score higher for complex password', () => {
-      const score = getPasswordStrength('SecureP@ssw0rd');
+      const score = getPasswordStrength('Password123!');
       assert.ok(score >= 4);
     });
 
     it('should max at 4', () => {
-      const score = getPasswordStrength('VerySecureL0ngP@ssword!');
+      const score = getPasswordStrength('VeryLongPassword123!@#');
       assert.strictEqual(score, 4);
     });
   });

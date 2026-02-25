@@ -68,6 +68,8 @@ interface NavigationProps {
   gridMenuRef: React.RefObject<HTMLDivElement>;
   userMenuRef: React.RefObject<HTMLDivElement>;
   handleGoHome: () => void;
+  onLoginClick?: () => void;
+  onLogoutClick?: () => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
@@ -109,6 +111,8 @@ export const Navigation: React.FC<NavigationProps> = ({
   gridMenuRef,
   userMenuRef,
   handleGoHome,
+  onLoginClick,
+  onLogoutClick,
 }) => {
   return (
     <nav
@@ -301,7 +305,11 @@ export const Navigation: React.FC<NavigationProps> = ({
                   {isLoggedIn ? (
                     <button
                       onClick={() => {
-                        setIsLoggedIn(false);
+                        if (onLogoutClick) {
+                          onLogoutClick();
+                        } else {
+                          setIsLoggedIn(false);
+                        }
                         setIsUserMenuOpen(false);
                       }}
                       className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-zinc-800 hover:text-red-300 flex items-center gap-3 transition-colors"
@@ -312,7 +320,11 @@ export const Navigation: React.FC<NavigationProps> = ({
                   ) : (
                     <button
                       onClick={() => {
-                        setIsLoggedIn(true);
+                        if (onLoginClick) {
+                          onLoginClick();
+                        } else {
+                          setIsLoggedIn(true);
+                        }
                         setIsUserMenuOpen(false);
                       }}
                       className="w-full text-left px-3 py-2 rounded-lg text-sm text-blue-400 hover:bg-zinc-800 hover:text-blue-300 flex items-center gap-3 transition-colors"

@@ -78,18 +78,18 @@ router.post('/register', registerLimiter, async (req, res) => {
     return res.status(400).json({ error: validation.error });
   }
 
-  const { email, password } = validation.data;
+  const { username, password } = validation.data;
   const metadata = getSessionMetadata(req);
 
   try {
-    const result = await registerUser(email, password, metadata);
+    const result = await registerUser(username, password, metadata);
 
     if (result.error) {
-      if (result.error === 'EMAIL_EXISTS') {
+      if (result.error === 'USERNAME_EXISTS') {
         return res.status(409).json({
           error: {
-            code: 'EMAIL_EXISTS',
-            message: 'Email is already registered',
+            code: 'USERNAME_EXISTS',
+            message: 'Username is already taken',
           },
         });
       }
@@ -130,18 +130,18 @@ router.post('/login', loginLimiter, async (req, res) => {
     return res.status(400).json({ error: validation.error });
   }
 
-  const { email, password } = validation.data;
+  const { username, password } = validation.data;
   const metadata = getSessionMetadata(req);
 
   try {
-    const result = await loginUser(email, password, metadata);
+    const result = await loginUser(username, password, metadata);
 
     if (result.error) {
       if (result.error === 'INVALID_CREDENTIALS') {
         return res.status(401).json({
           error: {
             code: 'INVALID_CREDENTIALS',
-            message: 'Email or password is incorrect',
+            message: 'Username or password is incorrect',
           },
         });
       }
