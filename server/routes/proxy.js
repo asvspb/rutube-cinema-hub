@@ -50,6 +50,9 @@ const makeRequest = async (urlString, options, maxRetries = 2) => {
             },
             timeout: REQUEST_TIMEOUT_MS,
             rejectUnauthorized: true,
+            // SNI (Server Name Indication) - required for proper SSL certificate validation
+            // when connecting via IP address. The certificate is issued for the domain name.
+            servername: parsedUrl.hostname,
           };
 
           const lib = isHttps ? https : http;
