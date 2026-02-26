@@ -36,11 +36,21 @@ export const securityMiddleware = helmet({
       imgSrc: ["'self'", 'data:', 'https:'],
       connectSrc: ["'self'", 'https:'],
       objectSrc: ["'none'"],
+      // Allow Rutube iframe embeds
+      frameSrc: ["'self'", 'https://rutube.ru', 'https://*.rutube.ru'],
+      // Allow media from Rutube CDN
+      mediaSrc: ["'self'", 'https:', 'blob:'],
+      // Allow fonts and other resources
+      fontSrc: ["'self'", 'https:', 'data:'],
     },
   },
-  frameguard: { action: 'deny' },
+  // Allow iframe embedding from Rutube
+  frameguard: false,
   noSniff: true,
-  referrerPolicy: { policy: 'same-origin' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: false,
+  crossOriginResourcePolicy: false,
 });
 
 export const compressionMiddleware = compression();

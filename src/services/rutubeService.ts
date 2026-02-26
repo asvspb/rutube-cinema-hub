@@ -1139,7 +1139,9 @@ export const fetchChannelInfo = async (
 };
 
 export const getEmbedUrl = (videoId: string): string => {
-  return `https://rutube.ru/play/embed/${videoId}`;
+  // Add autoplay and other parameters for better embed experience
+  // Note: 401 errors from Rutube player are normal - they're for optional features
+  return `https://rutube.ru/play/embed/${videoId}?autoplay=0&pver=v2`;
 };
 
 export const formatDuration = (seconds: number | undefined | null): string => {
